@@ -71,7 +71,7 @@ Relatório HTML da última execução:
 npx playwright show-report storage/e2e/relatorio-playwright
 ```
 
-Encerrar **somente** o `artisan serve` da porta 8003 (não derrube o Compose, a 8002, o Proesc, o banco `ecommerce` nem o app administrador/produtos locais). No terminal desse serve: `Ctrl+C`. Se o processo ficou no container Sail:
+Encerrar **somente** o `artisan serve` da porta 8003 (não derrube o Compose, a 8002, o banco `ecommerce` nem o app administrador/produtos locais). No terminal desse serve: `Ctrl+C`. Se o processo ficou no container Sail:
 
 ```bash
 ss -tlnp | grep 8003

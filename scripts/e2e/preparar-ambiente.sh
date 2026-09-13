@@ -21,7 +21,7 @@ if ! grep -q '^E2E_TOKEN=.\+' .env.e2e || grep -q '^E2E_TOKEN=$' .env.e2e; then
   fi
 fi
 
-echo "Confirmando MySQL do Compose ecommerce (não é o Proesc)..."
+echo "Confirmando MySQL do Compose ecommerce..."
 db_atual="$(docker exec ecommerce-mysql-1 mysql -usail -ppassword -N -e 'SELECT DATABASE();' ecommerce)"
 if [[ "$db_atual" != "ecommerce" ]]; then
   echo "Abortado: esperado conferir o banco ecommerce, obtido: ${db_atual}"
