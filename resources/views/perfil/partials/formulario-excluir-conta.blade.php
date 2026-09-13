@@ -39,6 +39,7 @@
                 />
 
                 <x-erro-campo :messages="$errors->exclusao_usuario->get('password')" class="mt-2" />
+                <x-erro-campo :messages="$errors->exclusao_usuario->get('exclusao_usuario')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">

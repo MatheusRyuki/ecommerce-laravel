@@ -60,7 +60,10 @@ class PerfilController extends Controller
         });
 
         if ($bloqueado) {
-            return back()->withErrors(['exclusao_usuario' => 'Não é possível excluir o último administrador.']);
+            return back()->withErrors(
+                ['exclusao_usuario' => 'Não é possível excluir o último administrador.'],
+                'exclusao_usuario',
+            );
         }
 
         Auth::logout();

@@ -168,20 +168,20 @@ O build de assets da loja (quando necessário):
 
 | # | Entrega | Implementação | Validação |
 | --- | --- | --- | --- |
-| 1 | Busca na vitrine e no admin | Query `q` + paginação com query string | PHPUnit catálogo/listagem; E2E vitrine |
-| 2 | Publicação | `publicado`; `scopePublicados` | PHPUnit oculto 404 |
-| 3 | Duplicar produto | Cópia oculta, imagens novas, estoque via movimentação | PHPUnit `AdminProdutoSalvarTest` |
-| 4 | Verificação de e-mail | `MustVerifyEmail`; `verificacao:url` local | PHPUnit auth; E2E cadastro/perfil |
-| 5 | Carrinho persistente e mescla | `itens_carrinho` + `MescladorCarrinho` | PHPUnit; E2E jornada |
-| 6 | Categorias | CRUD admin + vitrine por slug | PHPUnit; E2E jornada |
-| 7 | Favoritos | Conta verificada | PHPUnit; E2E jornada |
-| 8 | Endereços | Um padrão; exclusão promove o mais antigo | PHPUnit; E2E jornada |
-| 9 | Estoque | Lock + histórico; edição de produto não muda qty | PHPUnit produto/estoque; concorrência MySQL |
-| 10 | Checkout e pedidos | Snapshot, idempotência, sem pagamento | PHPUnit; E2E jornada |
-| 11 | Cupons | Fixo/percentual, uso único | PHPUnit; E2E jornada; concorrência MySQL |
-| 12 | Frete por CEP | Faixas no admin | PHPUnit CEP sem cobertura; E2E jornada |
-| 13 | Usuários admin | Promover/rebaixar; último admin protegido | PHPUnit `AdminUsuarioTest` / perfil |
-| 14 | Filtros de catálogo (cor/disponível) | `ConsultaCatalogo` | PHPUnit `PublicacaoCatalogoFavoritoTest` |
+| 1 | Busca pública | Query `q` na vitrine + filtros | PHPUnit `PublicacaoCatalogoFavoritoTest`; E2E vitrine |
+| 2 | Busca administrativa | Query `q` em produtos e usuários | PHPUnit `AdminProdutoListarTest` / `AdminUsuarioTest`; E2E `usuarios-admin` |
+| 3 | Publicação | `publicado`; `scopePublicados` | PHPUnit oculto 404; E2E vitrine e duplicar |
+| 4 | Duplicar produto | Formulário preenchido, SKU novo, cópia oculta | E2E `duplicar-produto`; PHPUnit `AdminProdutoSalvarTest` |
+| 5 | Verificação de e-mail | `MustVerifyEmail`; `verificacao:url` local | PHPUnit auth; E2E cadastro/perfil/jornada |
+| 6 | Carrinho persistente e mescla | `itens_carrinho` + `MescladorCarrinho` | PHPUnit; E2E carrinho/jornada |
+| 7 | Categorias | CRUD admin + vitrine por slug | PHPUnit; E2E jornada |
+| 8 | Favoritos | Conta verificada | PHPUnit; E2E jornada |
+| 9 | Endereços | Um padrão; exclusão promove o mais antigo | PHPUnit; E2E jornada |
+| 10 | Estoque | Tela admin (entrada/saída/ajuste) + lock | E2E `estoque-admin`; PHPUnit; concorrência MySQL |
+| 11 | Checkout e pedidos | Snapshot, idempotência, sem pagamento | PHPUnit; E2E jornada |
+| 12 | Cupons | Fixo/percentual, uso único | PHPUnit; E2E jornada; concorrência MySQL |
+| 13 | Frete por CEP | Faixas no admin | PHPUnit CEP sem cobertura; E2E jornada |
+| 14 | Usuários admin | Promover/rebaixar; último admin protegido | E2E `usuarios-admin`; PHPUnit `AdminUsuarioTest` / perfil |
 
 Pendências conhecidas: disputa **simultânea** de duas transações no mesmo instante (a suíte MySQL cobre a ordem sequencial com `lockForUpdate`; não prova dois processos em paralelo).
 

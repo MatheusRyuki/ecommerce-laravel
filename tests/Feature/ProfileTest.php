@@ -104,7 +104,7 @@ class ProfileTest extends TestCase
         $this->actingAs($admin)
             ->from('/perfil')
             ->delete('/perfil', ['password' => 'password'])
-            ->assertSessionHasErrors('exclusao_usuario');
+            ->assertSessionHasErrors('exclusao_usuario', errorBag: 'exclusao_usuario');
 
         $this->assertNotNull($admin->fresh());
     }

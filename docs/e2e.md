@@ -101,7 +101,7 @@ Pré-condições: `./scripts/e2e/preparar-ambiente.sh` já rodou; `artisan serve
 
 ## Matriz de cobertura (automação)
 
-Há **38 cenários únicos** (`test()` em `testes/e2e/*.spec.ts`). Sem retry. Tags: `@principal` (fluxos de autenticação, CRUD admin, galeria, carrinho principal, integrado, jornada de compra e foco do modal) e `@somente-mobile` (menu da loja em emulação Pixel 5).
+Há **41 cenários únicos** (`test()` em `testes/e2e/*.spec.ts`). Sem retry. Tags: `@principal` (fluxos de autenticação, CRUD admin, duplicar, estoque, usuários, galeria, carrinho principal, integrado, jornada de compra e foco do modal) e `@somente-mobile` (menu da loja em emulação Pixel 5).
 
 | Arquivo | Cenários únicos | Desktop (3 navegadores) | Emulação mobile |
 | --- | --- | --- | --- |
@@ -111,13 +111,16 @@ Há **38 cenários únicos** (`test()` em `testes/e2e/*.spec.ts`). Sem retry. Ta
 | `recuperacao-senha.spec.ts` | 2 | 6 | — |
 | `permissoes.spec.ts` | 3 | 9 | — |
 | `admin-produtos.spec.ts` | 5 | 15 | 2 (`@principal`) |
+| `duplicar-produto.spec.ts` | 1 | 3 | 1 (`@principal`) |
+| `estoque-admin.spec.ts` | 1 | 3 | 1 (`@principal`) |
+| `usuarios-admin.spec.ts` | 1 | 3 | 1 (`@principal`) |
 | `vitrine.spec.ts` | 3 | 9 | 1 (`@principal`) |
 | `carrinho.spec.ts` | 9 | 27 | 3 (`@principal`) |
 | `fluxo-integrado.spec.ts` | 1 | 3 | 1 (`@principal`) |
 | `jornada-compra.spec.ts` | 1 | 3 | 1 (`@principal`) |
 | `navegacao.spec.ts` | 5 | 12 (sem `@somente-mobile`) | 2 (`@principal` + `@somente-mobile`) |
 
-Execuções por `npm run teste:e2e`: **37 × Chromium + 37 × Firefox + 37 × WebKit + 12 × mobile**. Quantidade 0/fracionária no servidor continua coberta pelo PHPUnit (`LojaCarrinhoMutacaoTest`).
+Execuções por `npm run teste:e2e`: **40 × Chromium + 40 × Firefox + 40 × WebKit + 15 × mobile**. Quantidade 0/fracionária no servidor continua coberta pelo PHPUnit (`LojaCarrinhoMutacaoTest`).
 
 Preparação: `e2e:reiniciar` no `beforeEach` (ou no próprio teste quando usa `--com-catalogo`). Não é um teste extra.
 
