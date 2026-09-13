@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import {
   arquivoFixture,
   cadastrarProdutoUi,
@@ -6,6 +6,27 @@ import {
   expectTotal,
   reiniciar,
 } from './suporte/aplicacao';
+
+async function expectBarraPrincipalEmUmaLinha(page: Page): Promise<void> {
+  const logo = page.locator('.navbar-brand');
+  const carrinho = page.locator('.cabecalho-loja__carrinho');
+  const menu = page.getByRole('button', { name: 'Abrir menu' });
+  const caixaLogo = await logo.boundingBox();
+  const caixaCarrinho = await carrinho.boundingBox();
+  const caixaMenu = await menu.boundingBox();
+
+  expect(caixaLogo, 'logo visível na barra').toBeTruthy();
+  expect(caixaCarrinho, 'carrinho visível na barra').toBeTruthy();
+  expect(caixaMenu, 'botão do menu visível na barra').toBeTruthy();
+
+  const centro = (caixa: { y: number; height: number }) => caixa.y + caixa.height / 2;
+  expect(Math.abs(centro(caixaLogo!) - centro(caixaCarrinho!))).toBeLessThan(10);
+  expect(Math.abs(centro(caixaCarrinho!) - centro(caixaMenu!))).toBeLessThan(10);
+  expect(caixaLogo!.x).toBeLessThan(caixaCarrinho!.x);
+  expect(caixaCarrinho!.x).toBeLessThan(caixaMenu!.x);
+  expect(caixaLogo!.y + caixaLogo!.height).toBeGreaterThan(caixaCarrinho!.y);
+  expect(caixaCarrinho!.y + caixaCarrinho!.height).toBeGreaterThan(caixaLogo!.y);
+}
 
 test.describe('Navegação e apresentação', () => {
   test.beforeEach(() => {
@@ -48,6 +69,15 @@ test.describe('Navegação e apresentação', () => {
     await expect(page.getByRole('link', { name: 'Carrinho, 0 itens' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+
+    await page.setViewportSize({ width: 991, height: 800 });
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Entrar' })).toBeHidden();
+    await expectBarraPrincipalEmUmaLinha(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
     await expect(page.getByRole('link', { name: 'Loja' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Sobre' })).toHaveCount(0);
     await expect(page.locator('a[href="#"]')).toHaveCount(0);
@@ -64,6 +94,26 @@ test.describe('Navegação e apresentação', () => {
   });
 
   test('celular: menu da loja, admin e carrinho utilizáveis @somente-mobile', async ({ page }) => {
+    await page.goto('/');
+    for (const largura of [320, 390, 414]) {
+      await page.setViewportSize({ width: largura, height: 844 });
+      await expect(page.getByRole('link', { name: 'Carrinho, 0 itens' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Entrar' })).toBeHidden();
+      await expect(page.getByRole('link', { name: 'Criar conta' })).toBeHidden();
+      await expectBarraPrincipalEmUmaLinha(page);
+    }
+
+    await page.getByRole('link', { name: /Carrinho/ }).focus();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeFocused();
+
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await expect(page.getByRole('link', { name: 'Início' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
+    await expectBarraPrincipalEmUmaLinha(page);
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
       nome: 'Mobile',
@@ -72,14 +122,19 @@ test.describe('Navegação e apresentação', () => {
     });
 
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Carrinho, 0 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Conta' })).toBeHidden();
+    await expectBarraPrincipalEmUmaLinha(page);
     await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await expect(page.getByRole('link', { name: 'Conta' })).toBeVisible();
     await page.getByRole('link', { name: 'Início' }).click();
     await page.getByRole('link', { name: 'Mobile' }).click();
     await expect(page.getByRole('heading', { name: 'Mobile' })).toBeVisible();
+    await page.locator('#formulario-adicionar-carrinho input[name="quantidade"]').fill('10');
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
     await expect(page.getByText('O produto foi adicionado ao carrinho.')).toBeVisible();
-    await expectTotal(page, 'R$ 49,90');
+    await expect(page.getByRole('link', { name: 'Carrinho, 10 itens' })).toBeVisible();
+    await expectBarraPrincipalEmUmaLinha(page);
+    await expectTotal(page, 'R$ 499,00');
 
     await page.goto('/admin/produtos');
     await page.locator('div.sm\\:hidden button').click();

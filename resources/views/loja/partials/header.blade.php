@@ -4,7 +4,7 @@
                 <img src="{{ asset('frontend/images/logo.png') }}" alt="Freeit" class="img-fluid">
             </a>
 
-            <div class="d-flex align-items-center gap-2 ms-auto order-lg-3 cabecalho-loja__acoes">
+            <div class="d-flex align-items-center cabecalho-loja__acoes">
                 @php
                     $itensCarrinho = (int) $quantidadeCarrinho;
                     $rotuloCarrinho = $itensCarrinho === 1
@@ -18,10 +18,10 @@
                     </span>
                 </a>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="cabecalho-loja__conta {{ request()->routeIs('dashboard') ? 'ativo' : '' }}">Conta</a>
+                    <a href="{{ route('dashboard') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex {{ request()->routeIs('dashboard') ? 'ativo' : '' }}">Conta</a>
                 @else
-                    <a href="{{ route('login') }}" class="cabecalho-loja__conta">Entrar</a>
-                    <a href="{{ route('register') }}" class="cabecalho-loja__conta">Criar conta</a>
+                    <a href="{{ route('login') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex">Entrar</a>
+                    <a href="{{ route('register') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex">Criar conta</a>
                 @endauth
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
@@ -30,11 +30,23 @@
                 </button>
             </div>
 
-            <div class="collapse navbar-collapse order-lg-2" id="navbarSupportedContent">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('inicio') ? 'active' : '' }}" href="{{ route('inicio') }}">Início</a>
                     </li>
+                    @auth
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Conta</a>
+                        </li>
+                    @else
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link" href="{{ route('login') }}">Entrar</a>
+                        </li>
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link" href="{{ route('register') }}">Criar conta</a>
+                        </li>
+                    @endauth
                 </ul>
             </div>
         </div>
