@@ -12,14 +12,25 @@
 
                 <!-- Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-link-navegacao :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    @php
+                        $contaAtiva = request()->routeIs('perfil.*', 'dashboard');
+                        $produtosAtivos = request()->routeIs('admin.produtos.*');
+                    @endphp
+                    <x-link-navegacao
+                        id="nav-conta"
+                        :href="route('perfil.editar')"
+                        :active="$contaAtiva"
+                        :aria-current="$contaAtiva ? 'page' : false"
+                    >
                         Conta
                     </x-link-navegacao>
                     @can('acessar-admin')
-                        <x-link-navegacao :href="route('admin.painel')" :active="request()->routeIs('admin.*')">
-                            {{ __('Administração') }}
-                        </x-link-navegacao>
-                        <x-link-navegacao id="nav-produtos" :href="route('admin.produtos.listar')" :active="request()->routeIs('admin.produtos.*')">
+                        <x-link-navegacao
+                            id="nav-produtos"
+                            :href="route('admin.produtos.listar')"
+                            :active="$produtosAtivos"
+                            :aria-current="$produtosAtivos ? 'page' : false"
+                        >
                             Produtos
                         </x-link-navegacao>
                     @endcan
@@ -75,14 +86,25 @@
     <!-- Menu responsivo -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-link-navegacao-responsivo :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+            @php
+                $contaAtiva = request()->routeIs('perfil.*', 'dashboard');
+                $produtosAtivos = request()->routeIs('admin.produtos.*');
+            @endphp
+            <x-link-navegacao-responsivo
+                id="nav-conta-movel"
+                :href="route('perfil.editar')"
+                :active="$contaAtiva"
+                :aria-current="$contaAtiva ? 'page' : false"
+            >
                 Conta
             </x-link-navegacao-responsivo>
             @can('acessar-admin')
-                <x-link-navegacao-responsivo :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">
-                    {{ __('Administração') }}
-                </x-link-navegacao-responsivo>
-                <x-link-navegacao-responsivo :href="route('admin.produtos.listar')" :active="request()->routeIs('admin.produtos.*')">
+                <x-link-navegacao-responsivo
+                    id="nav-produtos-movel"
+                    :href="route('admin.produtos.listar')"
+                    :active="$produtosAtivos"
+                    :aria-current="$produtosAtivos ? 'page' : false"
+                >
                     Produtos
                 </x-link-navegacao-responsivo>
             @endcan

@@ -1,6 +1,6 @@
 <x-layout-aplicacao>
     <x-slot name="cabecalho">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 id="titulo-produtos" class="font-semibold text-xl text-gray-800 leading-tight">
             Produtos
         </h2>
     </x-slot>
@@ -8,8 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-800">Produtos</h3>
+                <div class="flex items-center justify-end px-4 py-3 bg-gray-50 border-b border-gray-200">
                     <a id="link-cadastrar-produto" href="{{ route('admin.produtos.criar') }}" class="relative z-10 inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         Cadastrar produto
                     </a>
@@ -38,7 +37,7 @@
                         </div>
                     @else
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm" aria-labelledby="titulo-produtos">
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Capa</th>

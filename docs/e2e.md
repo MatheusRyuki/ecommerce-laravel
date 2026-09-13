@@ -96,7 +96,7 @@ Pré-condições: `./scripts/e2e/preparar-ambiente.sh` já rodou; `artisan serve
 | 6 | conta de teste | `/forgot-password` → ver `storage/e2e/correio/mensagens.log` → abrir o link → redefinir. Abrir o mesmo link de novo. | Senha nova funciona; segundo uso rejeita o token. |
 | 7 | `/login` com “Lembrar de mim” | Nas ferramentas de desenvolvedor, apagar só o cookie `e2e_sessao`, manter `remember_web_*`, abrir `/perfil`. | Continua autenticado. |
 | 8 | `/perfil` | Excluir conta: Cancelar; senha errada; senha certa (só conta de teste). | Modal fecha; erro de senha; depois `/` e login falha. |
-| 9 | usuário comum criado no cadastro | URL `/admin/produtos`. | 403. Menu Administração/Produtos ausente. |
+| 9 | usuário comum criado no cadastro | URL `/admin/produtos`. | 403. Menu Produtos ausente. |
 | 10 | duas abas da **mesma** sessão no carrinho | Alterar quantidade nas duas e Atualizar. | Quantidade final ≤ estoque; sem total enganoso se a linha ficar inválida. |
 
 ## Matriz de cobertura (automação)
