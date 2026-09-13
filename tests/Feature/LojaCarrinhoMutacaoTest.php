@@ -33,7 +33,7 @@ class LojaCarrinhoMutacaoTest extends TestCase
         Storage::disk('public')->put($path, 'img');
         ImagemProduto::factory()->create([
             'produto_id' => $produto->id,
-            'path' => $path,
+            'caminho' => $path,
             'posicao' => 0,
         ]);
 

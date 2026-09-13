@@ -7,17 +7,17 @@
 ])
 
 @php
-    $tone = match ($type) {
-        'success' => 'alert-success',
-        'danger' => 'alert-danger',
-        'warning' => 'alert-warning',
+    $tom = match ($type) {
+        'sucesso' => 'alert-success',
+        'erro' => 'alert-danger',
+        'aviso' => 'alert-warning',
         default => 'alert-info',
     };
-    $role = $type === 'success' || $type === 'info' ? 'status' : 'alert';
+    $role = $type === 'sucesso' || $type === 'info' ? 'status' : 'alert';
     $text = $message ?? '';
 @endphp
 
-<div class="alert {{ $tone }} {{ $dismissible ? 'alert-dismissible fade show' : '' }} {{ $class }}" role="{{ $role }}">
+<div class="alert {{ $tom }} {{ $dismissible ? 'alert-dismissible fade show' : '' }} {{ $class }}" role="{{ $role }}">
     @if ($title)
         <strong class="d-block">{{ $title }}</strong>
     @endif

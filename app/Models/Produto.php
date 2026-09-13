@@ -58,7 +58,7 @@ class Produto extends Model
     {
         $capa = $this->imagemCapa();
 
-        if ($capa === null || ! Storage::disk('public')->exists($capa->path)) {
+        if ($capa === null || ! Storage::disk('public')->exists($capa->caminho)) {
             return null;
         }
 

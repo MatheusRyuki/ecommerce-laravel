@@ -29,7 +29,7 @@ class LojaApresentacaoTest extends TestCase
             Storage::disk('public')->put($path, 'img-'.$position);
             ImagemProduto::factory()->create([
                 'produto_id' => $produto->id,
-                'path' => $path,
+                'caminho' => $path,
                 'posicao' => $position,
             ]);
         }
@@ -95,7 +95,7 @@ class LojaApresentacaoTest extends TestCase
         $produto = Produto::factory()->create(['nome' => 'Capa quebrada', 'sku' => 'BRK-1']);
         ImagemProduto::factory()->create([
             'produto_id' => $produto->id,
-            'path' => 'products/missing.png',
+            'caminho' => 'products/missing.png',
             'posicao' => 0,
         ]);
 

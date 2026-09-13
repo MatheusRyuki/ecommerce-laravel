@@ -74,16 +74,16 @@
                         </p>
 
                         @if ($errors->has('carrinho'))
-                            @include('loja.partials.alert', ['type' => 'danger', 'message' => $errors->first('carrinho')])
+                            @include('loja.partials.alert', ['type' => 'erro', 'message' => $errors->first('carrinho')])
                         @endif
                         @error('cor')
-                            @include('loja.partials.alert', ['type' => 'danger', 'message' => $message])
+                            @include('loja.partials.alert', ['type' => 'erro', 'message' => $message])
                         @enderror
                         @error('quantidade')
-                            @include('loja.partials.alert', ['type' => 'danger', 'message' => $message])
+                            @include('loja.partials.alert', ['type' => 'erro', 'message' => $message])
                         @enderror
                         @error('produto_id')
-                            @include('loja.partials.alert', ['type' => 'danger', 'message' => $message])
+                            @include('loja.partials.alert', ['type' => 'erro', 'message' => $message])
                         @enderror
 
                         @if ($produto->estaDisponivel())

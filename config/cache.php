@@ -6,30 +6,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Cache Store
+    | Store de cache padrão
     |--------------------------------------------------------------------------
     |
-    | This option controls the default cache store that will be used by the
-    | framework. This connection is utilized if another isn't explicitly
-    | specified when running a cache operation inside the application.
-    |
+    | Store usada quando nenhuma outra é informada.
     */
 
     'default' => env('CACHE_STORE', 'database'),
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Stores
+    | Stores de cache
     |--------------------------------------------------------------------------
     |
-    | Here you may define all of the cache "stores" for your application as
-    | well as their drivers. You may even define multiple stores for the
-    | same cache driver to group types of items stored in your caches.
+    | Stores e respectivos drivers. Os nomes dos drivers são contrato do Laravel.
     |
     | Supported drivers: "array", "database", "file", "memcached",
     |                    "redis", "dynamodb", "storage", "octane",
     |                    "session", "failover", "null"
-    |
     */
 
     'stores' => [
@@ -109,25 +103,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Key Prefix
+    | Prefixo das chaves
     |--------------------------------------------------------------------------
     |
-    | When utilizing the APC, database, memcached, Redis, and DynamoDB cache
-    | stores, there might be other applications using the same cache. For
-    | that reason, you may prefix every cache key to avoid collisions.
-    |
+    | Prefixo para evitar colisões em cache compartilhado.
     */
 
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
 
     /*
     |--------------------------------------------------------------------------
-    | Serializable Classes
+    | Classes serializáveis
     |--------------------------------------------------------------------------
     |
-    | This value determines the classes that can be unserialized from cache
-    | storage. By default, no PHP classes will be unserialized from your
-    | cache to prevent gadget chain attacks if your APP_KEY is leaked.
+    | Classes que podem ser desserializadas do cache. O padrão não desserializa
+    | classes PHP, para reduzir risco se APP_KEY vazar.
     |
     */
 

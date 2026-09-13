@@ -4,12 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Filesystem Disk
+    | Disco de arquivos padrão
     |--------------------------------------------------------------------------
     |
-    | Here you may specify the default filesystem disk that should be used
-    | by the framework. The "local" disk, as well as a variety of cloud
-    | based disks are available to your application for file storage.
+    | Disco usado pelo framework quando nenhum outro é informado.
     |
     */
 
@@ -17,14 +15,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Filesystem Disks
+    | Discos de arquivos
     |--------------------------------------------------------------------------
     |
-    | Below you may configure as many filesystem disks as necessary, and you
-    | may even configure multiple disks for the same driver. Examples for
-    | most supported storage drivers are configured here for reference.
+    | Imagens de produto usam o disco public. Os arquivos já gravados
+    | permanecem no diretório products/ dentro desse disco.
     |
-    | Supported drivers: "local", "ftp", "sftp", "s3"
+    | Drivers suportados: "local", "ftp", "sftp", "s3"
     |
     */
 
@@ -64,12 +61,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Symbolic Links
+    | Links simbólicos
     |--------------------------------------------------------------------------
     |
-    | Here you may configure the symbolic links that will be created when the
-    | `storage:link` Artisan command is executed. The array keys should be
-    | the locations of the links and the values should be their targets.
+    | Links criados por `storage:link`. As chaves são o destino público e
+    | os valores, o caminho real no disco.
     |
     */
 

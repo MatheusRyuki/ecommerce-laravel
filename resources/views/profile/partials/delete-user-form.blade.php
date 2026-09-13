@@ -11,11 +11,11 @@
 
     <x-danger-button
         x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+        x-on:click.prevent="$dispatch('abrir-modal', 'confirmar-exclusao-usuario')"
     >Excluir conta</x-danger-button>
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+    <x-modal name="confirmar-exclusao-usuario" :show="$errors->exclusao_usuario->isNotEmpty()" focusable>
+        <form method="post" action="{{ route('perfil.excluir') }}" class="p-6">
             @csrf
             @method('delete')
 
@@ -38,11 +38,11 @@
                     placeholder="Senha"
                 />
 
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+                <x-input-error :messages="$errors->exclusao_usuario->get('password')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-secondary-button x-on:click="$dispatch('fechar')">
                     Cancelar
                 </x-secondary-button>
 

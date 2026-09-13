@@ -13,22 +13,17 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
-class RegisteredUserController extends Controller
+class CadastroUsuarioController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
-    public function create(): View
+    public function exibir(): View
     {
         return view('auth.register');
     }
 
     /**
-     * Handle an incoming registration request.
-     *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function cadastrar(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -36,15 +31,15 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = Usuario::create([
+        $usuario = Usuario::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
+        event(new Registered($usuario));
 
-        Auth::login($user);
+        Auth::login($usuario);
 
         return redirect(route('dashboard', absolute: false));
     }

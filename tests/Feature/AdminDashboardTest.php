@@ -61,11 +61,11 @@ class AdminDashboardTest extends TestCase
     {
         $user = Usuario::factory()->create(['administrador' => false]);
 
-        $this->actingAs($user)->patch('/profile', [
+        $this->actingAs($user)->patch('/perfil', [
             'name' => $user->name,
             'email' => $user->email,
             'administrador' => true,
-        ])->assertRedirect('/profile');
+        ])->assertRedirect('/perfil');
 
         $this->assertFalse($user->fresh()->administrador);
     }

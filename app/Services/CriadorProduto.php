@@ -45,7 +45,7 @@ class CriadorProduto
                     $caminhos[] = $caminho;
 
                     $produto->imagens()->create([
-                        'path' => $caminho,
+                        'caminho' => $caminho,
                         'posicao' => $posicao,
                     ]);
                 }

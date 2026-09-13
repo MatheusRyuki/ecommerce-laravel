@@ -20,7 +20,7 @@ class ImagemProdutoFactory extends Factory
     {
         return [
             'produto_id' => Produto::factory(),
-            'path' => 'products/'.fake()->uuid().'.jpg',
+            'caminho' => 'products/'.fake()->uuid().'.jpg',
             'posicao' => 0,
         ];
     }

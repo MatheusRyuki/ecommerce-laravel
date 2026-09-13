@@ -20,7 +20,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-800">Editar produto</h3>
-                    <a id="voltar-produtos" href="{{ route('admin.produtos.index') }}" class="relative z-10 inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <a id="voltar-produtos" href="{{ route('admin.produtos.listar') }}" class="relative z-10 inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         {{ 'Voltar' }}
                     </a>
                 </div>
@@ -29,7 +29,7 @@
                     @csrf
                     @method('PATCH')
                     @if ($errors->any())
-                        <x-admin-alert class="mb-4" :status="'Corrija os campos destacados.'" tone="danger" :dismissible="false" />
+                        <x-admin-alert class="mb-4" :status="'Corrija os campos destacados.'" tom="erro" :dismissible="false" />
                     @endif
 
                     <div>
@@ -38,7 +38,7 @@
                             @foreach ($produto->imagens as $imagem)
                                 @php
                                     $urlImagem = $imagem->url();
-                                    $arquivoExiste = \Illuminate\Support\Facades\Storage::disk('public')->exists($imagem->path);
+                                    $arquivoExiste = \Illuminate\Support\Facades\Storage::disk('public')->exists($imagem->caminho);
                                 @endphp
                                 <li class="flex items-start gap-3 rounded-md border border-gray-200 p-3">
                                     @if ($arquivoExiste)

@@ -64,7 +64,7 @@ class AtualizadorProduto
 
                 foreach ($caminhosNovos as $caminho) {
                     $produto->imagens()->create([
-                        'path' => $caminho,
+                        'caminho' => $caminho,
                         'posicao' => $posicao,
                     ]);
                     $posicao++;
@@ -80,17 +80,17 @@ class AtualizadorProduto
 
         foreach ($imagensRemovidas as $imagem) {
             try {
-                if ($this->disco->delete($imagem->path) === false) {
+                if ($this->disco->delete($imagem->caminho) === false) {
                     Log::warning('Limpeza pendente de imagem após atualização do produto.', [
                         'id_produto' => $produto->id,
-                        'path' => $imagem->path,
+                        'caminho' => $imagem->caminho,
                     ]);
                 }
             } catch (Throwable $excecao) {
                 Log::warning('Limpeza pendente de imagem após atualização do produto.', [
                     'id_produto' => $produto->id,
-                    'path' => $imagem->path,
-                    'exception' => $excecao->getMessage(),
+                    'caminho' => $imagem->caminho,
+                    'excecao' => $excecao->getMessage(),
                 ]);
             }
         }

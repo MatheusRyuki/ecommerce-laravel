@@ -17,7 +17,7 @@ use RuntimeException;
 
 class ProdutoController extends Controller
 {
-    public function index(): View
+    public function listar(): View
     {
         $produtos = Produto::query()
             ->with('imagens')
@@ -25,7 +25,7 @@ class ProdutoController extends Controller
             ->orderByDesc('id')
             ->paginate(15);
 
-        return view('admin.produtos.index', [
+        return view('admin.produtos.listar', [
             'produtos' => $produtos,
         ]);
     }
@@ -52,7 +52,7 @@ class ProdutoController extends Controller
         }
 
         return redirect()
-            ->route('admin.produtos.index')
+            ->route('admin.produtos.listar')
             ->with('status', 'produto-criado');
     }
 
@@ -88,7 +88,7 @@ class ProdutoController extends Controller
         }
 
         return redirect()
-            ->route('admin.produtos.index')
+            ->route('admin.produtos.listar')
             ->with('status', 'produto-atualizado');
     }
 
@@ -97,7 +97,7 @@ class ProdutoController extends Controller
         $pendencias = $excluir->excluir($produto);
 
         return redirect()
-            ->route('admin.produtos.index')
+            ->route('admin.produtos.listar')
             ->with('status', $pendencias === [] ? 'produto-excluido' : 'produto-excluido-com-limpeza-pendente');
     }
 }

@@ -24,7 +24,7 @@ class LojaCatalogoTest extends TestCase
             Storage::disk('public')->put($path, 'img-'.$position);
             ImagemProduto::factory()->create([
                 'produto_id' => $produto->id,
-                'path' => $path,
+                'caminho' => $path,
                 'posicao' => $position,
             ]);
         }
@@ -216,7 +216,7 @@ class LojaCatalogoTest extends TestCase
             'quantidade' => $produto->quantidade,
             'sku' => $produto->sku,
             'descricao' => $produto->descricao,
-        ])->assertRedirect(route('admin.produtos.index'));
+        ])->assertRedirect(route('admin.produtos.listar'));
 
         $this->get(route('inicio'))
             ->assertSee('Depois da loja')
@@ -224,7 +224,7 @@ class LojaCatalogoTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('admin.produtos.excluir', $produto))
-            ->assertRedirect(route('admin.produtos.index'));
+            ->assertRedirect(route('admin.produtos.listar'));
 
         $this->get(route('inicio'))
             ->assertDontSee('Depois da loja')

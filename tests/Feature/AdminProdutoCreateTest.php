@@ -42,7 +42,7 @@ class AdminProdutoCreateTest extends TestCase
         $response->assertSee('name="descricao"', false);
         $response->assertSee('Descrição curta');
         $response->assertSee('Voltar');
-        $response->assertSee(route('admin.produtos.index'), false);
+        $response->assertSee(route('admin.produtos.listar'), false);
         $response->assertSee(route('admin.produtos.salvar'), false);
         $response->assertSee('Preço (BRL)');
         $response->assertDontSee('disabled', false);
@@ -56,7 +56,7 @@ class AdminProdutoCreateTest extends TestCase
             ->get(route('admin.painel'))
             ->assertOk()
             ->assertSee(route('admin.produtos.criar'), false)
-            ->assertSee(route('admin.produtos.index'), false)
+            ->assertSee(route('admin.produtos.listar'), false)
             ->assertSee('Produtos')
             ->assertSee('Cadastrar produto');
     }

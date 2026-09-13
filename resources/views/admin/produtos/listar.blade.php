@@ -25,9 +25,9 @@
                             'produto-excluido-com-limpeza-pendente' => 'O produto foi excluído, mas algumas imagens não puderam ser removidas e precisam de limpeza.',
                             default => $chaveStatus,
                         };
-                        $tomStatus = $chaveStatus === 'produto-excluido-com-limpeza-pendente' ? 'warning' : 'success';
+                        $tomStatus = $chaveStatus === 'produto-excluido-com-limpeza-pendente' ? 'aviso' : 'sucesso';
                     @endphp
-                    <x-admin-alert class="mb-4" :status="$mensagemStatus" :tone="$tomStatus" :dismissible="$chaveStatus !== 'produto-excluido-com-limpeza-pendente'" />
+                    <x-admin-alert class="mb-4" :status="$mensagemStatus" :tom="$tomStatus" :dismissible="$chaveStatus !== 'produto-excluido-com-limpeza-pendente'" />
 
                     @if ($produtos->isEmpty())
                         <div class="text-center py-10 space-y-4">
@@ -78,7 +78,7 @@
                                                         id="excluir-produto-{{ $produto->id }}"
                                                         class="relative z-10 font-semibold text-red-600 hover:text-red-500"
                                                         x-data=""
-                                                        x-on:click.prevent="$dispatch('open-modal', 'confirmar-exclusao-produto-{{ $produto->id }}')"
+                                                        x-on:click.prevent="$dispatch('abrir-modal', 'confirmar-exclusao-produto-{{ $produto->id }}')"
                                                     >
                                                         Excluir
                                                     </button>
@@ -105,7 +105,7 @@
                                     </p>
 
                                     <div class="mt-6 flex justify-end">
-                                        <x-secondary-button x-on:click="$dispatch('close')">
+                                        <x-secondary-button x-on:click="$dispatch('fechar')">
                                             Cancelar
                                         </x-secondary-button>
 

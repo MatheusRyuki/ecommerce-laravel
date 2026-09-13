@@ -13,6 +13,8 @@
 /.vscode
 /.zed
 /auth.json
+/AGENTS.md
+/CLAUDE.md
 /node_modules
 /public/build
 /public/fonts-manifest.dev.json

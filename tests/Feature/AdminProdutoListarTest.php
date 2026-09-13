@@ -10,13 +10,13 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-class AdminProdutoIndexTest extends TestCase
+class AdminProdutoListarTest extends TestCase
 {
     use RefreshDatabase;
 
     public function test_visitante_e_redirecionado_ao_login(): void
     {
-        $this->get(route('admin.produtos.index'))
+        $this->get(route('admin.produtos.listar'))
             ->assertRedirect(route('login'));
     }
 
@@ -25,7 +25,7 @@ class AdminProdutoIndexTest extends TestCase
         $user = Usuario::factory()->create(['administrador' => false]);
 
         $this->actingAs($user)
-            ->get(route('admin.produtos.index'))
+            ->get(route('admin.produtos.listar'))
             ->assertForbidden();
     }
 
@@ -34,7 +34,7 @@ class AdminProdutoIndexTest extends TestCase
         $admin = Usuario::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->get(route('admin.produtos.index'))
+            ->get(route('admin.produtos.listar'))
             ->assertOk()
             ->assertSee('Nenhum produto cadastrado ainda.')
             ->assertSee(route('admin.produtos.criar'), false)
@@ -59,11 +59,11 @@ class AdminProdutoIndexTest extends TestCase
 
         ImagemProduto::factory()->create([
             'produto_id' => $produto->id,
-            'path' => $coverPath,
+            'caminho' => $coverPath,
             'posicao' => 0,
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.produtos.index'));
+        $response = $this->actingAs($admin)->get(route('admin.produtos.listar'));
 
         $response->assertOk();
         $response->assertSee('Bolsa Demo Curso');
@@ -90,14 +90,14 @@ class AdminProdutoIndexTest extends TestCase
             ]);
         }
 
-        $firstPage = $this->actingAs($admin)->get(route('admin.produtos.index'));
+        $firstPage = $this->actingAs($admin)->get(route('admin.produtos.listar'));
         $firstPage->assertOk();
         $firstPage->assertSee('PAGE-16');
         $firstPage->assertSee('PAGE-02');
         $firstPage->assertDontSee('PAGE-01');
         $firstPage->assertSee('page=2', false);
 
-        $secondPage = $this->actingAs($admin)->get(route('admin.produtos.index', ['page' => 2]));
+        $secondPage = $this->actingAs($admin)->get(route('admin.produtos.listar', ['page' => 2]));
         $secondPage->assertOk();
         $secondPage->assertSee('Produto listado 1');
         $secondPage->assertSee('PAGE-01');
@@ -126,11 +126,11 @@ class AdminProdutoIndexTest extends TestCase
                 'sku' => 'fresh-1',
                 'descricao' => '<p>Newest item</p>',
             ])
-            ->assertRedirect(route('admin.produtos.index'))
+            ->assertRedirect(route('admin.produtos.listar'))
             ->assertSessionHas('status', 'produto-criado');
 
         $html = $this->actingAs($admin)
-            ->get(route('admin.produtos.index'))
+            ->get(route('admin.produtos.listar'))
             ->assertOk()
             ->assertSee('Produto cadastrado.')
             ->assertSee('Produto novo')
@@ -151,7 +151,7 @@ class AdminProdutoIndexTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Produtos')
-            ->assertSee(route('admin.produtos.index'), false);
+            ->assertSee(route('admin.produtos.listar'), false);
     }
 
     public function test_usuario_comum_nao_ve_link_de_produtos_na_navegacao(): void
@@ -161,7 +161,7 @@ class AdminProdutoIndexTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertDontSee(route('admin.produtos.index'), false);
+            ->assertDontSee(route('admin.produtos.listar'), false);
     }
 
     public function test_capa_ausente_usa_reserva(): void
@@ -170,7 +170,7 @@ class AdminProdutoIndexTest extends TestCase
         Produto::factory()->create(['nome' => 'Produto sem imagem']);
 
         $this->actingAs($admin)
-            ->get(route('admin.produtos.index'))
+            ->get(route('admin.produtos.listar'))
             ->assertOk()
             ->assertSee('Sem capa')
             ->assertSee('Produto sem imagem');

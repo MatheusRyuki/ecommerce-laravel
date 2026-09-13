@@ -26,8 +26,8 @@
 
         <!-- Lembrar de mim -->
         <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
+            <label for="lembrar" class="inline-flex items-center">
+                <input id="lembrar" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="lembrar">
                 <span class="ms-2 text-sm text-gray-600">Lembrar de mim</span>
             </label>
         </div>

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Tests\TestCase;
 
-class AdminProdutoStoreTest extends TestCase
+class AdminProdutoSalvarTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -46,7 +46,7 @@ class AdminProdutoStoreTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('admin.produtos.salvar'), $this->validPayload());
 
-        $response->assertRedirect(route('admin.produtos.index'));
+        $response->assertRedirect(route('admin.produtos.listar'));
         $response->assertSessionHas('status', 'produto-criado');
 
         $produto = Produto::query()->where('sku', 'TOTE-001')->first();
@@ -59,9 +59,9 @@ class AdminProdutoStoreTest extends TestCase
         $this->assertCount(2, $produto->imagens);
         $this->assertSame(0, $produto->imagens[0]->posicao);
         $this->assertSame(1, $produto->imagens[1]->posicao);
-        Storage::disk('public')->assertExists($produto->imagens[0]->path);
-        Storage::disk('public')->assertExists($produto->imagens[1]->path);
-        $this->assertSame($produto->imagens[0]->path, $produto->imagemCapa()?->path);
+        Storage::disk('public')->assertExists($produto->imagens[0]->caminho);
+        Storage::disk('public')->assertExists($produto->imagens[1]->caminho);
+        $this->assertSame($produto->imagens[0]->caminho, $produto->imagemCapa()?->caminho);
     }
 
     public function test_sku_mantem_zeros_a_esquerda_como_texto(): void
@@ -71,7 +71,7 @@ class AdminProdutoStoreTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.produtos.salvar'), $this->validPayload(overrides: [
             'sku' => '007abc',
-        ]))->assertRedirect(route('admin.produtos.index'));
+        ]))->assertRedirect(route('admin.produtos.listar'));
 
         $this->assertDatabaseHas('produtos', ['sku' => '007ABC']);
         $this->assertSame('007ABC', Produto::query()->value('sku'));
@@ -175,7 +175,7 @@ class AdminProdutoStoreTest extends TestCase
         $this->actingAs($admin)->post(route('admin.produtos.salvar'), $this->validPayload(overrides: [
             'sku' => 'SAFE-1',
             'descricao' => '<p>Safe <strong>bold</strong> <em>and</em> <a href="https://example.test">link</a><script>alert(1)</script></p><a href="javascript:alert(1)">bad</a>',
-        ]))->assertRedirect(route('admin.produtos.index'));
+        ]))->assertRedirect(route('admin.produtos.listar'));
 
         $description = Produto::query()->where('sku', 'SAFE-1')->value('descricao');
         $this->assertStringContainsString('<strong>bold</strong>', $description);

@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
-class PasswordResetLinkController extends Controller
+class LinkRedefinicaoSenhaController extends Controller
 {
-    public function create(): View
+    public function exibir(): View
     {
         return view('auth.forgot-password');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function enviar(Request $request): RedirectResponse
     {
         $request->validate([
             'email' => ['required', 'email'],

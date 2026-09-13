@@ -29,7 +29,7 @@ class AdminProdutoUpdateTest extends TestCase
             Storage::disk('public')->put($path, 'image-'.$position);
             ImagemProduto::factory()->create([
                 'produto_id' => $produto->id,
-                'path' => $path,
+                'caminho' => $path,
                 'posicao' => $position,
             ]);
         }
@@ -125,7 +125,7 @@ class AdminProdutoUpdateTest extends TestCase
                 'sku' => ' demo-0001 ',
                 'quantidade' => 20,
             ]))
-            ->assertRedirect(route('admin.produtos.index'))
+            ->assertRedirect(route('admin.produtos.listar'))
             ->assertSessionHas('status', 'produto-atualizado');
 
         $this->assertDatabaseHas('produtos', [
@@ -192,11 +192,11 @@ class AdminProdutoUpdateTest extends TestCase
             ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'nome' => 'Renamed',
             ]))
-            ->assertRedirect(route('admin.produtos.index'));
+            ->assertRedirect(route('admin.produtos.listar'));
 
         $produto->refresh()->load('imagens');
         $this->assertSame('Renamed', $produto->nome);
-        $this->assertSame(['products/a.png', 'products/b.png'], $produto->imagens->pluck('path')->all());
+        $this->assertSame(['products/a.png', 'products/b.png'], $produto->imagens->pluck('caminho')->all());
         $this->assertSame([0, 1], $produto->imagens->pluck('posicao')->all());
     }
 
@@ -215,17 +215,17 @@ class AdminProdutoUpdateTest extends TestCase
                 'ids_imagens_remover' => [$coverId],
                 'imagens' => [UploadedFile::fake()->image('extra.jpg', 20, 20)],
             ]))
-            ->assertRedirect(route('admin.produtos.index'));
+            ->assertRedirect(route('admin.produtos.listar'));
 
         $produto->refresh()->load('imagens');
         $this->assertCount(2, $produto->imagens);
-        $this->assertSame('products/side.png', $produto->imagens[0]->path);
+        $this->assertSame('products/side.png', $produto->imagens[0]->caminho);
         $this->assertSame(0, $produto->imagens[0]->posicao);
         $this->assertSame(1, $produto->imagens[1]->posicao);
-        $this->assertStringStartsWith('products/', $produto->imagens[1]->path);
+        $this->assertStringStartsWith('products/', $produto->imagens[1]->caminho);
         Storage::disk('public')->assertMissing('products/cover-old.png');
         Storage::disk('public')->assertExists('products/side.png');
-        Storage::disk('public')->assertExists($produto->imagens[1]->path);
+        Storage::disk('public')->assertExists($produto->imagens[1]->caminho);
     }
 
     public function test_quantidade_final_de_imagens_nao_pode_ser_zero_nem_acima_de_cinco(): void
@@ -280,11 +280,11 @@ class AdminProdutoUpdateTest extends TestCase
 
         $this->assertDatabaseHas('imagens_produto', [
             'id' => $produto->imagens[0]->id,
-            'path' => 'products/own.png',
+            'caminho' => 'products/own.png',
         ]);
         $this->assertDatabaseHas('imagens_produto', [
             'id' => $other->imagens[0]->id,
-            'path' => 'products/other.png',
+            'caminho' => 'products/other.png',
         ]);
     }
 
@@ -315,7 +315,7 @@ class AdminProdutoUpdateTest extends TestCase
             ->assertSessionHasErrors('imagens');
 
         $this->assertDatabaseHas('produtos', ['id' => $produto->id, 'nome' => 'Untouched']);
-        $this->assertDatabaseHas('imagens_produto', ['produto_id' => $produto->id, 'path' => 'products/keep.png']);
+        $this->assertDatabaseHas('imagens_produto', ['produto_id' => $produto->id, 'caminho' => 'products/keep.png']);
         Storage::disk('public')->assertExists('products/keep.png');
     }
 
@@ -340,11 +340,11 @@ class AdminProdutoUpdateTest extends TestCase
                 'ids_imagens_remover' => [$removeId],
                 'imagens' => [UploadedFile::fake()->image('brand-new.png')],
             ]))
-            ->assertRedirect(route('admin.produtos.index'))
+            ->assertRedirect(route('admin.produtos.listar'))
             ->assertSessionHas('status', 'produto-atualizado');
 
         $this->assertDatabaseHas('produtos', ['id' => $produto->id, 'nome' => 'After Commit']);
-        $this->assertDatabaseHas('imagens_produto', ['produto_id' => $produto->id, 'path' => 'products/brand-new.png']);
+        $this->assertDatabaseHas('imagens_produto', ['produto_id' => $produto->id, 'caminho' => 'products/brand-new.png']);
         $this->assertDatabaseMissing('imagens_produto', ['id' => $removeId]);
         Log::shouldHaveReceived('warning')->once();
     }
@@ -355,7 +355,7 @@ class AdminProdutoUpdateTest extends TestCase
         $produto = Produto::factory()->create();
 
         $this->actingAs($admin)
-            ->get(route('admin.produtos.index'))
+            ->get(route('admin.produtos.listar'))
             ->assertOk()
             ->assertSee('Editar')
             ->assertSee(route('admin.produtos.editar', $produto), false);

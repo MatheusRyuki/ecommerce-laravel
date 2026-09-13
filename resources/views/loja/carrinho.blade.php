@@ -6,7 +6,7 @@
     <section class="wsus__cart mt_170 pb_100">
         <div class="container">
             @if (session('status'))
-                @include('loja.partials.alert', ['type' => 'success', 'dismissible' => true, 'message' => session('status')])
+                @include('loja.partials.alert', ['type' => 'sucesso', 'dismissible' => true, 'message' => session('status')])
             @endif
 
             @if ($linhas->isEmpty())
@@ -58,9 +58,9 @@
                                                     @endif
                                                     <p class="mb-0">Cor: {{ $linha->rotuloCor() }}</p>
                                                     @if ($linha->estaIndisponivel())
-                                                        @include('loja.partials.alert', ['type' => 'warning', 'message' => 'Indisponível', 'class' => 'mt-2 mb-0'])
+                                                        @include('loja.partials.alert', ['type' => 'aviso', 'message' => 'Indisponível', 'class' => 'mt-2 mb-0'])
                                                     @elseif ($linha->precisaAjuste())
-                                                        @include('loja.partials.alert', ['type' => 'warning', 'message' => 'Este item precisa de ajuste', 'class' => 'mt-2 mb-0'])
+                                                        @include('loja.partials.alert', ['type' => 'aviso', 'message' => 'Este item precisa de ajuste', 'class' => 'mt-2 mb-0'])
                                                     @endif
                                                 </td>
                                                 <td class="pro_select">
@@ -79,7 +79,7 @@
                                                                     </div>
                                                                     <button type="submit" class="common_btn mt-2">{{ 'Atualizar' }}</button>
                                                                     <div class="qtd-carrinho-pendente mt-2 d-none">
-                                                                        @include('loja.partials.alert', ['type' => 'warning', 'message' => 'Quantidade ainda não salva', 'class' => 'mb-0'])
+                                                                        @include('loja.partials.alert', ['type' => 'aviso', 'message' => 'Quantidade ainda não salva', 'class' => 'mb-0'])
                                                                     </div>
                                                                 </form>
                                                             @else
@@ -88,7 +88,7 @@
                                                                 </div>
                                                             @endif
                                                             @if ($errors->has($chaveErroLinha))
-                                                                @include('loja.partials.alert', ['type' => 'danger', 'message' => $errors->first($chaveErroLinha), 'class' => 'mt-2 mb-0'])
+                                                                @include('loja.partials.alert', ['type' => 'erro', 'message' => $errors->first($chaveErroLinha), 'class' => 'mt-2 mb-0'])
                                                             @endif
                                                         </div>
                                                     </div>
@@ -135,7 +135,7 @@
                                     <h6>{{ 'Total dos produtos' }} <span>{{ $totalProdutosFormatado }}</span></h6>
                                 </div>
                             @else
-                                @include('loja.partials.alert', ['type' => 'warning', 'message' => 'O total dos produtos só aparece quando todos os itens estão disponíveis.', 'class' => 'mb-0'])
+                                @include('loja.partials.alert', ['type' => 'aviso', 'message' => 'O total dos produtos só aparece quando todos os itens estão disponíveis.', 'class' => 'mb-0'])
                             @endif
                         </div>
                     </div>

@@ -29,7 +29,7 @@ class AdminProdutoDestroyTest extends TestCase
             Storage::disk('public')->put($path, 'image-'.$position);
             ImagemProduto::factory()->create([
                 'produto_id' => $produto->id,
-                'path' => $path,
+                'caminho' => $path,
                 'posicao' => $position,
             ]);
         }
@@ -73,9 +73,9 @@ class AdminProdutoDestroyTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->from(route('admin.produtos.index'))
+            ->from(route('admin.produtos.listar'))
             ->delete(route('admin.produtos.excluir', $produto))
-            ->assertRedirect(route('admin.produtos.index'))
+            ->assertRedirect(route('admin.produtos.listar'))
             ->assertSessionHas('status', 'produto-excluido');
 
         $this->assertDatabaseMissing('produtos', ['id' => $produto->id]);
@@ -93,10 +93,10 @@ class AdminProdutoDestroyTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('admin.produtos.excluir', $remove))
-            ->assertRedirect(route('admin.produtos.index'));
+            ->assertRedirect(route('admin.produtos.listar'));
 
         $this->assertDatabaseHas('produtos', ['id' => $keep->id, 'sku' => 'KEEP-1']);
-        $this->assertDatabaseHas('imagens_produto', ['produto_id' => $keep->id, 'path' => 'products/keep.png']);
+        $this->assertDatabaseHas('imagens_produto', ['produto_id' => $keep->id, 'caminho' => 'products/keep.png']);
         Storage::disk('public')->assertExists('products/keep.png');
         Storage::disk('public')->assertMissing('products/gone.png');
     }
@@ -114,7 +114,7 @@ class AdminProdutoDestroyTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('admin.produtos.excluir', $produto))
-            ->assertRedirect(route('admin.produtos.index'));
+            ->assertRedirect(route('admin.produtos.listar'));
 
         $this->actingAs($admin)
             ->delete('/admin/produtos/'.$id)
@@ -147,7 +147,7 @@ class AdminProdutoDestroyTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('admin.produtos.excluir', $produto))
-            ->assertRedirect(route('admin.produtos.index'))
+            ->assertRedirect(route('admin.produtos.listar'))
             ->assertSessionHas('status', 'produto-excluido');
 
         $this->assertDatabaseMissing('produtos', ['id' => $produto->id]);
@@ -197,7 +197,7 @@ class AdminProdutoDestroyTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('admin.produtos.excluir', $produto))
-            ->assertRedirect(route('admin.produtos.index'))
+            ->assertRedirect(route('admin.produtos.listar'))
             ->assertSessionHas('status', 'produto-excluido-com-limpeza-pendente');
 
         $this->assertDatabaseMissing('produtos', ['id' => $produto->id]);
@@ -212,12 +212,12 @@ class AdminProdutoDestroyTest extends TestCase
         $produto = $this->produtoComImagens(['nome' => 'Only Product', 'sku' => 'ONLY-1']);
 
         $this->actingAs($admin)
-            ->from(route('admin.produtos.index', ['page' => 2]))
+            ->from(route('admin.produtos.listar', ['page' => 2]))
             ->delete(route('admin.produtos.excluir', $produto))
-            ->assertRedirect(route('admin.produtos.index'));
+            ->assertRedirect(route('admin.produtos.listar'));
 
         $this->actingAs($admin)
-            ->get(route('admin.produtos.index'))
+            ->get(route('admin.produtos.listar'))
             ->assertOk()
             ->assertSee('Produto excluído.')
             ->assertSee('Nenhum produto cadastrado ainda.')
@@ -234,7 +234,7 @@ class AdminProdutoDestroyTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.produtos.index'))
+            ->get(route('admin.produtos.listar'))
             ->assertOk()
             ->assertSee('Excluir')
             ->assertSee('Listado para exclusao')

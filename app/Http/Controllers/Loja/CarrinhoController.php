@@ -17,7 +17,7 @@ class CarrinhoController extends Controller
 {
     public function __construct(private CarrinhoSessao $carrinho) {}
 
-    public function index(): View
+    public function exibir(): View
     {
         $linhas = $this->carrinho->linhas();
         $totalProdutos = $this->carrinho->totalProdutos($linhas);

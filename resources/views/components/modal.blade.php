@@ -19,10 +19,10 @@ $maxWidth = [
         show: @js($show),
         lastFocused: null,
         focusables() {
-            // All focusable element types...
+            // Tipos focáveis...
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
             return [...$el.querySelectorAll(selector)]
-                // All non-disabled elements...
+                // Elementos não desabilitados...
                 .filter(el => ! el.hasAttribute('disabled'))
         },
         firstFocusable() { return this.focusables()[0] },
@@ -42,9 +42,9 @@ $maxWidth = [
             queueMicrotask(() => lastFocused?.focus?.());
         }
     })"
-    x-on:open-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
-    x-on:close-modal.window="$event.detail == '{{ $name }}' ? show = false : null"
-    x-on:close.stop="show = false"
+    x-on:abrir-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
+    x-on:fechar-modal.window="$event.detail == '{{ $name }}' ? show = false : null"
+    x-on:fechar.stop="show = false"
     x-on:keydown.escape.window="show = false"
     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"

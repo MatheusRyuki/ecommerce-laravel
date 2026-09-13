@@ -20,7 +20,7 @@ class ImagemProduto extends Model
      */
     protected $fillable = [
         'produto_id',
-        'path',
+        'caminho',
         'posicao',
     ];
 
@@ -44,12 +44,12 @@ class ImagemProduto extends Model
 
     public function url(): string
     {
-        return Storage::disk('public')->url($this->path);
+        return Storage::disk('public')->url($this->caminho);
     }
 
     public function urlDisponivel(): ?string
     {
-        if (! Storage::disk('public')->exists($this->path)) {
+        if (! Storage::disk('public')->exists($this->caminho)) {
             return null;
         }
 

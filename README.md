@@ -63,7 +63,7 @@ Suba o ambiente, gere a chave, rode as migrations, o link de storage e o build d
 ./vendor/bin/sail composer check-platform-reqs
 ```
 
-`storage:link` é necessário para as imagens de produto no disco `public` (pasta `products`). Não use `migrate:fresh` se já houver dados locais que devam ser preservados.
+`storage:link` é necessário para as imagens de produto no disco `public`. A coluna `caminho` em `imagens_produto` guarda o caminho relativo no disco; os arquivos já existentes continuam em `products/` (compatibilidade com uploads anteriores). Não use `migrate:fresh` se já houver dados locais que devam ser preservados.
 
 ## URLs
 

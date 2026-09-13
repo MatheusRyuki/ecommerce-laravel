@@ -21,7 +21,7 @@ class ExcluirProduto
 
         $idProduto = $produto->id;
         $caminhos = $produto->imagens
-            ->pluck('path')
+            ->pluck('caminho')
             ->filter(fn (mixed $caminho): bool => is_string($caminho) && $caminho !== '')
             ->unique()
             ->values()
@@ -57,8 +57,8 @@ class ExcluirProduto
         Log::warning('Limpeza pendente de imagem após exclusão do produto.', array_filter([
             'disk' => 'public',
             'id_produto' => $idProduto,
-            'path' => $caminho,
-            'exception' => $excecao,
+            'caminho' => $caminho,
+            'excecao' => $excecao,
         ]));
     }
 }

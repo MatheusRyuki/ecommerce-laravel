@@ -13,7 +13,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('perfil.atualizar') }}" class="mt-6 space-y-6">
         @csrf
         @method('patch')
 
@@ -38,7 +38,7 @@
                         </button>
                     </p>
 
-                    @if (session('status') === 'verification-link-sent')
+                    @if (session('status') === 'link-verificacao-enviado')
                         <p class="mt-2 font-medium text-sm text-green-600">
                             Enviamos um novo link de verificação para o seu e-mail.
                         </p>
@@ -50,7 +50,7 @@
         <div class="flex items-center gap-4">
             <x-primary-button>Salvar</x-primary-button>
 
-            @if (session('status') === 'profile-updated')
+            @if (session('status') === 'perfil-atualizado')
                 <p
                     x-data="{ show: true }"
                     x-show="show"

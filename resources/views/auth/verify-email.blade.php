@@ -3,7 +3,7 @@
         Obrigado por se cadastrar. Confirme o e-mail pelo link que enviamos. Se a mensagem não chegou, podemos reenviar.
     </div>
 
-    @if (session('status') == 'verification-link-sent')
+    @if (session('status') == 'link-verificacao-enviado')
         <div class="mb-4 font-medium text-sm text-green-600">
             Enviamos um novo link para o e-mail informado no cadastro.
         </div>
