@@ -1,4 +1,8 @@
 <x-layout-convidado>
+    <x-slot name="titulo">Confirmar senha — {{ config('app.name') }}</x-slot>
+
+    <h1 class="text-lg font-semibold text-gray-900 mb-4">Confirmar senha</h1>
+
     <div class="mb-4 text-sm text-gray-600">
         Área protegida. Confirme a senha para continuar.
     </div>

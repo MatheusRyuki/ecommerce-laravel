@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.autenticacao-loja button[type='submit'].inline-flex {
+    background-color: #5556e4;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.autenticacao-loja button[type='submit'].inline-flex:hover,
+.autenticacao-loja button[type='submit'].inline-flex:focus {
+    background-color: #4445c7;
+}
+
+.autenticacao-loja a:focus-visible,
+.autenticacao-loja button:focus-visible,
+.autenticacao-loja input:focus-visible {
+    outline: 2px solid #5556e4;
+    outline-offset: 2px;
+}
+

@@ -31,9 +31,10 @@ test.describe('Vitrine e detalhes', () => {
     });
 
     await page.goto('/');
-    const titulos = page.locator('a.title');
+    const titulos = page.locator('.wsus__product_item__link .title');
     await expect(titulos.first()).toHaveText('Mais recente');
     await expect(page.getByText('R$ 20,50')).toBeVisible();
+    await expect(page.getByText('Ver produto').first()).toBeVisible();
     await titulos.filter({ hasText: 'Primeiro criado' }).click();
     await expect(page.getByRole('heading', { name: 'Primeiro criado' })).toBeVisible();
     await expect(page.getByText('SKU')).toBeVisible();
@@ -64,12 +65,15 @@ test.describe('Vitrine e detalhes', () => {
     await miniaturas.nth(1).evaluate((el) => (el as HTMLElement).click());
     await expect(page.locator('.slider-forFive .slick-current img[alt*="Imagem 2"]')).toBeVisible();
     await expect(page.getByText('Indisponível', { exact: true })).toBeVisible();
-    await expect(page.getByText('Comprar agora')).toBeVisible();
+    await expect(page.getByText('Comprar agora')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Galeria' })).toBeVisible();
     await expect(page.locator('.wsus__product_details_menu_contant script')).toHaveCount(0);
     await expect(page.locator('.wsus__product_details_menu_contant').locator('b, strong')).toContainText('negrito');
     await expect(page.getByText('Curta <b>nao html</b>')).toBeVisible();
 
     expect((await page.goto('/produtos/999999'))?.status()).toBe(404);
+    await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Voltar à loja' })).toBeVisible();
 
     artisan(['e2e:atualizar-produto', '--sku=GAL-01', '--quantidade=8', '--preco=33.30', '--nome=Galeria Nova']);
     await page.goto('/');
@@ -83,6 +87,6 @@ test.describe('Vitrine e detalhes', () => {
     await expect(page.getByRole('link', { name: '2', exact: true })).toBeVisible();
     await page.getByRole('link', { name: '2', exact: true }).click();
     await expect(page).toHaveURL(/page=2/);
-    await expect(page.locator('a.title')).toHaveCount(1);
+    await expect(page.locator('.wsus__product_item__link .title')).toHaveCount(1);
   });
 });

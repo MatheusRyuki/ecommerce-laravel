@@ -27,8 +27,6 @@ test.describe('Permissões', () => {
   test('administrador acessa o painel e os produtos', async ({ page }) => {
     await entrarComoAdmin(page);
     await page.goto('/admin/painel');
-    await expect(page).toHaveURL(/admin\/painel/);
-    await page.getByRole('link', { name: 'Produtos' }).first().click();
     await expect(page).toHaveURL(/admin\/produtos/);
     await expect(page.getByRole('link', { name: 'Cadastrar produto' }).first()).toBeVisible();
   });

@@ -34,10 +34,7 @@ test.describe('Carrinho', () => {
     await page.goto('/carrinho');
     await expect(page.getByText('Seu carrinho está vazio.')).toBeVisible();
     await expect(page.getByText('R$ 0,00')).toBeVisible();
-    const contador = page.locator('a.wsus__manu_cart b').filter({ hasText: /^0$/ });
-    if (!(await contador.isVisible())) {
-      await page.getByRole('button', { name: 'Abrir menu' }).click();
-    }
+    const contador = page.getByRole('link', { name: 'Carrinho, 0 itens' });
     await expect(contador).toBeVisible();
 
     await prepararProduto(page);
@@ -61,8 +58,8 @@ test.describe('Carrinho', () => {
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
     await expect(page.getByText('Cor: Amarelo')).toBeVisible();
     await expectTotal(page, 'R$ 199,60');
-    await expect(page.getByText('Finalizar compra')).toBeVisible();
-    await expect(page.getByText('Finalizar compra')).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByText('Pagamento ainda não está disponível.')).toBeVisible();
+    await expect(page.locator('.checkout-indisponivel')).toHaveAttribute('aria-disabled', 'true');
   });
 
   test('estoque compartilhado, aviso não salvo, rejeição acima do estoque e persistência', async ({ page }) => {

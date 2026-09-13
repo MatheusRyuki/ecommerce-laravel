@@ -1,7 +1,7 @@
 <x-layout-aplicacao>
     <x-slot name="cabecalho">
-        <h2 class="font-semibold text-xl text-blue-600 leading-tight">
-            Painel
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Produtos
         </h2>
     </x-slot>
 
@@ -45,7 +45,7 @@
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Nome</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">{{ 'SKU' }}</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Preço (BRL)</th>
-                                        <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Qtd.</th>
+                                        <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Estoque</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Cores</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Ações</th>
                                     </tr>

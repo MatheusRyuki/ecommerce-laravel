@@ -236,19 +236,27 @@ class LojaCatalogoTest extends TestCase
         $this->get('/product-details')->assertRedirect(route('inicio'));
     }
 
+    public function test_pagina_inexistente_usa_404_em_portugues(): void
+    {
+        $this->get('/pagina-que-nao-existe')
+            ->assertNotFound()
+            ->assertSee('Página não encontrada')
+            ->assertSee('Voltar à loja');
+    }
+
     public function test_controles_de_compra_ficam_desabilitados_na_vitrine(): void
     {
         Storage::fake('public');
         $produto = $this->produtoComImagens();
 
         $this->get(route('inicio'))
-            ->assertSee('Adicionar ao carrinho')
+            ->assertSee('Ver produto')
             ->assertSee(route('loja.produtos.exibir', $produto), false)
             ->assertDontSee(route('loja.carrinho.itens.adicionar'), false);
 
         $this->get(route('loja.produtos.exibir', $produto))
-            ->assertSee('Comprar agora')
-            ->assertSee('pe-none', false)
+            ->assertDontSee('Comprar agora')
+            ->assertSee('Adicionar ao carrinho')
             ->assertSee(route('loja.carrinho.itens.adicionar'), false);
     }
 }

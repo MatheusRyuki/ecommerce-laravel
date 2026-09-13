@@ -56,50 +56,6 @@ $(function () {
         }
     }
 
-    if ($.fn.select2) {
-        var linguagemSelect2 = {
-            errorLoading: function () {
-                return 'Não foi possível carregar os resultados.';
-            },
-            inputTooLong: function (args) {
-                var excedente = args.input.length - args.maximum;
-                return 'Apague ' + excedente + (excedente === 1 ? ' caractere' : ' caracteres');
-            },
-            inputTooShort: function (args) {
-                var restante = args.minimum - args.input.length;
-                return 'Digite ' + restante + (restante === 1 ? ' caractere' : ' caracteres');
-            },
-            loadingMore: function () {
-                return 'Carregando mais resultados…';
-            },
-            maximumSelected: function (args) {
-                return 'Você só pode selecionar ' + args.maximum + (args.maximum === 1 ? ' item' : ' itens');
-            },
-            noResults: function () {
-                return 'Nenhum resultado encontrado';
-            },
-            searching: function () {
-                return 'Buscando…';
-            },
-            removeAllItems: function () {
-                return 'Remover todos os itens';
-            }
-        };
-
-        $('.select_2').select2({
-            language: linguagemSelect2,
-            width: 'style'
-        });
-
-        $('.select_2').on('select2:open', function () {
-            var campo = document.querySelector('.select2-container--open .select2-search__field');
-            if (campo) {
-                campo.setAttribute('aria-label', 'Buscar');
-                campo.setAttribute('placeholder', 'Buscar');
-            }
-        });
-    }
-
     $('#formulario-adicionar-carrinho .wsus__product_quantity .plus').on('click', function () {
         var input = $('#formulario-adicionar-carrinho input[name="quantidade"]');
         var value = parseInt(input.val(), 10) || 1;

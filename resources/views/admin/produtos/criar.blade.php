@@ -9,8 +9,8 @@
 
 <x-layout-aplicacao>
     <x-slot name="cabecalho">
-        <h2 class="font-semibold text-xl text-blue-600 leading-tight">
-            Painel
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Cadastrar produto
         </h2>
     </x-slot>
 
@@ -32,11 +32,15 @@
                     @endif
                     <x-alerta-admin class="mb-4" :status="session('status') === 'produto-criado' ? 'Produto cadastrado.' : session('status')" />
 
-                    <div>
-                        <label for="imagens" class="block text-sm font-medium text-gray-700">{{ 'Imagens' }}</label>
+                    <div class="seletor-imagens" data-seletor-imagens>
+                        <span class="block text-sm font-medium text-gray-700" id="rotulo-imagens">{{ 'Imagens' }}</span>
                         <input id="imagens" name="imagens[]" type="file" accept="image/jpeg,image/png,image/webp" multiple
-                            class="{{ $classeCampo }} file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm">
+                            class="sr-only" tabindex="-1" aria-labelledby="rotulo-imagens">
+                        <button type="button" class="mt-2 inline-flex items-center px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" data-abrir-imagens>
+                            Escolher imagens
+                        </button>
                         <p class="mt-1 text-xs text-gray-500">JPEG, PNG ou WebP. 1 a 5 arquivos, até 2048 KB cada. Os arquivos precisam ser escolhidos de novo se a validação falhar.</p>
+                        <ul class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-previsao-novas hidden></ul>
                         <x-erro-campo class="mt-2" :messages="$errors->get('imagens')" />
                         <x-erro-campo class="mt-2" :messages="$errors->get('imagens.*')" />
                     </div>

@@ -122,10 +122,9 @@ Outros produtos locais (por exemplo a Bolsa Demo Editada, SKU `DEMO-0001`) **nã
 
 ## Limitações atuais
 
-- Sem checkout, pagamento, frete, impostos ou descontos.
-- Carrinho só na sessão atual (visitante ou autenticado). A loja pública **não** exibe menu de conta; logout fica no layout Breeze (`/dashboard`, `/perfil`).
+- Sem checkout, pagamento, frete, impostos ou descontos. No carrinho o pagamento permanece indisponível, com o aviso correspondente.
+- Carrinho só na sessão atual (visitante ou autenticado). Visitantes veem Entrar e Criar conta no cabeçalho da loja; quem autenticou acessa a conta pelo mesmo cabeçalho e pelo layout Breeze.
 - Totais do carrinho consideram apenas preço × quantidade (BCMath, duas casas).
-- Comprar agora permanece desabilitado.
 
 ## Testes
 

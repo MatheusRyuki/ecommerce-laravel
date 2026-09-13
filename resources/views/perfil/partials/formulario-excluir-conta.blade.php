@@ -5,7 +5,7 @@
         </h2>
 
         <p class="mt-1 text-sm text-gray-600">
-            Quando a conta for excluída, os dados associados saem de forma permanente. Baixe o que quiser guardar antes de continuar.
+            Quando a conta for excluída, os dados associados saem de forma permanente. Esta ação não pode ser desfeita.
         </p>
     </header>
 

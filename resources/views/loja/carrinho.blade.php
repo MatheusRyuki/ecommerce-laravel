@@ -3,7 +3,7 @@
 @section('title', 'Carrinho')
 
 @section('content')
-    <section class="wsus__cart mt_170 pb_100">
+    <section class="wsus__cart loja-conteudo pb_100">
         <div class="container">
             @if (session('status'))
                 @include('loja.partials.alert', ['type' => 'sucesso', 'dismissible' => true, 'message' => session('status')])
@@ -16,7 +16,7 @@
                         <div class="wsus__cart_summary">
                             <h2>{{ 'Resumo do pedido' }}</h2>
                             <div class="wsus__cart_list_pricing">
-                                <h6>{{ 'Total dos produtos' }} <span>{{ $totalProdutosFormatado }}</span></h6>
+                                <p class="total-produtos-carrinho">{{ 'Total dos produtos' }} <span>{{ $totalProdutosFormatado }}</span></p>
                             </div>
                         </div>
                         <a href="{{ route('inicio') }}" class="common_btn">{{ 'Continuar comprando' }}</a>
@@ -72,12 +72,14 @@
                                                                     @csrf
                                                                     @method('PATCH')
                                                                     <input type="hidden" name="item_em_atualizacao" value="{{ $linha->id }}">
-                                                                    <div class="quentity_btn">
-                                                                        <button class="btn btn-danger minus" type="button" aria-label="{{ 'Diminuir quantidade' }}"><i class="fas fa-minus" aria-hidden="true"></i></button>
-                                                                        <input id="qtd-carrinho-{{ $linha->id }}" type="number" name="quantidade" min="1" step="1" required data-salvo="{{ $linha->quantidade }}" value="{{ $valorQuantidade }}" aria-label="{{ 'Quantidade' }}">
-                                                                        <button class="btn btn-success plus" type="button" aria-label="{{ 'Aumentar quantidade' }}"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                                                                    <div class="grupo-qtd-carrinho">
+                                                                        <div class="quentity_btn">
+                                                                            <button class="btn btn-danger minus" type="button" aria-label="{{ 'Diminuir quantidade' }}"><i class="fas fa-minus" aria-hidden="true"></i></button>
+                                                                            <input id="qtd-carrinho-{{ $linha->id }}" type="number" name="quantidade" min="1" step="1" required data-salvo="{{ $linha->quantidade }}" value="{{ $valorQuantidade }}" aria-label="{{ 'Quantidade' }}">
+                                                                            <button class="btn btn-success plus" type="button" aria-label="{{ 'Aumentar quantidade' }}"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                                                                        </div>
+                                                                        <button type="submit" class="common_btn">{{ 'Atualizar' }}</button>
                                                                     </div>
-                                                                    <button type="submit" class="common_btn mt-2">{{ 'Atualizar' }}</button>
                                                                     <div class="qtd-carrinho-pendente mt-2 d-none">
                                                                         @include('loja.partials.alert', ['type' => 'aviso', 'message' => 'Quantidade ainda não salva', 'class' => 'mb-0'])
                                                                     </div>
@@ -111,8 +113,8 @@
                                                         <form method="POST" action="{{ route('loja.carrinho.itens.remover', $linha->id) }}" id="formulario-remover-carrinho-{{ $linha->id }}">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" aria-label="Remover">
-                                                                <i class="fas fa-times" aria-hidden="true"></i>
+                                                            <button type="submit" class="botao-remover-carrinho" aria-label="{{ 'Remover '.$linha->nome().' ('.$linha->rotuloCor().')' }}">
+                                                                {{ 'Remover' }}
                                                             </button>
                                                         </form>
                                                     </div>
@@ -132,7 +134,7 @@
                             <h2>{{ 'Resumo do pedido' }}</h2>
                             @if ($totalProdutosFormatado !== null)
                                 <div class="wsus__cart_list_pricing">
-                                    <h6>{{ 'Total dos produtos' }} <span>{{ $totalProdutosFormatado }}</span></h6>
+                                    <p class="total-produtos-carrinho">{{ 'Total dos produtos' }} <span>{{ $totalProdutosFormatado }}</span></p>
                                 </div>
                             @else
                                 @include('loja.partials.alert', ['type' => 'aviso', 'message' => 'O total dos produtos só aparece quando todos os itens estão disponíveis.', 'class' => 'mb-0'])
@@ -148,7 +150,7 @@
                                 <a href="{{ route('inicio') }}" class="common_btn cont_shop">{{ 'Continuar comprando' }}</a>
                             </li>
                             <li>
-                                <span class="common_btn common_btn_2 pe-none opacity-50" aria-disabled="true">{{ 'Finalizar compra' }}</span>
+                                <span class="checkout-indisponivel" aria-disabled="true">{{ 'Pagamento ainda não está disponível.' }}</span>
                             </li>
                         </ul>
                     </div>

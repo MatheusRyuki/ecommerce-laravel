@@ -1,4 +1,8 @@
 <x-layout-convidado>
+    <x-slot name="titulo">Criar conta — {{ config('app.name') }}</x-slot>
+
+    <h1 class="text-lg font-semibold text-gray-900 mb-4">Criar conta</h1>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 

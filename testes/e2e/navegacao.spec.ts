@@ -42,23 +42,25 @@ test.describe('Navegação e apresentação', () => {
     await expect(page.locator('.formulario-qtd-carrinho input[name="quantidade"]')).toHaveValue('3');
   });
 
-  test('menus da loja, links de template sem funcionalidade e teclado no login', async ({ page }) => {
+  test('menus da loja, destinos reais e teclado no login de administrador', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'Início' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Loja' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Sobre' })).toHaveAttribute('href', '#');
-    await expect(page.getByRole('link', { name: 'Serviços' })).toHaveAttribute('href', '#');
-    await expect(page.getByRole('link', { name: 'Portfólio' })).toHaveAttribute('href', '#');
-    await expect(page.getByRole('link', { name: 'Blog' })).toHaveAttribute('href', '#');
-    await expect(page.getByRole('link', { name: 'Fale conosco' })).toHaveAttribute('href', '#');
+    await expect(page.getByRole('link', { name: 'Carrinho, 0 itens' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Loja' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Sobre' })).toHaveCount(0);
+    await expect(page.locator('a[href="#"]')).toHaveCount(0);
 
     await page.goto('/login');
+    await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
     await page.getByLabel('E-mail').focus();
     await page.keyboard.type('admin@e2e.test');
     await page.keyboard.press('Tab');
     await page.keyboard.type('SenhaE2e!234');
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/dashboard/);
+    await expect(page).toHaveURL(/admin\/produtos/);
   });
 
   test('celular: menu da loja, admin e carrinho utilizáveis @somente-mobile', async ({ page }) => {
@@ -70,8 +72,9 @@ test.describe('Navegação e apresentação', () => {
     });
 
     await page.goto('/');
+    await expect(page.getByRole('link', { name: 'Carrinho, 0 itens' })).toBeVisible();
     await page.getByRole('button', { name: 'Abrir menu' }).click();
-    await page.getByRole('link', { name: 'Loja' }).click();
+    await page.getByRole('link', { name: 'Início' }).click();
     await page.getByRole('link', { name: 'Mobile' }).click();
     await expect(page.getByRole('heading', { name: 'Mobile' })).toBeVisible();
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
@@ -103,5 +106,21 @@ test.describe('Navegação e apresentação', () => {
     await page.getByRole('button', { name: 'Cancelar' }).click();
     await expect(page.getByRole('heading', { name: 'Excluir produto' })).toBeHidden();
     await expect(botao).toBeFocused();
+  });
+
+  test('cartão da vitrine abre o detalhe pelo teclado sem hover', async ({ page }) => {
+    await entrarComoAdmin(page);
+    await cadastrarProdutoUi(page, {
+      nome: 'Acesso teclado',
+      sku: 'TEC-CARD',
+      arquivos: [arquivoFixture('capa.jpg')],
+    });
+    await page.goto('/');
+    const cartao = page.locator('.wsus__product_item__link').filter({ hasText: 'Acesso teclado' });
+    await cartao.focus();
+    await expect(page.getByText('Ver produto').first()).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/produtos\/\d+/);
+    await expect(page.getByRole('heading', { name: 'Acesso teclado' })).toBeVisible();
   });
 });

@@ -35,7 +35,7 @@ test.describe('Administração de produtos', () => {
     await page.getByRole('link', { name: 'Editar' }).click();
     await expect(page.getByLabel('SKU')).toHaveValue('00123');
     await expect(page.getByLabel('Nome')).toHaveValue('Bolsa E2E');
-    await expect(page.getByText('Capa')).toBeVisible();
+    await expect(page.locator('[data-rotulo-capa]:not([hidden])')).toHaveCount(1);
   });
 
   test('valida obrigatoriedade, limites, SKU duplicado e arquivos', async ({ page }) => {
@@ -53,9 +53,9 @@ test.describe('Administração de produtos', () => {
     await page.getByLabel('Nome').fill('x'.repeat(256));
     await page.getByLabel('Preço (BRL)').fill('-1');
     await page.getByLabel('Descrição curta').fill('y'.repeat(501));
-    await page.getByLabel('Qtd.').fill('-3');
+    await page.getByLabel('Estoque').fill('-3');
     await page.getByLabel('SKU').fill('SKU-UNICO');
-    await page.locator('#cores').selectOption(['Vermelho']);
+    await page.getByRole('checkbox', { name: 'Vermelho', exact: true }).check();
     await preencherDescricaoQuill(page, 'Texto');
     await page.locator('#imagens').setInputFiles(arquivoFixture('invalido.txt'));
     await page.getByRole('button', { name: 'Cadastrar produto' }).click();
@@ -64,9 +64,9 @@ test.describe('Administração de produtos', () => {
     await page.getByLabel('Nome').fill('Segundo');
     await page.getByLabel('Preço (BRL)').fill('10.00');
     await page.getByLabel('Descrição curta').fill('Curta');
-    await page.getByLabel('Qtd.').fill('1');
+    await page.getByLabel('Estoque').fill('1');
     await page.getByLabel('SKU').fill('SKU-GRANDE');
-    await page.locator('#cores').selectOption(['Vermelho']);
+    await page.getByRole('checkbox', { name: 'Vermelho', exact: true }).check();
     await preencherDescricaoQuill(page, 'Texto visível');
     await page.locator('#imagens').setInputFiles(arquivoFixture('grande.bin'));
     await page.getByRole('button', { name: 'Cadastrar produto' }).click();
@@ -128,5 +128,30 @@ test.describe('Administração de produtos', () => {
     await expect(page.getByRole('link', { name: '2' }).or(page.getByLabel('Next')).or(page.getByText('Próximo'))).toBeVisible();
     await page.getByRole('link', { name: '2' }).first().click();
     await expect(page).toHaveURL(/page=2/);
+  });
+
+  test('preview das imagens escolhidas e checkboxes de cores', async ({ page }) => {
+    await entrarComoAdmin(page);
+    await page.goto('/admin/produtos/criar');
+    await page.getByRole('button', { name: 'Escolher imagens' }).focus();
+    await expect(page.getByRole('button', { name: 'Escolher imagens' })).toBeFocused();
+    await page.getByRole('checkbox', { name: 'Azul', exact: true }).check();
+    await page.locator('#imagens').setInputFiles([arquivoFixture('capa.jpg'), arquivoFixture('lado.png')]);
+    await expect(page.getByText('capa.jpg')).toBeVisible();
+    await expect(page.getByText('lado.png')).toBeVisible();
+    await expect(page.getByText('Nova — entra ao final').first()).toBeVisible();
+
+    await cadastrarProdutoUi(page, {
+      nome: 'Com preview',
+      sku: 'PREV-01',
+      arquivos: [arquivoFixture('capa.jpg'), arquivoFixture('lado.png')],
+    });
+    await page.getByRole('link', { name: 'Editar' }).click();
+    await page.getByRole('checkbox', { name: 'Remover ao salvar' }).nth(1).check();
+    await expect(page.locator('[data-rotulo-remocao]:not([hidden])')).toHaveCount(1);
+    await page.locator('#imagens').setInputFiles(arquivoFixture('extra.webp'));
+    await expect(page.getByText('extra.webp')).toBeVisible();
+    await expect(page.getByText(/Total previsto: 2/)).toBeVisible();
+    await expect(page.locator('[data-rotulo-capa]:not([hidden])')).toHaveCount(1);
   });
 });

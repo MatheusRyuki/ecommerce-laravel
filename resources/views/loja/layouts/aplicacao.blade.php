@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densityDpi=device-dpi" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Loja')</title>
     <link rel="icon" type="image/png" href="{{ asset('frontend/images/logo.png') }}">
     <link rel="stylesheet" href="{{ asset('frontend/css/all.min.css') }}">

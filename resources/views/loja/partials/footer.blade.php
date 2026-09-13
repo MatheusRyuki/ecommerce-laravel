@@ -1,4 +1,3 @@
-    <!-- Início do rodapé -->
     <footer class="pt_100 pb_100">
         <div class="container">
             <div class="row">
@@ -7,15 +6,9 @@
                         <a class="footer_logo" href="{{ route('inicio') }}">
                             <img src="{{ asset('frontend/images/logo.png') }}" alt="Freeit" class="img-fluid">
                         </a>
-                        <ul class="d-flex flex-wrap">
-                            <li><a href="#"><i class="fab fa-twitter" aria-hidden="true"></i></a></li>
-                            <li><a href="#"><i class="fab fa-facebook-f" aria-hidden="true"></i></a></li>
-                            <li><a href="#"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a></li>
-                        </ul>
                         <p>© 2025. Todos os direitos reservados por <span>Freeit</span>.</p>
                     </div>
                 </div>
             </div>
         </div>
     </footer>
-    <!-- Fim do rodapé -->

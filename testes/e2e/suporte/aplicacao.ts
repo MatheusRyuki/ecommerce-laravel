@@ -20,11 +20,24 @@ export function lerEnvE2e(chave: string): string {
 }
 
 export function artisan(args: string[]): string {
-  return execFileSync('./vendor/bin/sail', ['artisan', ...args, '--env=e2e', '--no-interaction'], {
-    cwd: raiz,
-    encoding: 'utf8',
-    timeout: 120_000,
-  });
+  let ultimo: unknown;
+
+  for (let tentativa = 1; tentativa <= 3; tentativa++) {
+    try {
+      return execFileSync('./vendor/bin/sail', ['artisan', ...args, '--env=e2e', '--no-interaction'], {
+        cwd: raiz,
+        encoding: 'utf8',
+        timeout: 120_000,
+      });
+    } catch (erro) {
+      ultimo = erro;
+      if (tentativa < 3) {
+        execFileSync('sleep', ['2'], { encoding: 'utf8' });
+      }
+    }
+  }
+
+  throw ultimo;
 }
 
 export function reiniciar(opcoes: string[] = []): void {
@@ -68,8 +81,8 @@ export async function entrar(page: Page, email: string, senha = senhaPadrao, lem
   if (lembrar) {
     await page.getByLabel('Lembrar de mim').check();
   }
-  await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page).toHaveURL(/\/(dashboard|admin|perfil)?/);
+  await page.locator('form').filter({ has: page.getByLabel('E-mail') }).getByRole('button', { name: 'Entrar' }).click();
+  await expect(page).toHaveURL(/\/(dashboard|admin\/produtos|perfil)/);
 }
 
 export async function entrarComoAdmin(page: Page): Promise<void> {
@@ -112,9 +125,11 @@ export async function cadastrarProdutoUi(
   await page.getByLabel('Nome').fill(dados.nome);
   await page.getByLabel('Preço (BRL)').fill(dados.preco ?? '49.90');
   const cores = dados.cores ?? ['Vermelho'];
-  await page.locator('#cores').selectOption(cores);
+  for (const cor of cores) {
+    await page.getByRole('checkbox', { name: cor, exact: true }).check();
+  }
   await page.getByLabel('Descrição curta').fill(dados.descricaoCurta ?? 'Resumo do produto de teste.');
-  await page.getByLabel('Qtd.').fill(dados.quantidade ?? '10');
+  await page.getByLabel('Estoque').fill(dados.quantidade ?? '10');
   await page.getByLabel('SKU').fill(dados.sku);
   if (dados.descricaoHtml) {
     await page.locator('#editor-descricao .ql-editor').evaluate((el, html) => {
@@ -133,18 +148,7 @@ export function arquivoFixture(nome: string): string {
 }
 
 export async function escolherCor(page: Page, cor: string): Promise<void> {
-  const nativo = page.locator('select[name="cor"]');
-  if (await nativo.count()) {
-    await nativo.selectOption(cor);
-  }
-  const select2 = page.locator('.select2-selection');
-  if (await select2.count()) {
-    await select2.first().click();
-    const opcao = page.getByRole('option', { name: cor });
-    if (await opcao.count()) {
-      await opcao.click();
-    }
-  }
+  await page.locator('select[name="cor"]').selectOption(cor);
 }
 
 export function ultimoLinkRedefinicao(): string {
@@ -165,5 +169,5 @@ export function ultimoLinkVerificacao(): string | null {
 }
 
 export async function expectTotal(page: Page, valor: string): Promise<void> {
-  await expect(page.getByRole('heading', { name: `Total dos produtos ${valor}` })).toBeVisible();
+  await expect(page.locator('.total-produtos-carrinho', { hasText: valor })).toBeVisible();
 }

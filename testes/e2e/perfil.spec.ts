@@ -80,7 +80,8 @@ test.describe('Perfil, verificação e confirmação de senha', () => {
     await page.getByRole('button', { name: 'Reenviar e-mail de verificação' }).click();
 
     await page.goto('/dashboard');
-    await expect(page.getByText('Painel').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Conta' })).toBeVisible();
+    await expect(page.getByText('Olá, Verif')).toBeVisible();
 
     await page.goto('/confirm-password');
     await expect(page.getByText('Área protegida')).toBeVisible();

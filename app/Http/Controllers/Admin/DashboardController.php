@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(): RedirectResponse
     {
-        return view('admin.dashboard', [
-            'admin' => $request->user(),
-        ]);
+        return redirect()->route('admin.produtos.listar');
     }
 }

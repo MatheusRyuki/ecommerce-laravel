@@ -35,7 +35,10 @@ class AdminProdutoCreateTest extends TestCase
         $response->assertSee('name="imagens[]"', false);
         $response->assertSee('name="nome"', false);
         $response->assertSee('name="preco"', false);
+        $response->assertSee('type="checkbox"', false);
         $response->assertSee('name="cores[]"', false);
+        $response->assertSee('Estoque');
+        $response->assertSee('Escolher imagens');
         $response->assertSee('name="descricao_curta"', false);
         $response->assertSee('name="quantidade"', false);
         $response->assertSee('name="sku"', false);
@@ -53,7 +56,7 @@ class AdminProdutoCreateTest extends TestCase
         $admin = Usuario::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->get(route('admin.painel'))
+            ->get(route('admin.produtos.listar'))
             ->assertOk()
             ->assertSee(route('admin.produtos.criar'), false)
             ->assertSee(route('admin.produtos.listar'), false)

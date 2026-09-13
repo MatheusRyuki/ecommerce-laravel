@@ -4,7 +4,7 @@
 
 @section('content')
     <!-- Início da vitrine -->
-    <section class="wsus__product mt_145 pb_100">
+    <section class="wsus__product loja-conteudo pb_100">
         <div class="container">
             @if ($produtos->isEmpty())
                 <div class="row">

@@ -1,53 +1,41 @@
-    <!--============================
-        MENU START
-    =============================-->
     <nav class="navbar navbar-expand-lg main_menu">
         <div class="container">
             <a class="navbar-brand" href="{{ route('inicio') }}">
                 <img src="{{ asset('frontend/images/logo.png') }}" alt="Freeit" class="img-fluid">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Abrir menu">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav m-auto">
+
+            <div class="d-flex align-items-center gap-2 ms-auto order-lg-3 cabecalho-loja__acoes">
+                @php
+                    $itensCarrinho = (int) $quantidadeCarrinho;
+                    $rotuloCarrinho = $itensCarrinho === 1
+                        ? 'Carrinho, 1 item'
+                        : 'Carrinho, '.$itensCarrinho.' itens';
+                @endphp
+                <a href="{{ route('carrinho') }}" class="wsus__manu_cart icon {{ request()->routeIs('carrinho') ? 'ativo' : '' }}" aria-label="{{ $rotuloCarrinho }}">
+                    <span>
+                        <img src="{{ asset('frontend/images/cart_icon_black.svg') }}" alt="" class="img-fluid" aria-hidden="true">
+                        <b aria-hidden="true">{{ $itensCarrinho }}</b>
+                    </span>
+                </a>
+                @auth
+                    <a href="{{ route('dashboard') }}" class="cabecalho-loja__conta {{ request()->routeIs('dashboard') ? 'ativo' : '' }}">Conta</a>
+                @else
+                    <a href="{{ route('login') }}" class="cabecalho-loja__conta">Entrar</a>
+                    <a href="{{ route('register') }}" class="cabecalho-loja__conta">Criar conta</a>
+                @endauth
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Abrir menu">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse order-lg-2" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inicio') || request()->routeIs('loja.produtos.exibir') ? 'active' : '' }}" href="{{ route('inicio') }}">Início</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Sobre</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Serviços</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Portfólio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inicio') || request()->routeIs('loja.produtos.exibir') ? 'active' : '' }}" href="{{ route('inicio') }}">Loja</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Blog</a>
-                    </li>
-                </ul>
-                <ul class="right_menu d-flex flex-wrap align-items-center">
-                    <li>
-                        <a href="{{ route('carrinho') }}" class="wsus__manu_cart icon">
-                            <span>
-                                <img src="{{ asset('frontend/images/cart_icon_black.svg') }}" alt="Carrinho" class="img-fluid">
-                                <b>{{ $quantidadeCarrinho }}</b>
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="common_btn">Fale conosco</a>
+                        <a class="nav-link {{ request()->routeIs('inicio') ? 'active' : '' }}" href="{{ route('inicio') }}">Início</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
-    <!--============================
-        MENU END
-    =============================-->

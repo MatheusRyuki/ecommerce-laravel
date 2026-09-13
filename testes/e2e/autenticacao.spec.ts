@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   artisan,
   entrar,
+  adminEmail,
   reiniciar,
   senhaPadrao,
   sairDaConta,
@@ -45,6 +46,7 @@ test.describe('Autenticação', () => {
     artisan(['e2e:preparar-usuario', '--email=comum@e2e.test', `--senha=${senhaPadrao}`, '--nome=Comum']);
 
     await page.goto('/login');
+    await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
     await page.getByLabel('E-mail').fill('comum@e2e.test');
     await page.getByLabel('Senha', { exact: true }).fill('errada-errada');
     await page.getByRole('button', { name: 'Entrar' }).click();
@@ -77,5 +79,18 @@ test.describe('Autenticação', () => {
     await context.addCookies(lembrar);
     await page.goto('/perfil');
     await expect(page.getByLabel('Nome')).toHaveValue('Lembrar');
+  });
+
+  test('destinos após login por perfil', async ({ page }) => {
+    await entrar(page, adminEmail);
+    await expect(page).toHaveURL(/admin\/produtos$/);
+    await sairDaConta(page, 'Administrador E2E');
+
+    artisan(['e2e:preparar-usuario', '--email=destino@e2e.test', `--senha=${senhaPadrao}`, '--nome=Destino']);
+    await entrar(page, 'destino@e2e.test');
+    await expect(page).toHaveURL(/dashboard/);
+    await expect(page.getByRole('link', { name: 'Loja' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Carrinho' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Perfil' }).first()).toBeVisible();
   });
 });

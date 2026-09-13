@@ -30,6 +30,27 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 
+    public function test_administrador_e_redirecionado_a_listagem_de_produtos(): void
+    {
+        $admin = Usuario::factory()->admin()->create();
+
+        $response = $this->post('/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('admin.produtos.listar', absolute: false));
+    }
+
+    public function test_tela_de_login_oferece_criar_conta(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Criar conta')
+            ->assertSee(route('register'), false);
+    }
+
     public function test_usuarios_nao_autenticam_com_senha_invalida(): void
     {
         $user = Usuario::factory()->create();

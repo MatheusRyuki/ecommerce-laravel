@@ -1,4 +1,8 @@
 <x-layout-convidado>
+    <x-slot name="titulo">Nova senha — {{ config('app.name') }}</x-slot>
+
+    <h1 class="text-lg font-semibold text-gray-900 mb-4">Nova senha</h1>
+
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
 

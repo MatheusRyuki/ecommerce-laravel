@@ -5,18 +5,18 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-logo-aplicacao class="block h-9 w-auto fill-current text-gray-800" />
+                    <a href="{{ route('inicio') }}">
+                        <img src="{{ asset('frontend/images/logo.png') }}" alt="Freeit" class="block h-9 w-auto">
                     </a>
                 </div>
 
                 <!-- Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-link-navegacao :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        Painel
+                        Conta
                     </x-link-navegacao>
                     @can('acessar-admin')
-                        <x-link-navegacao :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">
+                        <x-link-navegacao :href="route('admin.painel')" :active="request()->routeIs('admin.*')">
                             {{ __('Administração') }}
                         </x-link-navegacao>
                         <x-link-navegacao id="nav-produtos" :href="route('admin.produtos.listar')" :active="request()->routeIs('admin.produtos.*')">
@@ -76,7 +76,7 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-link-navegacao-responsivo :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                Painel
+                Conta
             </x-link-navegacao-responsivo>
             @can('acessar-admin')
                 <x-link-navegacao-responsivo :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">

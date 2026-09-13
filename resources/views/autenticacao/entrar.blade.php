@@ -1,18 +1,19 @@
 <x-layout-convidado>
-    <!-- Estado da sessão -->
+    <x-slot name="titulo">Entrar — {{ config('app.name') }}</x-slot>
+
+    <h1 class="text-lg font-semibold text-gray-900 mb-4">Entrar</h1>
+
     <x-status-sessao class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <!-- E-mail -->
         <div>
             <x-rotulo-campo for="email" :value="'E-mail'" />
             <x-campo-texto id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             <x-erro-campo :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Senha -->
         <div class="mt-4">
             <x-rotulo-campo for="password" :value="'Senha'" />
 
@@ -24,7 +25,6 @@
             <x-erro-campo :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <!-- Lembrar de mim -->
         <div class="block mt-4">
             <label for="lembrar" class="inline-flex items-center">
                 <input id="lembrar" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="lembrar">
@@ -32,14 +32,18 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-end mt-4 gap-3 flex-wrap">
             @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
                     Esqueceu a senha?
                 </a>
             @endif
 
-            <x-botao-principal class="ms-3">
+            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('register') }}">
+                Criar conta
+            </a>
+
+            <x-botao-principal>
                 Entrar
             </x-botao-principal>
         </div>

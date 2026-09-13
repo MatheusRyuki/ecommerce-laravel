@@ -26,16 +26,27 @@ class AdminDashboardTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_administrador_pode_acessar_o_painel(): void
+    public function test_administrador_e_encaminhado_do_painel_a_listagem(): void
     {
         $admin = Usuario::factory()->admin()->create();
 
-        $response = $this->actingAs($admin)->get(route('admin.painel'));
+        $this->actingAs($admin)
+            ->get(route('admin.painel'))
+            ->assertRedirect(route('admin.produtos.listar'));
+    }
 
-        $response->assertOk();
-        $response->assertSee($admin->name);
-        $response->assertSee($admin->email);
-        $response->assertSee('Painel administrativo');
+    public function test_usuario_comum_ve_atalhos_da_conta(): void
+    {
+        $user = Usuario::factory()->create(['administrador' => false]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Olá, '.$user->name)
+            ->assertSee('Loja')
+            ->assertSee('Carrinho')
+            ->assertSee('Perfil')
+            ->assertDontSee('Você entrou.');
     }
 
     public function test_cadastro_publico_nao_atribui_papel_admin(): void

@@ -14,17 +14,20 @@
     <x-erro-campo class="mt-2" :messages="$errors->get('preco')" />
 </div>
 
-<div>
-    <label for="cores" class="block text-sm font-medium text-gray-700">Cores</label>
-    <select id="cores" name="cores[]" multiple size="4" class="{{ $classeCampo }}">
+<fieldset class="space-y-2">
+    <legend class="block text-sm font-medium text-gray-700">Cores</legend>
+    <div class="flex flex-wrap gap-3">
         @foreach ($cores as $cor)
-            <option value="{{ $cor }}" @selected(in_array($cor, $coresSelecionadas, true))>{{ \App\Support\CoresProduto::rotulo($cor) }}</option>
+            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="cores[]" value="{{ $cor }}" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                    @checked(in_array($cor, $coresSelecionadas, true))>
+                <span>{{ \App\Support\CoresProduto::rotulo($cor) }}</span>
+            </label>
         @endforeach
-    </select>
-    <p class="mt-1 text-xs text-gray-500">{{ 'Use Ctrl ou Cmd para marcar mais de uma cor.' }}</p>
+    </div>
     <x-erro-campo class="mt-2" :messages="$errors->get('cores')" />
     <x-erro-campo class="mt-2" :messages="$errors->get('cores.*')" />
-</div>
+</fieldset>
 
 <div>
     <label for="descricao_curta" class="block text-sm font-medium text-gray-700">{{ 'Descrição curta' }}</label>
@@ -33,7 +36,7 @@
 </div>
 
 <div>
-    <label for="quantidade" class="block text-sm font-medium text-gray-700">Qtd.</label>
+    <label for="quantidade" class="block text-sm font-medium text-gray-700">Estoque</label>
     <input id="quantidade" name="quantidade" type="number" value="{{ $valorQuantidade }}" inputmode="numeric" step="1" min="0" class="{{ $classeCampo }}">
     <x-erro-campo class="mt-2" :messages="$errors->get('quantidade')" />
 </div>

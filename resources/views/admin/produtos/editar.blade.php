@@ -10,8 +10,8 @@
 
 <x-layout-aplicacao>
     <x-slot name="cabecalho">
-        <h2 class="font-semibold text-xl text-blue-600 leading-tight">
-            Painel
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Editar produto
         </h2>
     </x-slot>
 
@@ -34,24 +34,24 @@
 
                     <div>
                         <p class="block text-sm font-medium text-gray-700">Imagens atuais</p>
-                        <ul class="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <ul class="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-imagens-atuais>
                             @foreach ($produto->imagens as $imagem)
                                 @php
                                     $urlImagem = $imagem->url();
                                     $arquivoExiste = \App\Support\DiscoArquivosProduto::disco()->exists($imagem->caminho);
                                 @endphp
-                                <li class="flex items-start gap-3 rounded-md border border-gray-200 p-3">
+                                <li class="flex items-start gap-3 rounded-md border border-gray-200 p-3" data-imagem-atual data-id="{{ $imagem->id }}">
                                     @if ($arquivoExiste)
                                         <img src="{{ $urlImagem }}" alt="{{ $produto->nome }}" class="h-16 w-16 rounded object-contain border border-gray-200 bg-gray-50">
                                     @else
                                         <span class="inline-flex h-16 w-16 items-center justify-center rounded border border-dashed border-gray-300 bg-gray-50 text-[10px] text-gray-400">Sem capa</span>
                                     @endif
                                     <div class="min-w-0">
-                                        @if ($imagem->posicao === 0)
-                                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">Capa</p>
-                                        @endif
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600" data-rotulo-capa @if ($imagem->posicao !== 0) hidden @endif>Capa</p>
+                                        <p class="text-xs text-gray-500" data-rotulo-ordem></p>
+                                        <p class="text-xs font-medium text-red-600" data-rotulo-remocao hidden>Será removida ao salvar</p>
                                         <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700">
-                                            <input type="checkbox" name="ids_imagens_remover[]" value="{{ $imagem->id }}"
+                                            <input type="checkbox" name="ids_imagens_remover[]" value="{{ $imagem->id }}" data-remover-imagem
                                                 @checked(in_array($imagem->id, array_map('intval', (array) $idsRemover), true))>
                                             Remover ao salvar
                                         </label>
@@ -63,11 +63,16 @@
                         <x-erro-campo class="mt-2" :messages="$errors->get('ids_imagens_remover.*')" />
                     </div>
 
-                    <div>
-                        <label for="imagens" class="block text-sm font-medium text-gray-700">Novas imagens</label>
+                    <div class="seletor-imagens mt-4" data-seletor-imagens>
+                        <span class="block text-sm font-medium text-gray-700" id="rotulo-imagens">Novas imagens</span>
                         <input id="imagens" name="imagens[]" type="file" accept="image/jpeg,image/png,image/webp" multiple
-                            class="{{ $classeCampo }} file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm">
+                            class="sr-only" tabindex="-1" aria-labelledby="rotulo-imagens">
+                        <button type="button" class="mt-2 inline-flex items-center px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" data-abrir-imagens>
+                            Escolher imagens
+                        </button>
                         <p class="mt-1 text-xs text-gray-500">Opcional. JPEG, PNG ou WebP, até 2048 KB cada. Junto com as imagens mantidas, o total deve ficar entre 1 e 5. Novos arquivos precisam ser escolhidos de novo se a validação falhar.</p>
+                        <p class="mt-2 text-sm text-gray-700" data-ordem-prevista></p>
+                        <ul class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-previsao-novas hidden></ul>
                         <x-erro-campo class="mt-2" :messages="$errors->get('imagens')" />
                         <x-erro-campo class="mt-2" :messages="$errors->get('imagens.*')" />
                     </div>

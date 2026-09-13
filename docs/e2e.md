@@ -6,9 +6,9 @@ Os testes PHPUnit em `tests/` continuam no SQLite em memória. Não usam `ecomme
 
 ## Fora de escopo (não implementado no produto)
 
-Checkout, pagamento, frete, impostos, descontos, persistência do carrinho por conta, “Comprar agora”. Links de template `Sobre`, `Serviços`, `Portfólio`, `Blog` e `Fale conosco` apontam para `#`. `Usuario` **não** implementa `MustVerifyEmail`: o painel Breeze abre sem exigir verificação; a tela `/verify-email` e o reenvio existem e são o fluxo atual.
+Checkout, pagamento, frete, impostos, descontos e persistência do carrinho por conta. `Usuario` **não** implementa `MustVerifyEmail`: o painel Breeze abre sem exigir verificação; a tela `/verify-email` e o reenvio existem e são o fluxo atual.
 
-A loja pública **não** exibe menu de conta; login, perfil e logout ficam no layout Breeze (`/login`, `/dashboard`, `/perfil`).
+A loja pública tem Início, carrinho, Entrar/Criar conta (visitante) ou Conta (autenticado). Não há links de navegação só para `#`. Após o login, administradores vão para `/admin/produtos` e demais usuários para `/dashboard`. `/admin/painel` encaminha à listagem.
 
 ## Isolamento
 

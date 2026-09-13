@@ -1,4 +1,8 @@
 <x-layout-convidado>
+    <x-slot name="titulo">Redefinir senha — {{ config('app.name') }}</x-slot>
+
+    <h1 class="text-lg font-semibold text-gray-900 mb-4">Redefinir senha</h1>
+
     <div class="mb-4 text-sm text-gray-600">
         Informe o e-mail para receber um link e definir uma senha nova.
     </div>

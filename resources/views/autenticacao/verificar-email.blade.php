@@ -1,4 +1,8 @@
 <x-layout-convidado>
+    <x-slot name="titulo">Verificar e-mail — {{ config('app.name') }}</x-slot>
+
+    <h1 class="text-lg font-semibold text-gray-900 mb-4">Verificar e-mail</h1>
+
     <div class="mb-4 text-sm text-gray-600">
         Obrigado por se cadastrar. Confirme o e-mail pelo link que enviamos. Se a mensagem não chegou, podemos reenviar.
     </div>

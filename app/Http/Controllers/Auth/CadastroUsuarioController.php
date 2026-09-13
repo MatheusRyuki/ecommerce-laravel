@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Usuario;
+use App\Support\DestinoAposAutenticacao;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,6 @@ class CadastroUsuarioController extends Controller
 
         Auth::login($usuario);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(DestinoAposAutenticacao::url());
     }
 }

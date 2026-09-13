@@ -9,14 +9,13 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('frontend/css/slick.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/select2.min.css') }}">
 @endpush
 
 @section('content')
     <!--============================
         PRODUCT DETAILS START
     =============================-->
-    <section class="wsus__product_details mt_170 mb_100">
+    <section class="wsus__product_details loja-conteudo mb_100">
         <div class="container">
             <div class="mb-4">
                 <a href="{{ route('inicio') }}" class="common_btn">{{ 'Voltar à loja' }}</a>
@@ -62,8 +61,8 @@
                 </div>
                 <div class="col-lg-6 col-xl-7 wow fadeInRight">
                     <div class="wsus__product_summary">
-                        <h2>{{ $produto->nome }}</h2>
-                        <h6>{{ $produto->precoFormatado() }}</h6>
+                        <h1>{{ $produto->nome }}</h1>
+                        <p class="preco-detalhe">{{ $produto->precoFormatado() }}</p>
                         <p>{{ $produto->descricao_curta }}</p>
                         <p>
                             @if ($produto->estaDisponivel())
@@ -92,15 +91,17 @@
                                 <input type="hidden" name="produto_id" value="{{ $produto->id }}">
 
                                 @if ($produto->coresExibidas() !== [])
-                                    <h6 class="mt_30">{{ 'Cor' }}</h6>
-                                    <select class="select_2" name="cor" required>
-                                        @if (count($produto->coresExibidas()) > 1)
-                                            <option value="">{{ 'Selecione uma cor' }}</option>
-                                        @endif
-                                        @foreach ($produto->coresExibidas() as $color)
-                                            <option value="{{ $color }}" @selected(old('cor', count($produto->coresExibidas()) === 1 ? $color : '') === $color)>{{ \App\Support\CoresProduto::rotulo($color) }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="mt_30">
+                                        <label class="form-label" for="cor-produto">{{ 'Cor' }}</label>
+                                        <select id="cor-produto" class="form-select" name="cor" required>
+                                            @if (count($produto->coresExibidas()) > 1)
+                                                <option value="">{{ 'Selecione uma cor' }}</option>
+                                            @endif
+                                            @foreach ($produto->coresExibidas() as $color)
+                                                <option value="{{ $color }}" @selected(old('cor', count($produto->coresExibidas()) === 1 ? $color : '') === $color)>{{ \App\Support\CoresProduto::rotulo($color) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 @endif
 
                                 <div class="wsus__product_add_cart">
@@ -110,34 +111,21 @@
                                         <button class="plus" type="button" aria-label="{{ 'Aumentar quantidade' }}"><i class="fas fa-plus" aria-hidden="true"></i></button>
                                     </div>
                                     <div class="wsus__buy_cart_button">
-                                        <button type="submit" class="cart" aria-label="{{ 'Adicionar ao carrinho' }}">
-                                            <img src="{{ asset('frontend/images/cart_icon_black.svg') }}" alt="{{ 'Adicionar ao carrinho' }}" class="img-fluid w-100">
-                                        </button>
-                                        <span class="common_btn pe-none opacity-50" aria-disabled="true">Comprar agora</span>
+                                        <button type="submit" class="common_btn">{{ 'Adicionar ao carrinho' }}</button>
                                     </div>
                                 </div>
                             </form>
                         @else
                             @if ($produto->coresExibidas() !== [])
-                                <h6 class="mt_30">{{ 'Cor' }}</h6>
-                                <select class="select_2" name="cor" disabled>
-                                    @foreach ($produto->coresExibidas() as $color)
-                                        <option value="{{ $color }}">{{ \App\Support\CoresProduto::rotulo($color) }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="mt_30">
+                                    <label class="form-label" for="cor-produto-indisponivel">{{ 'Cor' }}</label>
+                                    <select id="cor-produto-indisponivel" class="form-select" name="cor" disabled>
+                                        @foreach ($produto->coresExibidas() as $color)
+                                            <option value="{{ $color }}">{{ \App\Support\CoresProduto::rotulo($color) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             @endif
-                            <div class="wsus__product_add_cart">
-                                <div class="wsus__product_quantity">
-                                    <button class="minus" type="button" disabled><i class="fas fa-minus"></i></button>
-                                    <input type="text" value="1" disabled>
-                                    <button class="plus" type="button" disabled><i class="fas fa-plus"></i></button>
-                                </div>
-                                <div class="wsus__buy_cart_button">
-                                    <span class="cart pe-none opacity-50" aria-disabled="true"><img src="{{ asset('frontend/images/cart_icon_black.svg') }}" alt="cart"
-                                            class="img-fluid w-100"></span>
-                                    <span class="common_btn pe-none opacity-50" aria-disabled="true">Comprar agora</span>
-                                </div>
-                            </div>
                         @endif
                         <ul class="details">
                             <li>{{ 'SKU' }}:<span>{{ $produto->sku }}</span></li>
@@ -163,5 +151,4 @@
 
 @push('scripts')
     <script src="{{ asset('frontend/js/slick.min.js') }}"></script>
-    <script src="{{ asset('frontend/js/select2.min.js') }}"></script>
 @endpush
