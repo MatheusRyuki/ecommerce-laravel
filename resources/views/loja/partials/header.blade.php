@@ -4,6 +4,26 @@
                 <img src="{{ asset('frontend/images/logo.png') }}" alt="Freeit" class="img-fluid">
             </a>
 
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('inicio') ? 'active' : '' }}" href="{{ route('inicio') }}">Início</a>
+                    </li>
+                    @auth
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Conta</a>
+                        </li>
+                    @else
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link" href="{{ route('login') }}">Entrar</a>
+                        </li>
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link" href="{{ route('register') }}">Criar conta</a>
+                        </li>
+                    @endauth
+                </ul>
+            </div>
+
             <div class="d-flex align-items-center cabecalho-loja__acoes">
                 @php
                     $itensCarrinho = (int) $quantidadeCarrinho;
@@ -28,26 +48,6 @@
                     aria-label="Abrir menu">
                     <i class="fas fa-bars" aria-hidden="true"></i>
                 </button>
-            </div>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inicio') ? 'active' : '' }}" href="{{ route('inicio') }}">Início</a>
-                    </li>
-                    @auth
-                        <li class="nav-item d-lg-none">
-                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Conta</a>
-                        </li>
-                    @else
-                        <li class="nav-item d-lg-none">
-                            <a class="nav-link" href="{{ route('login') }}">Entrar</a>
-                        </li>
-                        <li class="nav-item d-lg-none">
-                            <a class="nav-link" href="{{ route('register') }}">Criar conta</a>
-                        </li>
-                    @endauth
-                </ul>
             </div>
         </div>
     </nav>

@@ -28,6 +28,39 @@ async function expectBarraPrincipalEmUmaLinha(page: Page): Promise<void> {
   expect(caixaCarrinho!.y + caixaCarrinho!.height).toBeGreaterThan(caixaLogo!.y);
 }
 
+async function expectDistribuicaoDesktop(page: Page): Promise<void> {
+  const container = page.locator('nav.main_menu .container');
+  const logo = page.locator('.navbar-brand');
+  const inicio = page.locator('.navbar-nav .nav-link', { hasText: 'Início' });
+  const acoes = page.locator('.cabecalho-loja__acoes');
+  const carrinho = page.locator('.cabecalho-loja__carrinho');
+
+  const caixaContainer = await container.boundingBox();
+  const caixaLogo = await logo.boundingBox();
+  const caixaInicio = await inicio.boundingBox();
+  const caixaAcoes = await acoes.boundingBox();
+  const caixaCarrinho = await carrinho.boundingBox();
+
+  expect(caixaContainer).toBeTruthy();
+  expect(caixaLogo).toBeTruthy();
+  expect(caixaInicio).toBeTruthy();
+  expect(caixaAcoes).toBeTruthy();
+  expect(caixaCarrinho).toBeTruthy();
+
+  expect(caixaLogo!.x).toBeLessThan(caixaInicio!.x);
+  expect(caixaInicio!.x).toBeLessThan(caixaAcoes!.x);
+  expect(caixaLogo!.x + caixaLogo!.width).toBeLessThanOrEqual(caixaInicio!.x + 2);
+  expect(caixaInicio!.x + caixaInicio!.width).toBeLessThanOrEqual(caixaCarrinho!.x + 2);
+
+  const meioContainer = caixaContainer!.x + caixaContainer!.width / 2;
+  expect(caixaAcoes!.x).toBeGreaterThan(meioContainer);
+  expect(caixaContainer!.x + caixaContainer!.width - (caixaAcoes!.x + caixaAcoes!.width)).toBeLessThan(24);
+
+  const centro = (caixa: { y: number; height: number }) => caixa.y + caixa.height / 2;
+  expect(Math.abs(centro(caixaLogo!) - centro(caixaInicio!))).toBeLessThan(12);
+  expect(Math.abs(centro(caixaInicio!) - centro(caixaAcoes!))).toBeLessThan(12);
+}
+
 test.describe('Navegação e apresentação', () => {
   test.beforeEach(() => {
     reiniciar();
@@ -78,6 +111,17 @@ test.describe('Navegação e apresentação', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+    await expectDistribuicaoDesktop(page);
+
+    await page.setViewportSize({ width: 1920, height: 800 });
+    await expectDistribuicaoDesktop(page);
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+
+    await page.setViewportSize({ width: 992, height: 800 });
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+    await expectDistribuicaoDesktop(page);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
     await expect(page.getByRole('link', { name: 'Loja' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Sobre' })).toHaveCount(0);
     await expect(page.locator('a[href="#"]')).toHaveCount(0);
@@ -91,6 +135,9 @@ test.describe('Navegação e apresentação', () => {
     await page.keyboard.type('SenhaE2e!234');
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/admin\/produtos/);
+    await page.goto('/');
+    await expect(page.getByRole('link', { name: 'Conta' })).toBeVisible();
+    await expectDistribuicaoDesktop(page);
   });
 
   test('celular: menu da loja, admin e carrinho utilizáveis @somente-mobile', async ({ page }) => {
@@ -111,6 +158,10 @@ test.describe('Navegação e apresentação', () => {
     await expect(page.getByRole('link', { name: 'Início' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
+    await expectBarraPrincipalEmUmaLinha(page);
+    await page.setViewportSize({ width: 320, height: 844 });
+    await expectBarraPrincipalEmUmaLinha(page);
+    await page.setViewportSize({ width: 414, height: 844 });
     await expectBarraPrincipalEmUmaLinha(page);
     await page.getByRole('button', { name: 'Abrir menu' }).click();
 
