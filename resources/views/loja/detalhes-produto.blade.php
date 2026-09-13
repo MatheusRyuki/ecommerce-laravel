@@ -105,9 +105,9 @@
 
                                 <div class="wsus__product_add_cart">
                                     <div class="wsus__product_quantity">
-                                        <button class="minus" type="button"><i class="fas fa-minus"></i></button>
-                                        <input type="number" name="quantidade" value="{{ old('quantidade', 1) }}" min="1" step="1" required>
-                                        <button class="plus" type="button"><i class="fas fa-plus"></i></button>
+                                        <button class="minus" type="button" aria-label="{{ 'Diminuir quantidade' }}"><i class="fas fa-minus" aria-hidden="true"></i></button>
+                                        <input type="number" name="quantidade" value="{{ old('quantidade', 1) }}" min="1" step="1" required aria-label="{{ 'Quantidade' }}">
+                                        <button class="plus" type="button" aria-label="{{ 'Aumentar quantidade' }}"><i class="fas fa-plus" aria-hidden="true"></i></button>
                                     </div>
                                     <div class="wsus__buy_cart_button">
                                         <button type="submit" class="cart" aria-label="{{ 'Adicionar ao carrinho' }}">

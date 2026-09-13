@@ -12,6 +12,36 @@ test.describe('Navegação e apresentação', () => {
     reiniciar();
   });
 
+  test('teclado no formulário do produto e nas ações do carrinho', async ({ page }) => {
+    await entrarComoAdmin(page);
+    await cadastrarProdutoUi(page, {
+      nome: 'Teclado',
+      sku: 'TEC-01',
+      arquivos: [arquivoFixture('capa.jpg')],
+    });
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Teclado' }).first().click();
+    const quantidadeProduto = page.locator('#formulario-adicionar-carrinho input[name="quantidade"]');
+    await quantidadeProduto.focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(quantidadeProduto).toHaveValue('2');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('O produto foi adicionado ao carrinho.')).toBeVisible();
+    await expect(page.locator('.formulario-qtd-carrinho input[name="quantidade"]')).toHaveValue('2');
+
+    await page.locator('.formulario-qtd-carrinho input[name="quantidade"]').focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.formulario-qtd-carrinho input[name="quantidade"]')).toHaveValue('3');
+    await expect(page.getByText('Quantidade ainda não salva')).toBeVisible();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('O carrinho foi atualizado.')).toBeVisible();
+    await expect(page.locator('.formulario-qtd-carrinho input[name="quantidade"]')).toHaveValue('3');
+  });
+
   test('menus da loja, links de template sem funcionalidade e teclado no login', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'Início' })).toBeVisible();
@@ -31,8 +61,7 @@ test.describe('Navegação e apresentação', () => {
     await expect(page).toHaveURL(/dashboard/);
   });
 
-  test('celular: menu da loja, admin e carrinho utilizáveis', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+  test('celular: menu da loja, admin e carrinho utilizáveis @somente-mobile', async ({ page }) => {
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
       nome: 'Mobile',
@@ -54,7 +83,7 @@ test.describe('Navegação e apresentação', () => {
     await expect(page.getByRole('link', { name: 'Produtos' }).first()).toBeVisible();
   });
 
-  test('foco volta ao fechar o modal de exclusão', async ({ page }) => {
+  test('foco volta ao fechar o modal de exclusão com Escape e Cancelar @principal', async ({ page }) => {
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
       nome: 'Foco',
@@ -67,6 +96,12 @@ test.describe('Navegação e apresentação', () => {
     await expect(page.getByRole('heading', { name: 'Excluir produto' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('heading', { name: 'Excluir produto' })).toBeHidden();
-    await expect(botao).toBeVisible();
+    await expect(botao).toBeFocused();
+
+    await botao.click();
+    await expect(page.getByRole('heading', { name: 'Excluir produto' })).toBeVisible();
+    await page.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(page.getByRole('heading', { name: 'Excluir produto' })).toBeHidden();
+    await expect(botao).toBeFocused();
   });
 });

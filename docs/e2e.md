@@ -25,7 +25,7 @@ A loja pública **não** exibe menu de conta; login, perfil e logout ficam no la
 
 A prova HTTP não é só status 200: `GET /_e2e/diagnostico` (cabeçalho `X-Token-E2e`) devolve banco, disco, marcador em `storage/e2e/marcador.txt` e caminho do correio.
 
-Projetos Playwright configurados: **apenas `chromium`** (Desktop Chrome, 1280×800). **Firefox e WebKit não estão no `playwright.config.ts`**. Celular **não** é um projeto: o cenário `celular: menu da loja...` usa `setViewportSize(390×844)` no mesmo Chromium. `retries: 0`, `workers: 1`, `fullyParallel: false` — cada `test()` é um cenário único, não uma matriz de browsers.
+Projetos Playwright (`playwright.config.ts`): `chromium`, `firefox` e `webkit` (desktop 1280×800, `grepInvert: /@somente-mobile/`) e `mobile` (emulação **Pixel 5**, `hasTouch` e `isMobile`, `grep: /@principal|@somente-mobile/`). O projeto `mobile` **não** é aparelho físico. `retries: 0`, `workers: 1` global, `fullyParallel: false` — a suíte compartilha `ecommerce_e2e` e chama `e2e:reiniciar`; não rode processos concorrentes que reiniciem o mesmo banco.
 
 ## Comandos reais
 
@@ -35,7 +35,7 @@ Preparar (uma vez; não toca `ecommerce`):
 chmod +x scripts/e2e/preparar-ambiente.sh
 ./scripts/e2e/preparar-ambiente.sh
 ./vendor/bin/sail npm install
-./vendor/bin/sail npx playwright install chromium
+npx playwright install chromium firefox webkit
 ```
 
 Subir a instância HTTP E2E (se 8003 estiver livre):
@@ -50,11 +50,12 @@ Executar **tudo** (no host; `webServer` reutiliza 8003 se já estiver no ar):
 npm run teste:e2e
 ```
 
-Um arquivo / um cenário / o único projeto configurado:
+Um arquivo / um cenário / um projeto:
 
 ```bash
 npx playwright test testes/e2e/carrinho.spec.ts --project=chromium
-npx playwright test --grep "lembrar de mim" --project=chromium
+npx playwright test --grep "lembrar de mim" --project=firefox
+npx playwright test --project=mobile
 ```
 
 Navegador visível / UI do Playwright:
@@ -70,11 +71,13 @@ Relatório HTML da última execução:
 npx playwright show-report storage/e2e/relatorio-playwright
 ```
 
-Encerrar **somente** o `artisan serve` da porta 8003 (não derrube o Compose, a 8002 nem o Proesc). No terminal desse serve: `Ctrl+C`. Se o processo ficou em segundo plano:
+Encerrar **somente** o `artisan serve` da porta 8003 (não derrube o Compose, a 8002, o Proesc, o banco `ecommerce` nem o app administrador/produtos locais). No terminal desse serve: `Ctrl+C`. Se o processo ficou no container Sail:
 
 ```bash
-# confira o PID que escuta 8003 antes de matar
 ss -tlnp | grep 8003
+docker exec ecommerce-laravel.test-1 sh -c "ss -tlnp | grep 8003 || netstat -tlnp | grep 8003"
+docker exec ecommerce-laravel.test-1 pkill -f 'artisan serve.*8003' || true
+ss -tlnp | grep 8003 || echo '8003 livre'
 ```
 
 Administrador E2E: `admin@e2e.test` / `ADMIN_PASSWORD` em `.env.e2e` (padrão do exemplo: `SenhaE2e!234`). Não usa DEMO-0001 / DEMO-GALLERY-01.
@@ -98,22 +101,22 @@ Pré-condições: `./scripts/e2e/preparar-ambiente.sh` já rodou; `artisan serve
 
 ## Matriz de cobertura (automação)
 
-Cada linha é **um cenário único** no projeto `chromium` (1280×800), sem retry. O teste de celular é o mesmo Chromium com viewport 390×844, não um segundo projeto.
+Há **33 cenários únicos** (`test()` em `testes/e2e/*.spec.ts`). Sem retry. Tags: `@principal` (fluxos de autenticação, CRUD admin, galeria, carrinho principal, integrado e foco do modal) e `@somente-mobile` (menu da loja em emulação Pixel 5).
 
-Ver tabela na seção “Conferência” do relatório da suíte (chat) ou os `test()` em `testes/e2e/*.spec.ts`. Resumo por arquivo:
+| Arquivo | Cenários únicos | Desktop (3 navegadores) | Emulação mobile |
+| --- | --- | --- | --- |
+| `isolamento.spec.ts` | 1 (diagnóstico HTTP vs 8002) | 3 | — |
+| `autenticacao.spec.ts` | 3 (cadastro, login/logout, lembrar) | 9 | 2 (`@principal`) |
+| `perfil.spec.ts` | 4 (perfil, senha, exclusão, verify-email + confirm-password) | 12 | — |
+| `recuperacao-senha.spec.ts` | 2 (link local + token inválido/reusado) | 6 | — |
+| `permissoes.spec.ts` | 3 (visitante, comum 403, admin) | 9 | — |
+| `admin-produtos.spec.ts` | 4 (CRUD, validações/Quill/imagens, paginação 15) | 12 | 2 (`@principal`) |
+| `vitrine.spec.ts` | 3 (vazio/ordem, galeria/sanitização, paginação 12) | 9 | 1 (`@principal`) |
+| `carrinho.spec.ts` | 8 (cores/totais, estoque, redução, exclusão, abas, autenticado, +/−, qty 0 e 1,5 nativa) | 24 | 2 (`@principal`) |
+| `fluxo-integrado.spec.ts` | 1 (admin UI → visitante → carrinho → alteração admin) | 3 | 1 (`@principal`) |
+| `navegacao.spec.ts` | 4 (teclado produto/carrinho, links `#` + teclado login, celular, modal Escape/Cancelar + foco) | 9 (sem `@somente-mobile`) | 2 (`@principal` + `@somente-mobile`) |
 
-| Arquivo | Cenários |
-| --- | --- |
-| `isolamento.spec.ts` | Diagnóstico HTTP vs 8002 |
-| `autenticacao.spec.ts` | Cadastro, login/logout, lembrar |
-| `perfil.spec.ts` | Perfil, senha, exclusão, verify-email + confirm-password |
-| `recuperacao-senha.spec.ts` | Link local + token inválido/reusado |
-| `permissoes.spec.ts` | Visitante, comum 403, admin |
-| `admin-produtos.spec.ts` | CRUD, validações/Quill/imagens, paginação 15 |
-| `vitrine.spec.ts` | Vazio, ordem, galeria, sanitização, paginação 12 |
-| `carrinho.spec.ts` | Cores, estoque, totais BRL, exclusão/ajuste, sessões, concorrência, autenticado |
-| `fluxo-integrado.spec.ts` | Admin UI → visitante → carrinho → alteração admin |
-| `navegacao.spec.ts` | Links `#`, teclado no login, celular, modal |
+Execuções por `npm run teste:e2e`: **32 × Chromium + 32 × Firefox + 32 × WebKit + 10 × mobile = 106**. Quantidade 0/fracionária no servidor continua coberta pelo PHPUnit (`LojaCarrinhoMutacaoTest`).
 
 Preparação: `e2e:reiniciar` no `beforeEach` (ou no próprio teste quando usa `--com-catalogo`). Não é um teste extra.
 

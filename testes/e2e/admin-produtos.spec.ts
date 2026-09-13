@@ -12,7 +12,7 @@ test.describe('Administração de produtos', () => {
     reiniciar();
   });
 
-  test('listagem vazia, cadastro completo, persistência e SKU com zeros', async ({ page }) => {
+  test('listagem vazia, cadastro completo, persistência e SKU com zeros @principal', async ({ page }) => {
     await entrarComoAdmin(page);
     await page.goto('/admin/produtos');
     await expect(page.getByText('Nenhum produto cadastrado ainda.')).toBeVisible();
@@ -73,7 +73,7 @@ test.describe('Administração de produtos', () => {
     await expect(page.getByText('Corrija os campos destacados.')).toBeVisible();
   });
 
-  test('edição, cancelar, rejeição sem sobrescrever, imagens e exclusão', async ({ page }) => {
+  test('edição, cancelar, rejeição sem sobrescrever, imagens e exclusão @principal', async ({ page }) => {
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
       nome: 'Manter',

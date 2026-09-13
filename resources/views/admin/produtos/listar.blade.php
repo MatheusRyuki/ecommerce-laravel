@@ -78,7 +78,7 @@
                                                         id="excluir-produto-{{ $produto->id }}"
                                                         class="relative z-10 font-semibold text-red-600 hover:text-red-500"
                                                         x-data=""
-                                                        x-on:click.prevent="$dispatch('abrir-modal', 'confirmar-exclusao-produto-{{ $produto->id }}')"
+                                                        x-on:click.prevent="$dispatch('abrir-modal', { nome: 'confirmar-exclusao-produto-{{ $produto->id }}', gatilho: $el.id })"
                                                     >
                                                         Excluir
                                                     </button>

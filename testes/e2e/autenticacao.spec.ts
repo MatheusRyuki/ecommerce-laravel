@@ -4,6 +4,7 @@ import {
   entrar,
   reiniciar,
   senhaPadrao,
+  sairDaConta,
 } from './suporte/aplicacao';
 
 test.describe('Autenticação', () => {
@@ -11,7 +12,7 @@ test.describe('Autenticação', () => {
     reiniciar();
   });
 
-  test('cadastro válido, validações e e-mail duplicado', async ({ page }) => {
+  test('cadastro válido, validações e e-mail duplicado @principal', async ({ page }) => {
     await page.goto('/register');
     await page.getByRole('button', { name: 'Cadastrar' }).click();
     await expect(page.locator('#name')).toBeVisible();
@@ -27,10 +28,8 @@ test.describe('Autenticação', () => {
     await page.getByLabel('Confirmar senha').fill(senhaPadrao);
     await page.getByRole('button', { name: 'Cadastrar' }).click();
     await expect(page).toHaveURL(/dashboard/);
-    await expect(page.getByRole('button', { name: 'Maria E2E' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Maria E2E' }).click();
-    await page.getByRole('link', { name: 'Sair' }).click();
+    await sairDaConta(page, 'Maria E2E');
     await expect(page).toHaveURL('/');
 
     await page.goto('/register');
@@ -42,7 +41,7 @@ test.describe('Autenticação', () => {
     await expect(page.getByText(/já está|já foi/i)).toBeVisible();
   });
 
-  test('login válido, inválido, logout e proteção', async ({ page }) => {
+  test('login válido, inválido, logout e proteção @principal', async ({ page }) => {
     artisan(['e2e:preparar-usuario', '--email=comum@e2e.test', `--senha=${senhaPadrao}`, '--nome=Comum']);
 
     await page.goto('/login');
@@ -54,8 +53,7 @@ test.describe('Autenticação', () => {
     await entrar(page, 'comum@e2e.test');
     await expect(page).toHaveURL(/dashboard/);
 
-    await page.getByRole('button', { name: 'Comum' }).click();
-    await page.getByRole('link', { name: 'Sair' }).click();
+    await sairDaConta(page, 'Comum');
 
     await page.goto('/perfil');
     await expect(page).toHaveURL(/login/);

@@ -30,11 +30,15 @@ test.describe('Carrinho', () => {
     reiniciar();
   });
 
-  test('vazio, adicionar, acumular cor, cores distintas, totais exatos e checkout indisponível', async ({ page }) => {
+  test('vazio, adicionar, acumular cor, cores distintas, totais exatos e checkout indisponível @principal', async ({ page }) => {
     await page.goto('/carrinho');
     await expect(page.getByText('Seu carrinho está vazio.')).toBeVisible();
     await expect(page.getByText('R$ 0,00')).toBeVisible();
-    await expect(page.locator('b').filter({ hasText: /^0$/ })).toBeVisible();
+    const contador = page.locator('a.wsus__manu_cart b').filter({ hasText: /^0$/ });
+    if (!(await contador.isVisible())) {
+      await page.getByRole('button', { name: 'Abrir menu' }).click();
+    }
+    await expect(contador).toBeVisible();
 
     await prepararProduto(page);
     await escolherCor(page, 'Vermelho');
@@ -191,5 +195,61 @@ test.describe('Carrinho', () => {
     await escolherCor(page, 'Vermelho');
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
     await expect(page.getByText('O produto foi adicionado ao carrinho.')).toBeVisible();
+  });
+
+  test('botões mais e menos alteram quantidade, respeitam mínimo e persistem após atualizar @principal', async ({ page }) => {
+    await prepararProduto(page);
+    await escolherCor(page, 'Vermelho');
+    await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
+    await page.goto('/carrinho');
+
+    const quantidade = page.locator('.formulario-qtd-carrinho input[name="quantidade"]');
+    const aviso = page.getByText('Quantidade ainda não salva');
+    await expect(quantidade).toHaveValue('1');
+    await expect(aviso).toBeHidden();
+
+    await page.getByRole('button', { name: 'Aumentar quantidade' }).click();
+    await expect(quantidade).toHaveValue('2');
+    await expect(aviso).toBeVisible();
+
+    await page.getByRole('button', { name: 'Atualizar' }).click();
+    await expect(page.getByText('O carrinho foi atualizado.')).toBeVisible();
+    await expect(quantidade).toHaveValue('2');
+    await expectTotal(page, 'R$ 99,80');
+
+    await page.getByRole('button', { name: 'Diminuir quantidade' }).click();
+    await expect(quantidade).toHaveValue('1');
+    await expect(aviso).toBeVisible();
+    await page.getByRole('button', { name: 'Atualizar' }).click();
+    await expect(quantidade).toHaveValue('1');
+    await expectTotal(page, 'R$ 49,90');
+
+    await page.getByRole('button', { name: 'Diminuir quantidade' }).click();
+    await expect(quantidade).toHaveValue('1');
+    await expect(aviso).toBeHidden();
+    await page.getByRole('button', { name: 'Atualizar' }).click();
+    await expect(quantidade).toHaveValue('1');
+    await expectTotal(page, 'R$ 49,90');
+  });
+
+  test('quantidade zero e fracionária são bloqueadas pelo formulário nativo sem alterar o carrinho', async ({ page }) => {
+    await prepararProduto(page);
+    await escolherCor(page, 'Vermelho');
+    await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
+    await page.goto('/carrinho');
+
+    const quantidade = page.locator('.formulario-qtd-carrinho input[name="quantidade"]');
+    await quantidade.fill('0');
+    await page.getByRole('button', { name: 'Atualizar' }).click();
+    expect(await quantidade.evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(false);
+    await expect(page).toHaveURL(/\/carrinho$/);
+    await expect(quantidade).toHaveAttribute('data-salvo', '1');
+
+    await quantidade.fill('1.5');
+    await page.getByRole('button', { name: 'Atualizar' }).click();
+    expect(await quantidade.evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(false);
+    await expect(page).toHaveURL(/\/carrinho$/);
+    await expect(quantidade).toHaveAttribute('data-salvo', '1');
+    await expectTotal(page, 'R$ 49,90');
   });
 });

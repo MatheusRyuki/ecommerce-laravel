@@ -1,8 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const raiz = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   testDir: './testes/e2e',
@@ -22,7 +18,26 @@ export default defineConfig({
     locale: 'pt-BR',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+      grepInvert: /@somente-mobile/,
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 } },
+      grepInvert: /@somente-mobile/,
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } },
+      grepInvert: /@somente-mobile/,
+    },
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 5'], hasTouch: true, isMobile: true },
+      grep: /@principal|@somente-mobile/,
+    },
   ],
   webServer: {
     command: './vendor/bin/sail artisan serve --host=0.0.0.0 --port=8003 --env=e2e',

@@ -76,6 +76,18 @@ export async function entrarComoAdmin(page: Page): Promise<void> {
   await entrar(page, adminEmail);
 }
 
+export async function sairDaConta(page: Page, nome: string): Promise<void> {
+  const acionador = page.getByRole('button', { name: nome });
+  if (await acionador.isVisible()) {
+    await expect(acionador).toBeVisible();
+    await acionador.click();
+  } else {
+    await page.locator('nav .sm\\:hidden button').click();
+    await expect(page.locator('nav').getByText(nome, { exact: true }).last()).toBeVisible();
+  }
+  await page.getByRole('link', { name: 'Sair' }).click();
+}
+
 export async function preencherDescricaoQuill(page: Page, texto: string): Promise<void> {
   const editor = page.locator('#editor-descricao .ql-editor');
   await editor.click();

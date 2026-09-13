@@ -17,7 +17,7 @@ $larguraMaxima = [
 <div
     x-data="{
         show: @js($show),
-        lastFocused: null,
+        lastFocusedId: null,
         focusables() {
             // Tipos focáveis...
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
@@ -34,18 +34,18 @@ $larguraMaxima = [
     }"
     x-init="$watch('show', value => {
         if (value) {
-            lastFocused = document.activeElement;
             document.body.classList.add('overflow-y-hidden');
             {{ $attributes->has('focavel') ? 'setTimeout(() => firstFocusable().focus(), 100)' : '' }}
         } else {
             document.body.classList.remove('overflow-y-hidden');
-            $nextTick(() => lastFocused?.focus?.());
+            const id = lastFocusedId;
+            setTimeout(() => { const el = id ? document.getElementById(id) : null; el && el.focus() }, 200);
         }
     })"
-    x-on:abrir-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
-    x-on:fechar-modal.window="$event.detail == '{{ $name }}' ? show = false : null"
+    x-on:abrir-modal.window="(() => { const d = $event.detail; const nome = (d && d.nome) ? d.nome : d; if (nome == '{{ $name }}') { lastFocusedId = (d && d.gatilho) ? d.gatilho : (document.activeElement && document.activeElement.id); show = true } })()"
+    x-on:fechar-modal.window="if ($event.detail == '{{ $name }}') { show = false }"
     x-on:fechar.stop="show = false"
-    x-on:keydown.escape.window="show = false"
+    x-on:keydown.escape.window="if (show) { show = false }"
     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
     x-show="show"

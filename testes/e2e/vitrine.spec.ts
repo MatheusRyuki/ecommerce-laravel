@@ -42,7 +42,7 @@ test.describe('Vitrine e detalhes', () => {
     await expect(page.getByText('Em estoque: 10')).toBeVisible();
   });
 
-  test('galeria, sem estoque, inexistente, sanitização e reflexão administrativa', async ({ page }) => {
+  test('galeria, sem estoque, inexistente, sanitização e reflexão administrativa @principal', async ({ page }) => {
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
       nome: 'Galeria',
@@ -57,8 +57,12 @@ test.describe('Vitrine e detalhes', () => {
     await page.goto('/');
     await expect(page.locator('.wsus__product_item .new', { hasText: 'Indisponível' })).toBeVisible();
     await page.getByRole('link', { name: 'Galeria' }).first().click();
-    await expect(page.getByRole('img', { name: /Miniatura 2/ })).toBeVisible();
-    await page.getByRole('img', { name: /Miniatura 2/ }).click();
+    await expect(page.locator('.slider-navFive.slick-initialized')).toBeVisible();
+    await expect(page.getByRole('img', { name: /Imagem 1/ })).toBeVisible();
+    const miniaturas = page.locator('.slider-navFive .slick-slide:not(.slick-cloned) img');
+    await expect(miniaturas).toHaveCount(3);
+    await miniaturas.nth(1).evaluate((el) => (el as HTMLElement).click());
+    await expect(page.locator('.slider-forFive .slick-current img[alt*="Imagem 2"]')).toBeVisible();
     await expect(page.getByText('Indisponível', { exact: true })).toBeVisible();
     await expect(page.getByText('Comprar agora')).toBeVisible();
     await expect(page.locator('.wsus__product_details_menu_contant script')).toHaveCount(0);

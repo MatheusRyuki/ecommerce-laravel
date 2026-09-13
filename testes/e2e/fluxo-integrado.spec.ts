@@ -10,7 +10,7 @@ import {
 } from './suporte/aplicacao';
 
 test.describe('Fluxo integrado', () => {
-  test('admin cadastra, visitante compra no carrinho e alteração administrativa aparece', async ({ page, context }) => {
+  test('admin cadastra, visitante compra no carrinho e alteração administrativa aparece @principal', async ({ page, context }) => {
     reiniciar();
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
