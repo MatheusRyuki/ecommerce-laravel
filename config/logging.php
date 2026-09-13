@@ -123,6 +123,13 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'correio_e2e' => [
+            'driver' => 'single',
+            'path' => storage_path('e2e/correio/mensagens.log'),
+            'level' => 'debug',
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

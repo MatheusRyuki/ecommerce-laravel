@@ -75,7 +75,7 @@ class AdministradorSeeder extends Seeder
 
         $senha = Str::password(32, symbols: false);
 
-        if (! app()->environment('testing')) {
+        if (! app()->environment(['testing', 'e2e'])) {
             $this->persistirSenhaNoEnv($senha);
         }
 

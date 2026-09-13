@@ -46,7 +46,7 @@ return [
     | Diretório dos arquivos quando o driver é file.
     */
 
-    'files' => storage_path('framework/sessions'),
+    'files' => env('SESSION_FILES', storage_path('framework/sessions')),
 
     /*
     |--------------------------------------------------------------------------

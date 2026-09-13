@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\DiscoArquivosProduto;
 use Database\Factories\ImagemProdutoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class ImagemProduto extends Model
 {
@@ -44,12 +44,12 @@ class ImagemProduto extends Model
 
     public function url(): string
     {
-        return Storage::disk('public')->url($this->caminho);
+        return DiscoArquivosProduto::disco()->url($this->caminho);
     }
 
     public function urlDisponivel(): ?string
     {
-        if (! Storage::disk('public')->exists($this->caminho)) {
+        if (! DiscoArquivosProduto::disco()->exists($this->caminho)) {
             return null;
         }
 

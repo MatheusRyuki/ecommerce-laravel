@@ -34,5 +34,6 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="FILESYSTEM_DISK" value="public"/>
+        <env name="FILESYSTEM_DISCO_PRODUTOS" value="public"/>
     </php>
 </phpunit>

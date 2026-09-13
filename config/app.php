@@ -113,4 +113,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'token_e2e' => env('E2E_TOKEN'),
+
 ];

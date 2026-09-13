@@ -38,7 +38,7 @@
                             @foreach ($produto->imagens as $imagem)
                                 @php
                                     $urlImagem = $imagem->url();
-                                    $arquivoExiste = \Illuminate\Support\Facades\Storage::disk('public')->exists($imagem->caminho);
+                                    $arquivoExiste = \App\Support\DiscoArquivosProduto::disco()->exists($imagem->caminho);
                                 @endphp
                                 <li class="flex items-start gap-3 rounded-md border border-gray-200 p-3">
                                     @if ($arquivoExiste)

@@ -1,6 +1,7 @@
 *.log
 .DS_Store
 .env
+.env.e2e
 .env.backup
 .env.production
 .phpactor.json
@@ -23,6 +24,9 @@
 /storage/*.key
 /storage/pail
 /vendor
+/test-results
+/playwright-report
+/blob-report
 _ide_helper.php
 Homestead.json
 Homestead.yaml

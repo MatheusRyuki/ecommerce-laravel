@@ -13,6 +13,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'disco_produtos' => env('FILESYSTEM_DISCO_PRODUTOS', 'public'),
+
     /*
     |--------------------------------------------------------------------------
     | Discos de arquivos
@@ -39,6 +41,15 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'publico_e2e' => [
+            'driver' => 'local',
+            'root' => storage_path('e2e/app/publico'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/armazenamento-e2e',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

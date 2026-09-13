@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Support\CoresProduto;
+use App\Support\Dinheiro;
+use App\Support\DiscoArquivosProduto;
 use Database\Factories\ProdutoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class Produto extends Model
 {
@@ -58,7 +59,7 @@ class Produto extends Model
     {
         $capa = $this->imagemCapa();
 
-        if ($capa === null || ! Storage::disk('public')->exists($capa->caminho)) {
+        if ($capa === null || ! DiscoArquivosProduto::disco()->exists($capa->caminho)) {
             return null;
         }
 
@@ -72,7 +73,7 @@ class Produto extends Model
 
     public function precoFormatado(): string
     {
-        return 'R$ '.number_format((float) $this->preco, 2, ',', '.');
+        return Dinheiro::formatarBrl((string) $this->preco);
     }
 
     /**

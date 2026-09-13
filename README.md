@@ -123,16 +123,23 @@ Outros produtos locais (por exemplo a Bolsa Demo Editada, SKU `DEMO-0001`) **nã
 ## Limitações atuais
 
 - Sem checkout, pagamento, frete, impostos ou descontos.
-- Carrinho só na sessão atual (visitante ou autenticado).
+- Carrinho só na sessão atual (visitante ou autenticado). A loja pública **não** exibe menu de conta; logout fica no layout Breeze (`/dashboard`, `/perfil`).
 - Totais do carrinho consideram apenas preço × quantidade (BCMath, duas casas).
 - Comprar agora permanece desabilitado.
 
 ## Testes
 
-Os testes usam SQLite em memória (`phpunit.xml`) e não usam o MySQL `ecommerce`.
+Os testes PHPUnit usam SQLite em memória (`phpunit.xml`) e **não** usam o MySQL `ecommerce`.
 
 ```bash
 ./vendor/bin/sail artisan test
+```
+
+Há uma suíte E2E com Playwright (navegador, Laravel e MySQL `ecommerce_e2e` na porta **8003**). Isolamento, matriz de cenários e comandos: [docs/e2e.md](docs/e2e.md).
+
+```bash
+./scripts/e2e/preparar-ambiente.sh
+npm run teste:e2e
 ```
 
 O build de assets da loja (quando necessário):

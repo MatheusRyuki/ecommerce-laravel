@@ -95,6 +95,21 @@ class AdminProdutoSalvarTest extends TestCase
         $this->assertSame(0, ImagemProduto::query()->count());
     }
 
+    public function test_erro_de_arquivo_invalido_nao_quebra_o_formulario_ao_redisplay(): void
+    {
+        Storage::fake('public');
+        $admin = Usuario::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->from(route('admin.produtos.criar'))
+            ->followingRedirects()
+            ->post(route('admin.produtos.salvar'), $this->validPayload([
+                UploadedFile::fake()->create('nota.txt', 20, 'text/plain'),
+            ]))
+            ->assertOk()
+            ->assertSee('Corrija os campos destacados.');
+    }
+
     public function test_campos_obrigatorios_limites_e_cores_invalidas_sao_rejeitados(): void
     {
         Storage::fake('public');

@@ -39,7 +39,7 @@ $larguraMaxima = [
             {{ $attributes->has('focavel') ? 'setTimeout(() => firstFocusable().focus(), 100)' : '' }}
         } else {
             document.body.classList.remove('overflow-y-hidden');
-            queueMicrotask(() => lastFocused?.focus?.());
+            $nextTick(() => lastFocused?.focus?.());
         }
     })"
     x-on:abrir-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
