@@ -71,18 +71,15 @@ Não use `migrate:fresh` se já houver dados locais que devam ser preservados.
 
 ### Instalações que já rodaram as migrations antigas
 
-A consolidação **não** é uma atualização automática. Bancos que já executaram a sequência anterior (criação em inglês + `add_is_admin` + dois renomes) têm na tabela `migrations` os nomes dos arquivos intermediários. Esses arquivos saíram do repositório; o schema final, porém, já está nesse banco.
+A consolidação **não** é uma atualização automática de schema. Bancos que já executaram a sequência anterior (criação em inglês + `add_is_admin` + dois renomes) já estão no schema final; o que muda é só o **histórico** na tabela `migrations`.
 
-`php artisan migrate` **não** deve ser usado nesse estado: o Artisan tentaria criar de novo `produtos` / `imagens_produto` e falharia. Também não altere a tabela `migrations` do banco `ecommerce` de desenvolvimento como parte de um `migrate` comum.
+No banco local `ecommerce` essa adoção **já foi feita**: os cinco registros intermediários foram substituídos pelos dois arquivos consolidados (`criar_tabela_produtos` e `criar_tabela_imagens_produto`), no **batch 1**, junto com `users`, `cache` e `jobs`. `migrate:status` deve listar as cinco migrations atuais como executadas e `migrate` não deve ter nada a aplicar. Não rode `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `migrate:rollback` nem `db:wipe` se precisar preservar os dados.
 
-Para **adotar** a nova sequência num banco que já está no schema final, é um recorte **manual** do histórico, só depois de confirmar que as tabelas já coincidem com a criação consolidada:
+Efeito no rollback: os passos intermediários (`is_admin`, tabelas em inglês, `path`) **não existem mais** no histórico. Um `migrate:rollback` do batch 1 tentaria desfazer a **base inteira** (usuários, cache, filas, produtos e imagens) de uma vez — o `down()` das migrations consolidadas não reconstrói o caminho antigo. Trate rollback como incompatível com este banco de desenvolvimento já preenchido.
 
-1. Conferir colunas (`users.administrador`, `produtos.*`, `imagens_produto.caminho` / `produto_id` / `posicao`).
-2. Remover da tabela `migrations` as linhas dos arquivos que deixaram de existir (`add_is_admin_to_users_table`, `create_products_table`, `create_product_images_table`, `renomear_dominio_de_produtos_e_administrador`, `renomear_path_de_imagens_produto_para_caminho`).
-3. Inserir como já executadas (mesmo `batch` ou o próximo) as linhas `2026_09_12_210000_criar_tabela_produtos` e `2026_09_12_210100_criar_tabela_imagens_produto`. A linha `0001_01_01_000000_create_users_table` permanece: o arquivo agora já cria `administrador`, mas essa migration **não** deve rodar de novo nesse banco.
-4. Rodar `php artisan migrate:status` e confirmar que nada está pendente. Não rode `migrate:fresh`, `migrate:refresh` nem `db:wipe`.
+Outros bancos ainda no histórico antigo precisam do recorte **manual** (backup da tabela `migrations`, conferência do schema, substituição só daquelas cinco linhas). Alternativa: dump dos dados, banco vazio, `migrate` da sequência nova e importação.
 
-Alternativa equivalente: dump dos dados, banco vazio, `migrate` da sequência nova e importação. Índices antigos podem continuar com nomes gerados na criação em inglês (`products_sku_unique`); instalações novas usam `produtos_sku_unique`. Isso não muda unicidade nem o FK em `produto_id` (`ON DELETE CASCADE`).
+Índices herdados da criação em inglês podem continuar com os nomes `products_sku_unique` e `product_images_product_id_foreign`; instalações novas usam `produtos_sku_unique` e `imagens_produto_produto_id_foreign`. Isso não muda unicidade nem o FK em `produto_id` (`ON DELETE CASCADE`).
 
 ## URLs
 
