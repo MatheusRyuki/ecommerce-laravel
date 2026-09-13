@@ -7,8 +7,8 @@
     $coresSelecionadas = old('cores', []);
 @endphp
 
-<x-app-layout>
-    <x-slot name="header">
+<x-layout-aplicacao>
+    <x-slot name="cabecalho">
         <h2 class="font-semibold text-xl text-blue-600 leading-tight">
             Painel
         </h2>
@@ -28,17 +28,17 @@
                     @csrf
 
                     @if ($errors->any())
-                        <x-admin-alert class="mb-4" :status="'Corrija os campos destacados.'" tom="erro" :dismissible="false" />
+                        <x-alerta-admin class="mb-4" :status="'Corrija os campos destacados.'" tom="erro" :dismissible="false" />
                     @endif
-                    <x-admin-alert class="mb-4" :status="session('status') === 'produto-criado' ? 'Produto cadastrado.' : session('status')" />
+                    <x-alerta-admin class="mb-4" :status="session('status') === 'produto-criado' ? 'Produto cadastrado.' : session('status')" />
 
                     <div>
                         <label for="imagens" class="block text-sm font-medium text-gray-700">{{ 'Imagens' }}</label>
                         <input id="imagens" name="imagens[]" type="file" accept="image/jpeg,image/png,image/webp" multiple
                             class="{{ $classeCampo }} file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm">
                         <p class="mt-1 text-xs text-gray-500">JPEG, PNG ou WebP. 1 a 5 arquivos, até 2048 KB cada. Os arquivos precisam ser escolhidos de novo se a validação falhar.</p>
-                        <x-input-error class="mt-2" :messages="$errors->get('imagens')" />
-                        <x-input-error class="mt-2" :messages="$errors->get('imagens.*')" />
+                        <x-erro-campo class="mt-2" :messages="$errors->get('imagens')" />
+                        <x-erro-campo class="mt-2" :messages="$errors->get('imagens.*')" />
                     </div>
 
                     @include('admin.produtos.partials.fields', [
@@ -62,4 +62,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layout-aplicacao>

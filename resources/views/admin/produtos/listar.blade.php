@@ -1,5 +1,5 @@
-<x-app-layout>
-    <x-slot name="header">
+<x-layout-aplicacao>
+    <x-slot name="cabecalho">
         <h2 class="font-semibold text-xl text-blue-600 leading-tight">
             Painel
         </h2>
@@ -27,7 +27,7 @@
                         };
                         $tomStatus = $chaveStatus === 'produto-excluido-com-limpeza-pendente' ? 'aviso' : 'sucesso';
                     @endphp
-                    <x-admin-alert class="mb-4" :status="$mensagemStatus" :tom="$tomStatus" :dismissible="$chaveStatus !== 'produto-excluido-com-limpeza-pendente'" />
+                    <x-alerta-admin class="mb-4" :status="$mensagemStatus" :tom="$tomStatus" :dismissible="$chaveStatus !== 'produto-excluido-com-limpeza-pendente'" />
 
                     @if ($produtos->isEmpty())
                         <div class="text-center py-10 space-y-4">
@@ -91,7 +91,7 @@
                         </div>
 
                         @foreach ($produtos as $produto)
-                            <x-modal name="confirmar-exclusao-produto-{{ $produto->id }}" maxWidth="lg" focusable>
+                            <x-janela-modal name="confirmar-exclusao-produto-{{ $produto->id }}" largura-maxima="lg" focavel>
                                 <form method="POST" action="{{ route('admin.produtos.excluir', $produto) }}" class="p-6">
                                     @csrf
                                     @method('DELETE')
@@ -105,16 +105,16 @@
                                     </p>
 
                                     <div class="mt-6 flex justify-end">
-                                        <x-secondary-button x-on:click="$dispatch('fechar')">
+                                        <x-botao-secundario x-on:click="$dispatch('fechar')">
                                             Cancelar
-                                        </x-secondary-button>
+                                        </x-botao-secundario>
 
-                                        <x-danger-button class="ms-3">
+                                        <x-botao-perigo class="ms-3">
                                             Excluir
-                                        </x-danger-button>
+                                        </x-botao-perigo>
                                     </div>
                                 </form>
-                            </x-modal>
+                            </x-janela-modal>
                         @endforeach
 
                         <div class="mt-6">
@@ -125,4 +125,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layout-aplicacao>

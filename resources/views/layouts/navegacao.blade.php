@@ -6,30 +6,30 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <x-logo-aplicacao class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
                 </div>
 
                 <!-- Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-link-navegacao :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Painel
-                    </x-nav-link>
+                    </x-link-navegacao>
                     @can('acessar-admin')
-                        <x-nav-link :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">
+                        <x-link-navegacao :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">
                             {{ __('Administração') }}
-                        </x-nav-link>
-                        <x-nav-link id="nav-produtos" :href="route('admin.produtos.listar')" :active="request()->routeIs('admin.produtos.*')">
+                        </x-link-navegacao>
+                        <x-link-navegacao id="nav-produtos" :href="route('admin.produtos.listar')" :active="request()->routeIs('admin.produtos.*')">
                             Produtos
-                        </x-nav-link>
+                        </x-link-navegacao>
                     @endcan
                 </div>
             </div>
 
             <!-- Conta -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
+                <x-menu-suspenso align="right" width="48">
+                    <x-slot name="acionador">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
 
@@ -41,26 +41,26 @@
                         </button>
                     </x-slot>
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('perfil.editar')">
+                    <x-slot name="conteudo">
+                        <x-link-menu :href="route('perfil.editar')">
                             Perfil
-                        </x-dropdown-link>
+                        </x-link-menu>
 
                         <!-- Encerrar sessão -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="route('logout')"
+                            <x-link-menu :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 Sair
-                            </x-dropdown-link>
+                            </x-link-menu>
                         </form>
                     </x-slot>
-                </x-dropdown>
+                </x-menu-suspenso>
             </div>
 
-            <!-- Hamburger -->
+            <!-- Menu móvel -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -75,16 +75,16 @@
     <!-- Menu responsivo -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+            <x-link-navegacao-responsivo :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Painel
-            </x-responsive-nav-link>
+            </x-link-navegacao-responsivo>
             @can('acessar-admin')
-                <x-responsive-nav-link :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">
+                <x-link-navegacao-responsivo :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">
                     {{ __('Administração') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.produtos.listar')" :active="request()->routeIs('admin.produtos.*')">
+                </x-link-navegacao-responsivo>
+                <x-link-navegacao-responsivo :href="route('admin.produtos.listar')" :active="request()->routeIs('admin.produtos.*')">
                     Produtos
-                </x-responsive-nav-link>
+                </x-link-navegacao-responsivo>
             @endcan
         </div>
 
@@ -96,19 +96,19 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('perfil.editar')">
+                <x-link-navegacao-responsivo :href="route('perfil.editar')">
                     Perfil
-                </x-responsive-nav-link>
+                </x-link-navegacao-responsivo>
 
                 <!-- Encerrar sessão -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
+                    <x-link-navegacao-responsivo :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         Sair
-                    </x-responsive-nav-link>
+                    </x-link-navegacao-responsivo>
                 </form>
             </div>
         </div>

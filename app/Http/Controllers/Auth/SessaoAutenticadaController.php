@@ -13,7 +13,7 @@ class SessaoAutenticadaController extends Controller
 {
     public function exibir(): View
     {
-        return view('auth.login');
+        return view('autenticacao.entrar');
     }
 
     public function entrar(LoginRequest $request): RedirectResponse

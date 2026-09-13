@@ -1,4 +1,4 @@
-@extends('loja.layouts.app')
+@extends('loja.layouts.aplicacao')
 
 @section('title', 'Carrinho')
 

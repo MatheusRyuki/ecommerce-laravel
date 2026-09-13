@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-layout-convidado>
     <div class="mb-4 text-sm text-gray-600">
         Área protegida. Confirme a senha para continuar.
     </div>
@@ -8,20 +8,20 @@
 
         <!-- Senha -->
         <div>
-            <x-input-label for="password" :value="'Senha'" />
+            <x-rotulo-campo for="password" :value="'Senha'" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
+            <x-campo-texto id="password" class="block mt-1 w-full"
                             type="password"
                             name="password"
                             required autocomplete="current-password" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-erro-campo :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <div class="flex justify-end mt-4">
-            <x-primary-button>
+            <x-botao-principal>
                 Confirmar
-            </x-primary-button>
+            </x-botao-principal>
         </div>
     </form>
-</x-guest-layout>
+</x-layout-convidado>

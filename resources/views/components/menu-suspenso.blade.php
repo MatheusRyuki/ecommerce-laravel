@@ -15,7 +15,7 @@ $width = match ($width) {
 
 <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
     <div @click="open = ! open">
-        {{ $trigger }}
+        {{ $acionador }}
     </div>
 
     <div x-show="open"
@@ -29,7 +29,7 @@ $width = match ($width) {
             style="display: none;"
             @click="open = false">
         <div class="rounded-md ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
-            {{ $content }}
+            {{ $conteudo }}
         </div>
     </div>
 </div>

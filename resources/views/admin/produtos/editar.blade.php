@@ -8,8 +8,8 @@
     $idsRemover = old('ids_imagens_remover', []);
 @endphp
 
-<x-app-layout>
-    <x-slot name="header">
+<x-layout-aplicacao>
+    <x-slot name="cabecalho">
         <h2 class="font-semibold text-xl text-blue-600 leading-tight">
             Painel
         </h2>
@@ -29,7 +29,7 @@
                     @csrf
                     @method('PATCH')
                     @if ($errors->any())
-                        <x-admin-alert class="mb-4" :status="'Corrija os campos destacados.'" tom="erro" :dismissible="false" />
+                        <x-alerta-admin class="mb-4" :status="'Corrija os campos destacados.'" tom="erro" :dismissible="false" />
                     @endif
 
                     <div>
@@ -59,8 +59,8 @@
                                 </li>
                             @endforeach
                         </ul>
-                        <x-input-error class="mt-2" :messages="$errors->get('ids_imagens_remover')" />
-                        <x-input-error class="mt-2" :messages="$errors->get('ids_imagens_remover.*')" />
+                        <x-erro-campo class="mt-2" :messages="$errors->get('ids_imagens_remover')" />
+                        <x-erro-campo class="mt-2" :messages="$errors->get('ids_imagens_remover.*')" />
                     </div>
 
                     <div>
@@ -68,8 +68,8 @@
                         <input id="imagens" name="imagens[]" type="file" accept="image/jpeg,image/png,image/webp" multiple
                             class="{{ $classeCampo }} file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm">
                         <p class="mt-1 text-xs text-gray-500">Opcional. JPEG, PNG ou WebP, até 2048 KB cada. Junto com as imagens mantidas, o total deve ficar entre 1 e 5. Novos arquivos precisam ser escolhidos de novo se a validação falhar.</p>
-                        <x-input-error class="mt-2" :messages="$errors->get('imagens')" />
-                        <x-input-error class="mt-2" :messages="$errors->get('imagens.*')" />
+                        <x-erro-campo class="mt-2" :messages="$errors->get('imagens')" />
+                        <x-erro-campo class="mt-2" :messages="$errors->get('imagens.*')" />
                     </div>
 
                     @include('admin.produtos.partials.fields', [
@@ -93,4 +93,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layout-aplicacao>

@@ -13,7 +13,7 @@ class PerfilController extends Controller
 {
     public function editar(Request $request): View
     {
-        return view('profile.edit', [
+        return view('perfil.editar', [
             'user' => $request->user(),
         ]);
     }

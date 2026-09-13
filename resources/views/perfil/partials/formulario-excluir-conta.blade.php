@@ -9,12 +9,12 @@
         </p>
     </header>
 
-    <x-danger-button
+    <x-botao-perigo
         x-data=""
         x-on:click.prevent="$dispatch('abrir-modal', 'confirmar-exclusao-usuario')"
-    >Excluir conta</x-danger-button>
+    >Excluir conta</x-botao-perigo>
 
-    <x-modal name="confirmar-exclusao-usuario" :show="$errors->exclusao_usuario->isNotEmpty()" focusable>
+    <x-janela-modal name="confirmar-exclusao-usuario" :show="$errors->exclusao_usuario->isNotEmpty()" focavel>
         <form method="post" action="{{ route('perfil.excluir') }}" class="p-6">
             @csrf
             @method('delete')
@@ -28,9 +28,9 @@
             </p>
 
             <div class="mt-6">
-                <x-input-label for="password" value="Senha" class="sr-only" />
+                <x-rotulo-campo for="password" value="Senha" class="sr-only" />
 
-                <x-text-input
+                <x-campo-texto
                     id="password"
                     name="password"
                     type="password"
@@ -38,18 +38,18 @@
                     placeholder="Senha"
                 />
 
-                <x-input-error :messages="$errors->exclusao_usuario->get('password')" class="mt-2" />
+                <x-erro-campo :messages="$errors->exclusao_usuario->get('password')" class="mt-2" />
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('fechar')">
+                <x-botao-secundario x-on:click="$dispatch('fechar')">
                     Cancelar
-                </x-secondary-button>
+                </x-botao-secundario>
 
-                <x-danger-button class="ms-3">
+                <x-botao-perigo class="ms-3">
                     Excluir conta
-                </x-danger-button>
+                </x-botao-perigo>
             </div>
         </form>
-    </x-modal>
+    </x-janela-modal>
 </section>

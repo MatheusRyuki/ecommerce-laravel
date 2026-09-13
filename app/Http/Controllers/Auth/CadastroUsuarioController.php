@@ -17,7 +17,7 @@ class CadastroUsuarioController extends Controller
 {
     public function exibir(): View
     {
-        return view('auth.register');
+        return view('autenticacao.cadastrar');
     }
 
     /**

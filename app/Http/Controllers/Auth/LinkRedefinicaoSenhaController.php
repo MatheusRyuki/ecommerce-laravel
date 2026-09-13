@@ -12,7 +12,7 @@ class LinkRedefinicaoSenhaController extends Controller
 {
     public function exibir(): View
     {
-        return view('auth.forgot-password');
+        return view('autenticacao.esqueci-senha');
     }
 
     public function enviar(Request $request): RedirectResponse

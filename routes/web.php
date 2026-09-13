@@ -23,7 +23,7 @@ Route::get('/products/{produto}', function (Produto $produto) {
 Route::redirect('/cart', '/carrinho');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('painel');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'can:acessar-admin'])->group(function () {

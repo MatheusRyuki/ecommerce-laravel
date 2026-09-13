@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-layout-convidado>
     <div class="mb-4 text-sm text-gray-600">
         Obrigado por se cadastrar. Confirme o e-mail pelo link que enviamos. Se a mensagem não chegou, podemos reenviar.
     </div>
@@ -14,9 +14,9 @@
             @csrf
 
             <div>
-                <x-primary-button>
+                <x-botao-principal>
                     Reenviar e-mail de verificação
-                </x-primary-button>
+                </x-botao-principal>
             </div>
         </form>
 
@@ -28,4 +28,4 @@
             </button>
         </form>
     </div>
-</x-guest-layout>
+</x-layout-convidado>

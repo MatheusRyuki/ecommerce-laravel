@@ -13,7 +13,7 @@ class ConfirmacaoSenhaController extends Controller
 {
     public function exibir(): View
     {
-        return view('auth.confirm-password');
+        return view('autenticacao.confirmar-senha');
     }
 
     public function confirmar(Request $request): RedirectResponse

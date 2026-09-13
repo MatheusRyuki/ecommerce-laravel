@@ -17,7 +17,7 @@ class NovaSenhaController extends Controller
 {
     public function exibir(Request $request): View
     {
-        return view('auth.reset-password', ['request' => $request]);
+        return view('autenticacao.redefinir-senha', ['request' => $request]);
     }
 
     public function salvar(Request $request): RedirectResponse
