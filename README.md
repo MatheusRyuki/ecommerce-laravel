@@ -156,6 +156,8 @@ Há uma suíte E2E com Playwright (navegador, Laravel e MySQL `ecommerce_e2e` na
 npm run teste:e2e
 ```
 
+`teste:e2e` e a preparação compartilham `storage/e2e/execucao.lock` (`flock`). Uma segunda execução é recusada com mensagem clara e não reinicia o banco nem sobrescreve o relatório.
+
 O build de assets da loja (quando necessário):
 
 ```bash

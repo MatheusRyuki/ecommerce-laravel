@@ -25,7 +25,7 @@ A loja pública tem Início, categorias, Favoritos, Pedidos, carrinho, Entrar/Cr
 
 A prova HTTP não é só status 200: `GET /_e2e/diagnostico` (cabeçalho `X-Token-E2e`) devolve banco, disco, marcador em `storage/e2e/marcador.txt` e caminho do correio.
 
-Projetos Playwright (`playwright.config.ts`): `chromium`, `firefox` e `webkit` (desktop 1280×800, `grepInvert: /@somente-mobile/`) e `mobile` (emulação **Pixel 5**, `hasTouch` e `isMobile`, `grep: /@principal|@somente-mobile/`). O projeto `mobile` **não** é aparelho físico. `retries: 0`, `workers: 1` global, `fullyParallel: false` — a suíte compartilha `ecommerce_e2e` e chama `e2e:reiniciar`; não rode processos concorrentes que reiniciem o mesmo banco.
+Projetos Playwright (`playwright.config.ts`): `chromium`, `firefox` e `webkit` (desktop 1280×800, `grepInvert: /@somente-mobile/`) e `mobile` (emulação **Pixel 5**, `hasTouch` e `isMobile`, `grep: /@principal|@somente-mobile/`). O projeto `mobile` **não** é aparelho físico. `retries: 0`, `workers: 1` global, `fullyParallel: false`. `npm run teste:e2e` e `./scripts/e2e/preparar-ambiente.sh` usam `flock` em `storage/e2e/execucao.lock`: uma segunda execução é recusada **antes** de `e2e:reiniciar` ou de sobrescrever o relatório HTML. `workers: 1` não cobre dois `npm run teste:e2e` independentes. O `artisan serve` na 8003 **não** ocupa esse cadeado.
 
 ## Comandos reais
 

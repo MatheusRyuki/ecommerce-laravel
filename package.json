@@ -5,8 +5,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-    "teste:e2e": "playwright test",
-    "teste:e2e:ui": "playwright test --ui"
+    "teste:e2e": "bash scripts/e2e/com-exclusividade.sh playwright test",
+    "teste:e2e:ui": "bash scripts/e2e/com-exclusividade.sh playwright test --ui"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",

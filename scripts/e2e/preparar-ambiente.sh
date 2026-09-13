@@ -4,6 +4,11 @@ set -euo pipefail
 raiz="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$raiz"
 
+if [[ -z "${E2E_LOCK_HELD:-}" ]]; then
+  export E2E_LOCK_HELD=1
+  exec "$raiz/scripts/e2e/com-exclusividade.sh" "$0" "$@"
+fi
+
 if [[ ! -f .env.e2e ]]; then
   cp .env.e2e.example .env.e2e
 fi
