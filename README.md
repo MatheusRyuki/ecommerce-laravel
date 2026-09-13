@@ -63,7 +63,26 @@ Suba o ambiente, gere a chave, rode as migrations, o link de storage e o build d
 ./vendor/bin/sail composer check-platform-reqs
 ```
 
-`storage:link` é necessário para as imagens de produto no disco `public`. A coluna `caminho` em `imagens_produto` guarda o caminho relativo no disco; os arquivos já existentes continuam em `products/` (compatibilidade com uploads anteriores). Não use `migrate:fresh` se já houver dados locais que devam ser preservados.
+`storage:link` é necessário para as imagens de produto no disco `public`. A coluna `caminho` em `imagens_produto` guarda o caminho relativo no disco; uploads novos e já existentes usam o prefixo `products/` nesse disco (compatibilidade com arquivos gravados antes da consolidação do schema).
+
+Uma instalação nova aplica **cinco** migrations de criação (usuários/sessões do Laravel, cache, filas, `produtos` e `imagens_produto`). As tabelas de produto já nascem com os nomes e colunas finais (`nome`, `preco`, `caminho`, `administrador` em `users`, etc.).
+
+Não use `migrate:fresh` se já houver dados locais que devam ser preservados.
+
+### Instalações que já rodaram as migrations antigas
+
+A consolidação **não** é uma atualização automática. Bancos que já executaram a sequência anterior (criação em inglês + `add_is_admin` + dois renomes) têm na tabela `migrations` os nomes dos arquivos intermediários. Esses arquivos saíram do repositório; o schema final, porém, já está nesse banco.
+
+`php artisan migrate` **não** deve ser usado nesse estado: o Artisan tentaria criar de novo `produtos` / `imagens_produto` e falharia. Também não altere a tabela `migrations` do banco `ecommerce` de desenvolvimento como parte de um `migrate` comum.
+
+Para **adotar** a nova sequência num banco que já está no schema final, é um recorte **manual** do histórico, só depois de confirmar que as tabelas já coincidem com a criação consolidada:
+
+1. Conferir colunas (`users.administrador`, `produtos.*`, `imagens_produto.caminho` / `produto_id` / `posicao`).
+2. Remover da tabela `migrations` as linhas dos arquivos que deixaram de existir (`add_is_admin_to_users_table`, `create_products_table`, `create_product_images_table`, `renomear_dominio_de_produtos_e_administrador`, `renomear_path_de_imagens_produto_para_caminho`).
+3. Inserir como já executadas (mesmo `batch` ou o próximo) as linhas `2026_09_12_210000_criar_tabela_produtos` e `2026_09_12_210100_criar_tabela_imagens_produto`. A linha `0001_01_01_000000_create_users_table` permanece: o arquivo agora já cria `administrador`, mas essa migration **não** deve rodar de novo nesse banco.
+4. Rodar `php artisan migrate:status` e confirmar que nada está pendente. Não rode `migrate:fresh`, `migrate:refresh` nem `db:wipe`.
+
+Alternativa equivalente: dump dos dados, banco vazio, `migrate` da sequência nova e importação. Índices antigos podem continuar com nomes gerados na criação em inglês (`products_sku_unique`); instalações novas usam `produtos_sku_unique`. Isso não muda unicidade nem o FK em `produto_id` (`ON DELETE CASCADE`).
 
 ## URLs
 
