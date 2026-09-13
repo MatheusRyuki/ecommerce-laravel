@@ -4,12 +4,12 @@
                             @if ($produto->urlCapa())
                                 @include('loja.partials.foto-produto', [
                                     'url' => $produto->urlCapa(),
-                                    'alt' => $produto->name,
+                                    'alt' => $produto->nome,
                                 ])
                             @else
                                 @include('loja.partials.foto-produto', [
                                     'url' => null,
-                                    'alt' => $produto->name,
+                                    'alt' => $produto->nome,
                                 ])
                             @endif
                             <a href="{{ route('loja.produtos.exibir', $produto) }}" class="add_cart">
@@ -21,7 +21,7 @@
                             <span class="new">Indisponível</span>
                         @endunless
                         <div class="text">
-                            <a href="{{ route('loja.produtos.exibir', $produto) }}" class="title">{{ $produto->name }}</a>
+                            <a href="{{ route('loja.produtos.exibir', $produto) }}" class="title">{{ $produto->nome }}</a>
                             <h4>{{ $produto->precoFormatado() }}</h4>
                         </div>
                     </div>

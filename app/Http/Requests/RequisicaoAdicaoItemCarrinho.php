@@ -18,9 +18,9 @@ class RequisicaoAdicaoItemCarrinho extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'color' => ['required', 'string'],
-            'quantity' => ['required', 'integer', 'min:1'],
+            'produto_id' => ['required', 'integer', 'exists:produtos,id'],
+            'cor' => ['required', 'string'],
+            'quantidade' => ['required', 'integer', 'min:1'],
         ];
     }
 }

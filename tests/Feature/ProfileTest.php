@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +12,7 @@ class ProfileTest extends TestCase
 
     public function test_pagina_de_perfil_e_exibida(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this
             ->actingAs($user)
@@ -23,12 +23,12 @@ class ProfileTest extends TestCase
 
     public function test_dados_do_perfil_podem_ser_atualizados(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
-                'name' => 'Test User',
+                'name' => 'Usuario de teste',
                 'email' => 'test@example.com',
             ]);
 
@@ -38,19 +38,19 @@ class ProfileTest extends TestCase
 
         $user->refresh();
 
-        $this->assertSame('Test User', $user->name);
+        $this->assertSame('Usuario de teste', $user->name);
         $this->assertSame('test@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
     }
 
     public function test_status_de_verificacao_nao_muda_se_email_permanece(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
-                'name' => 'Test User',
+                'name' => 'Usuario de teste',
                 'email' => $user->email,
             ]);
 
@@ -63,7 +63,7 @@ class ProfileTest extends TestCase
 
     public function test_usuario_pode_excluir_a_conta(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this
             ->actingAs($user)
@@ -81,7 +81,7 @@ class ProfileTest extends TestCase
 
     public function test_senha_correta_e_obrigatoria_para_excluir_conta(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this
             ->actingAs($user)

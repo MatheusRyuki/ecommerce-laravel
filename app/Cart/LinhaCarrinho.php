@@ -25,7 +25,7 @@ final readonly class LinhaCarrinho
 
     public function nome(): string
     {
-        return $this->produto?->name ?? 'Item indisponível';
+        return $this->produto?->nome ?? 'Item indisponível';
     }
 
     public function precoUnitario(): ?string
@@ -34,7 +34,7 @@ final readonly class LinhaCarrinho
             return null;
         }
 
-        return (string) $this->produto->price;
+        return (string) $this->produto->preco;
     }
 
     public function precoUnitarioFormatado(): ?string

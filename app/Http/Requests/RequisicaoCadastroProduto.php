@@ -15,7 +15,7 @@ class RequisicaoCadastroProduto extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        RegrasFormularioProduto::prepare($this);
+        RegrasFormularioProduto::preparar($this);
     }
 
     /**
@@ -24,8 +24,8 @@ class RequisicaoCadastroProduto extends FormRequest
     public function rules(): array
     {
         return array_merge(
-            RegrasFormularioProduto::newImages(required: true),
-            RegrasFormularioProduto::attributes(),
+            RegrasFormularioProduto::novasImagens(obrigatorio: true),
+            RegrasFormularioProduto::regrasCampos(),
         );
     }
 
@@ -34,6 +34,6 @@ class RequisicaoCadastroProduto extends FormRequest
      */
     public function messages(): array
     {
-        return RegrasFormularioProduto::messages();
+        return RegrasFormularioProduto::mensagens();
     }
 }

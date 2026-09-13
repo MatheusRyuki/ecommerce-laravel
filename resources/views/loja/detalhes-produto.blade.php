@@ -1,10 +1,10 @@
 @extends('loja.layouts.app')
 
-@section('title', $produto->name)
+@section('title', $produto->nome)
 
 @php
     $galeria = $produto->imagens;
-    $sanitizedDescription = app(\App\Support\SanitizadorDescricaoProduto::class)->sanitizar($produto->description);
+    $sanitizedDescription = app(\App\Support\SanitizadorDescricaoProduto::class)->sanitizar($produto->descricao);
 @endphp
 
 @push('styles')
@@ -26,7 +26,7 @@
                     <div class="wsus__product_details_slider_area">
                         @if ($galeria->isEmpty())
                             <div class="wsus__product_details_slide_show_img">
-                                @include('loja.partials.foto-produto', ['url' => null, 'alt' => $produto->name])
+                                @include('loja.partials.foto-produto', ['url' => null, 'alt' => $produto->nome])
                             </div>
                         @else
                             <div class="row slider-forFive">
@@ -35,7 +35,7 @@
                                         <div class="wsus__product_details_slide_show_img">
                                             @include('loja.partials.foto-produto', [
                                                 'url' => $image->urlDisponivel(),
-                                                'alt' => $produto->name.' — '.'Imagem'.' '.$loop->iteration,
+                                                'alt' => $produto->nome.' — '.'Imagem'.' '.$loop->iteration,
                                             ])
                                         </div>
                                     </div>
@@ -49,7 +49,7 @@
                                                 <div class="wsus__product_details_slider_img">
                                                     @include('loja.partials.foto-produto', [
                                                         'url' => $image->urlDisponivel(),
-                                                        'alt' => $produto->name.' — '.'Miniatura'.' '.$loop->iteration,
+                                                        'alt' => $produto->nome.' — '.'Miniatura'.' '.$loop->iteration,
                                                     ])
                                                 </div>
                                             </div>
@@ -62,12 +62,12 @@
                 </div>
                 <div class="col-lg-6 col-xl-7 wow fadeInRight">
                     <div class="wsus__product_summary">
-                        <h2>{{ $produto->name }}</h2>
+                        <h2>{{ $produto->nome }}</h2>
                         <h6>{{ $produto->precoFormatado() }}</h6>
-                        <p>{{ $produto->short_description }}</p>
+                        <p>{{ $produto->descricao_curta }}</p>
                         <p>
                             @if ($produto->estaDisponivel())
-                                {{ 'Em estoque' }}: {{ $produto->qty }}
+                                {{ 'Em estoque' }}: {{ $produto->quantidade }}
                             @else
                                 {{ 'Indisponível' }}
                             @endif
@@ -76,29 +76,29 @@
                         @if ($errors->has('carrinho'))
                             @include('loja.partials.alert', ['type' => 'danger', 'message' => $errors->first('carrinho')])
                         @endif
-                        @error('color')
+                        @error('cor')
                             @include('loja.partials.alert', ['type' => 'danger', 'message' => $message])
                         @enderror
-                        @error('quantity')
+                        @error('quantidade')
                             @include('loja.partials.alert', ['type' => 'danger', 'message' => $message])
                         @enderror
-                        @error('product_id')
+                        @error('produto_id')
                             @include('loja.partials.alert', ['type' => 'danger', 'message' => $message])
                         @enderror
 
                         @if ($produto->estaDisponivel())
-                            <form method="POST" action="{{ route('loja.carrinho.itens.adicionar') }}" id="add-to-cart-form">
+                            <form method="POST" action="{{ route('loja.carrinho.itens.adicionar') }}" id="formulario-adicionar-carrinho">
                                 @csrf
-                                <input type="hidden" name="product_id" value="{{ $produto->id }}">
+                                <input type="hidden" name="produto_id" value="{{ $produto->id }}">
 
                                 @if ($produto->coresExibidas() !== [])
                                     <h6 class="mt_30">{{ 'Cor' }}</h6>
-                                    <select class="select_2" name="color" required>
+                                    <select class="select_2" name="cor" required>
                                         @if (count($produto->coresExibidas()) > 1)
                                             <option value="">{{ 'Selecione uma cor' }}</option>
                                         @endif
                                         @foreach ($produto->coresExibidas() as $color)
-                                            <option value="{{ $color }}" @selected(old('color', count($produto->coresExibidas()) === 1 ? $color : '') === $color)>{{ \App\Support\CoresProduto::rotulo($color) }}</option>
+                                            <option value="{{ $color }}" @selected(old('cor', count($produto->coresExibidas()) === 1 ? $color : '') === $color)>{{ \App\Support\CoresProduto::rotulo($color) }}</option>
                                         @endforeach
                                     </select>
                                 @endif
@@ -106,7 +106,7 @@
                                 <div class="wsus__product_add_cart">
                                     <div class="wsus__product_quantity">
                                         <button class="minus" type="button"><i class="fas fa-minus"></i></button>
-                                        <input type="number" name="quantity" value="{{ old('quantity', 1) }}" min="1" step="1" required>
+                                        <input type="number" name="quantidade" value="{{ old('quantidade', 1) }}" min="1" step="1" required>
                                         <button class="plus" type="button"><i class="fas fa-plus"></i></button>
                                     </div>
                                     <div class="wsus__buy_cart_button">
@@ -120,7 +120,7 @@
                         @else
                             @if ($produto->coresExibidas() !== [])
                                 <h6 class="mt_30">{{ 'Cor' }}</h6>
-                                <select class="select_2" name="color" disabled>
+                                <select class="select_2" name="cor" disabled>
                                     @foreach ($produto->coresExibidas() as $color)
                                         <option value="{{ $color }}">{{ \App\Support\CoresProduto::rotulo($color) }}</option>
                                     @endforeach

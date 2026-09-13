@@ -3,9 +3,7 @@
 @section('title', 'Loja')
 
 @section('content')
-    <!--============================
-        PRODUCT START
-    =============================-->
+    <!-- Início da vitrine -->
     <section class="wsus__product mt_145 pb_100">
         <div class="container">
             @if ($produtos->isEmpty())
@@ -22,13 +20,11 @@
                 </div>
                 @if ($produtos->hasPages())
                     <div class="wsus__pagination mt_60">
-                        {{ $produtos->links('pagination.store-bootstrap') }}
+                        {{ $produtos->links('pagination.loja-bootstrap') }}
                     </div>
                 @endif
             @endif
         </div>
     </section>
-    <!--============================
-        PRODUCT END
-    =============================-->
+    <!-- Fim da vitrine -->
 @endsection

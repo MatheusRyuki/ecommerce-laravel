@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Produto;
 use App\Models\ImagemProduto;
+use App\Models\Produto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,9 +19,9 @@ class ImagemProdutoFactory extends Factory
     public function definition(): array
     {
         return [
-            'product_id' => Produto::factory(),
+            'produto_id' => Produto::factory(),
             'path' => 'products/'.fake()->uuid().'.jpg',
-            'position' => 0,
+            'posicao' => 0,
         ];
     }
 }

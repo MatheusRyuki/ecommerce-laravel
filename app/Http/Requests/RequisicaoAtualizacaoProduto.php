@@ -20,16 +20,16 @@ class RequisicaoAtualizacaoProduto extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        RegrasFormularioProduto::prepare($this);
+        RegrasFormularioProduto::preparar($this);
 
-        $ids = $this->input('remove_image_ids', []);
+        $ids = $this->input('ids_imagens_remover', []);
 
         if (! is_array($ids)) {
             $ids = [];
         }
 
         $this->merge([
-            'remove_image_ids' => array_values(array_filter(
+            'ids_imagens_remover' => array_values(array_filter(
                 array_map(static fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null, $ids),
                 static fn (?int $id): bool => $id !== null,
             )),
@@ -44,13 +44,13 @@ class RequisicaoAtualizacaoProduto extends FormRequest
         $produto = $this->produto();
 
         return array_merge(
-            RegrasFormularioProduto::newImages(required: false),
-            RegrasFormularioProduto::attributes($produto),
+            RegrasFormularioProduto::novasImagens(obrigatorio: false),
+            RegrasFormularioProduto::regrasCampos($produto),
             [
-                'remove_image_ids' => ['sometimes', 'array', 'distinct'],
-                'remove_image_ids.*' => [
+                'ids_imagens_remover' => ['sometimes', 'array', 'distinct'],
+                'ids_imagens_remover.*' => [
                     'integer',
-                    Rule::exists('product_images', 'id')->where('product_id', $produto->id),
+                    Rule::exists('imagens_produto', 'id')->where('produto_id', $produto->id),
                 ],
             ],
         );
@@ -64,14 +64,14 @@ class RequisicaoAtualizacaoProduto extends FormRequest
             }
 
             $produto = $this->produto()->loadMissing('imagens');
-            $ids = $this->input('remove_image_ids', []);
+            $ids = $this->input('ids_imagens_remover', []);
             $mantidas = $produto->imagens->whereNotIn('id', $ids)->count();
             $novas = count($this->novosArquivosImagem());
             $total = $mantidas + $novas;
 
             if ($total < 1 || $total > 5) {
                 $validator->errors()->add(
-                    'images',
+                    'imagens',
                     'O produto deve ficar com 1 a 5 imagens após a atualização. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
                 );
             }
@@ -83,8 +83,8 @@ class RequisicaoAtualizacaoProduto extends FormRequest
      */
     public function messages(): array
     {
-        return array_merge(RegrasFormularioProduto::messages(), [
-            'remove_image_ids.*.exists' => 'A imagem selecionada não pertence a este produto.',
+        return array_merge(RegrasFormularioProduto::mensagens(), [
+            'ids_imagens_remover.*.exists' => 'A imagem selecionada não pertence a este produto.',
         ]);
     }
 
@@ -102,7 +102,7 @@ class RequisicaoAtualizacaoProduto extends FormRequest
     public function novosArquivosImagem(): array
     {
         return array_values(array_filter(
-            Arr::wrap($this->file('images')),
+            Arr::wrap($this->file('imagens')),
             static fn (mixed $arquivo): bool => $arquivo instanceof UploadedFile,
         ));
     }

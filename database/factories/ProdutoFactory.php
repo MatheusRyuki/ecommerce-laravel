@@ -19,13 +19,13 @@ class ProdutoFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(3, true),
-            'price' => '19.90',
-            'colors' => [CoresProduto::todas()[0]],
-            'short_description' => fake()->sentence(),
-            'qty' => 10,
+            'nome' => fake()->words(3, true),
+            'preco' => '19.90',
+            'cores' => [CoresProduto::todas()[0]],
+            'descricao_curta' => fake()->sentence(),
+            'quantidade' => 10,
             'sku' => strtoupper(fake()->unique()->bothify('SKU-####??')),
-            'description' => '<p>'.fake()->sentence().'</p>',
+            'descricao' => '<p>'.fake()->sentence().'</p>',
         ];
     }
 }

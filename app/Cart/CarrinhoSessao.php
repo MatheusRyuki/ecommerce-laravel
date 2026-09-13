@@ -3,6 +3,7 @@
 namespace App\Cart;
 
 use App\Models\Produto;
+use App\Support\CoresProduto;
 use App\Support\Dinheiro;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Collection;
@@ -10,12 +11,14 @@ use Illuminate\Support\Str;
 
 class CarrinhoSessao
 {
-    public const CHAVE_SESSAO = 'cart.items';
+    public const CHAVE_SESSAO = 'carrinho.itens';
+
+    public const CHAVE_SESSAO_LEGADA = 'cart.items';
 
     public function __construct(private Session $sessao) {}
 
     /**
-     * @return list<array{id: string, product_id: int, color: string, quantity: int}>
+     * @return list<array{id: string, produto_id: int, cor: string, quantidade: int}>
      */
     public function itens(): array
     {
@@ -24,7 +27,7 @@ class CarrinhoSessao
 
     public function quantidadeTotal(): int
     {
-        return array_sum(array_column($this->itensNormalizados(), 'quantity'));
+        return array_sum(array_column($this->itensNormalizados(), 'quantidade'));
     }
 
     public function adicionar(int $idProduto, string $cor, int $quantidade): void
@@ -33,6 +36,7 @@ class CarrinhoSessao
             throw new ExcecaoNaoPodeAdicionarCarrinho('A quantidade deve ser um inteiro positivo.');
         }
 
+        $cor = CoresProduto::normalizar($cor);
         $produto = Produto::query()->find($idProduto);
 
         if ($produto === null || ! $produto->estaDisponivel()) {
@@ -47,20 +51,20 @@ class CarrinhoSessao
         $quantidadeJaNoCarrinho = 0;
 
         foreach ($itens as $item) {
-            if ($item['product_id'] === $idProduto) {
-                $quantidadeJaNoCarrinho += $item['quantity'];
+            if ($item['produto_id'] === $idProduto) {
+                $quantidadeJaNoCarrinho += $item['quantidade'];
             }
         }
 
-        if ($quantidadeJaNoCarrinho + $quantidade > $produto->qty) {
+        if ($quantidadeJaNoCarrinho + $quantidade > $produto->quantidade) {
             throw new ExcecaoNaoPodeAdicionarCarrinho('A quantidade pedida ultrapassa o estoque disponível.');
         }
 
         $juntou = false;
 
         foreach ($itens as $indice => $item) {
-            if ($item['product_id'] === $idProduto && $item['color'] === $cor) {
-                $itens[$indice]['quantity'] = $item['quantity'] + $quantidade;
+            if ($item['produto_id'] === $idProduto && $item['cor'] === $cor) {
+                $itens[$indice]['quantidade'] = $item['quantidade'] + $quantidade;
                 $juntou = true;
                 break;
             }
@@ -69,13 +73,13 @@ class CarrinhoSessao
         if (! $juntou) {
             $itens[] = [
                 'id' => (string) Str::uuid(),
-                'product_id' => $idProduto,
-                'color' => $cor,
-                'quantity' => $quantidade,
+                'produto_id' => $idProduto,
+                'cor' => $cor,
+                'quantidade' => $quantidade,
             ];
         }
 
-        $this->sessao->put(self::CHAVE_SESSAO, $itens);
+        $this->gravar($itens);
     }
 
     public function atualizarQuantidade(string $idItem, int $quantidade): void
@@ -87,26 +91,26 @@ class CarrinhoSessao
         $itens = $this->itensNormalizados();
         $indice = $this->indiceDe($itens, $idItem);
         $linha = $itens[$indice];
-        $produto = Produto::query()->find($linha['product_id']);
+        $produto = Produto::query()->find($linha['produto_id']);
 
-        if ($produto === null || ! $produto->estaDisponivel() || ! in_array($linha['color'], $produto->coresExibidas(), true)) {
+        if ($produto === null || ! $produto->estaDisponivel() || ! in_array($linha['cor'], $produto->coresExibidas(), true)) {
             throw new ExcecaoCarrinho('Este item do carrinho não pode ser atualizado.');
         }
 
         $outras = 0;
 
         foreach ($itens as $indiceItem => $item) {
-            if ($indiceItem !== $indice && $item['product_id'] === $linha['product_id']) {
-                $outras += $item['quantity'];
+            if ($indiceItem !== $indice && $item['produto_id'] === $linha['produto_id']) {
+                $outras += $item['quantidade'];
             }
         }
 
-        if ($quantidade > $linha['quantity'] && ($outras + $quantidade) > $produto->qty) {
+        if ($quantidade > $linha['quantidade'] && ($outras + $quantidade) > $produto->quantidade) {
             throw new ExcecaoCarrinho('A quantidade pedida ultrapassa o estoque disponível.');
         }
 
-        $itens[$indice]['quantity'] = $quantidade;
-        $this->sessao->put(self::CHAVE_SESSAO, $itens);
+        $itens[$indice]['quantidade'] = $quantidade;
+        $this->gravar($itens);
     }
 
     public function remover(string $idItem): void
@@ -114,7 +118,7 @@ class CarrinhoSessao
         $itens = $this->itensNormalizados();
         $indice = $this->indiceDe($itens, $idItem);
         unset($itens[$indice]);
-        $this->sessao->put(self::CHAVE_SESSAO, array_values($itens));
+        $this->gravar(array_values($itens));
     }
 
     /**
@@ -140,7 +144,15 @@ class CarrinhoSessao
     }
 
     /**
-     * @param  list<array{id: string, product_id: int, color: string, quantity: int}>  $itens
+     * @param  list<array{id: string, produto_id: int, cor: string, quantidade: int}>  $itens
+     */
+    public function restaurar(array $itens): void
+    {
+        $this->gravar($itens);
+    }
+
+    /**
+     * @param  list<array{id: string, produto_id: int, cor: string, quantidade: int}>  $itens
      */
     private function indiceDe(array $itens, string $idItem): int
     {
@@ -159,7 +171,7 @@ class CarrinhoSessao
     public function linhas(): Collection
     {
         $itens = $this->itensNormalizados();
-        $ids = array_values(array_unique(array_column($itens, 'product_id')));
+        $ids = array_values(array_unique(array_column($itens, 'produto_id')));
         $produtos = Produto::query()
             ->with('imagens')
             ->whereIn('id', $ids)
@@ -169,45 +181,46 @@ class CarrinhoSessao
         $pedidoPorProduto = [];
 
         foreach ($itens as $item) {
-            $pedidoPorProduto[$item['product_id']] = ($pedidoPorProduto[$item['product_id']] ?? 0) + $item['quantity'];
+            $pedidoPorProduto[$item['produto_id']] = ($pedidoPorProduto[$item['produto_id']] ?? 0) + $item['quantidade'];
         }
 
         return collect($itens)->map(function (array $item) use ($produtos, $pedidoPorProduto): LinhaCarrinho {
-            $produto = $produtos->get($item['product_id']);
+            $produto = $produtos->get($item['produto_id']);
 
             return new LinhaCarrinho(
                 id: $item['id'],
-                idProduto: $item['product_id'],
-                cor: $item['color'],
-                quantidade: $item['quantity'],
+                idProduto: $item['produto_id'],
+                cor: $item['cor'],
+                quantidade: $item['quantidade'],
                 produto: $produto,
-                situacao: $this->situacaoDe($produto, $item['color'], $pedidoPorProduto[$item['product_id']]),
+                situacao: $this->situacaoDe($produto, $item['cor'], $pedidoPorProduto[$item['produto_id']]),
             );
         })->values();
     }
 
     /**
-     * @return list<array{id: string, product_id: int, color: string, quantity: int}>
+     * @return list<array{id: string, produto_id: int, cor: string, quantidade: int}>
      */
     private function itensNormalizados(): array
     {
-        $itens = $this->sessao->get(self::CHAVE_SESSAO, []);
+        $brutos = $this->sessao->get(self::CHAVE_SESSAO);
 
-        if (! is_array($itens)) {
-            return [];
+        if (! is_array($brutos) || $brutos === []) {
+            $legado = $this->sessao->get(self::CHAVE_SESSAO_LEGADA, []);
+            $brutos = is_array($legado) ? $legado : [];
         }
 
         $normalizados = [];
 
-        foreach ($itens as $item) {
+        foreach ($brutos as $item) {
             if (! is_array($item)) {
                 continue;
             }
 
             $id = $item['id'] ?? null;
-            $idProduto = $item['product_id'] ?? null;
-            $cor = $item['color'] ?? null;
-            $quantidade = $item['quantity'] ?? null;
+            $idProduto = $item['produto_id'] ?? $item['product_id'] ?? null;
+            $cor = $item['cor'] ?? $item['color'] ?? null;
+            $quantidade = $item['quantidade'] ?? $item['quantity'] ?? null;
 
             if (! is_string($id) || $id === '' || ! is_numeric($idProduto) || ! is_string($cor) || $cor === '' || ! is_numeric($quantidade)) {
                 continue;
@@ -221,13 +234,22 @@ class CarrinhoSessao
 
             $normalizados[] = [
                 'id' => $id,
-                'product_id' => (int) $idProduto,
-                'color' => $cor,
-                'quantity' => $quantidade,
+                'produto_id' => (int) $idProduto,
+                'cor' => CoresProduto::normalizar($cor),
+                'quantidade' => $quantidade,
             ];
         }
 
         return $normalizados;
+    }
+
+    /**
+     * @param  list<array{id: string, produto_id: int, cor: string, quantidade: int}>  $itens
+     */
+    private function gravar(array $itens): void
+    {
+        $this->sessao->put(self::CHAVE_SESSAO, $itens);
+        $this->sessao->forget(self::CHAVE_SESSAO_LEGADA);
     }
 
     private function situacaoDe(?Produto $produto, string $cor, int $pedidoDoProduto): string
@@ -236,7 +258,7 @@ class CarrinhoSessao
             return LinhaCarrinho::SITUACAO_INDISPONIVEL;
         }
 
-        if (! in_array($cor, $produto->coresExibidas(), true) || $pedidoDoProduto > $produto->qty) {
+        if (! in_array($cor, $produto->coresExibidas(), true) || $pedidoDoProduto > $produto->quantidade) {
             return LinhaCarrinho::SITUACAO_AJUSTAR;
         }
 

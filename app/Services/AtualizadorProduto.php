@@ -42,13 +42,13 @@ class AtualizadorProduto
 
             DB::transaction(function () use ($produto, $atributos, $idsParaRemover, $imagensMantidas, $caminhosNovos): void {
                 $produto->update([
-                    'name' => $atributos['name'],
-                    'price' => $atributos['price'],
-                    'colors' => array_values($atributos['colors']),
-                    'short_description' => $atributos['short_description'],
-                    'qty' => $atributos['qty'],
+                    'nome' => $atributos['nome'],
+                    'preco' => $atributos['preco'],
+                    'cores' => array_values($atributos['cores']),
+                    'descricao_curta' => $atributos['descricao_curta'],
+                    'quantidade' => $atributos['quantidade'],
                     'sku' => $atributos['sku'],
-                    'description' => $atributos['description'],
+                    'descricao' => $atributos['descricao'],
                 ]);
 
                 if ($idsParaRemover !== []) {
@@ -58,14 +58,14 @@ class AtualizadorProduto
                 $posicao = 0;
 
                 foreach ($imagensMantidas as $imagem) {
-                    $imagem->update(['position' => $posicao]);
+                    $imagem->update(['posicao' => $posicao]);
                     $posicao++;
                 }
 
                 foreach ($caminhosNovos as $caminho) {
                     $produto->imagens()->create([
                         'path' => $caminho,
-                        'position' => $posicao,
+                        'posicao' => $posicao,
                     ]);
                     $posicao++;
                 }
@@ -82,13 +82,13 @@ class AtualizadorProduto
             try {
                 if ($this->disco->delete($imagem->path) === false) {
                     Log::warning('Limpeza pendente de imagem após atualização do produto.', [
-                        'product_id' => $produto->id,
+                        'id_produto' => $produto->id,
                         'path' => $imagem->path,
                     ]);
                 }
             } catch (Throwable $excecao) {
                 Log::warning('Limpeza pendente de imagem após atualização do produto.', [
-                    'product_id' => $produto->id,
+                    'id_produto' => $produto->id,
                     'path' => $imagem->path,
                     'exception' => $excecao->getMessage(),
                 ]);

@@ -19,7 +19,7 @@
                         <x-nav-link :href="route('admin.painel')" :active="request()->routeIs('admin.painel')">
                             {{ __('Administração') }}
                         </x-nav-link>
-                        <x-nav-link id="nav-products" :href="route('admin.produtos.index')" :active="request()->routeIs('admin.produtos.*')">
+                        <x-nav-link id="nav-produtos" :href="route('admin.produtos.index')" :active="request()->routeIs('admin.produtos.*')">
                             Produtos
                         </x-nav-link>
                     @endcan

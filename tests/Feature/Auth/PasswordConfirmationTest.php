@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +12,7 @@ class PasswordConfirmationTest extends TestCase
 
     public function test_tela_de_confirmacao_de_senha_pode_ser_exibida(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this->actingAs($user)->get('/confirm-password');
 
@@ -21,7 +21,7 @@ class PasswordConfirmationTest extends TestCase
 
     public function test_senha_pode_ser_confirmada(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this->actingAs($user)->post('/confirm-password', [
             'password' => 'password',
@@ -33,7 +33,7 @@ class PasswordConfirmationTest extends TestCase
 
     public function test_senha_invalida_nao_confirma(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this->actingAs($user)->post('/confirm-password', [
             'password' => 'wrong-password',

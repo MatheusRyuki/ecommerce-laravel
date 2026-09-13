@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{{ asset('frontend/css/spacing.css') }}">
     <link rel="stylesheet" href="{{ asset('frontend/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('frontend/css/responsive.css') }}">
-    <link rel="stylesheet" href="{{ asset('frontend/css/store.css') }}">
+    <link rel="stylesheet" href="{{ asset('frontend/css/loja.css') }}">
 </head>
 
 <body>

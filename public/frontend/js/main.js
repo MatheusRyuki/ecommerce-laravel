@@ -57,55 +57,95 @@ $(function () {
     }
 
     if ($.fn.select2) {
-        $('.select_2').select2();
+        var linguagemSelect2 = {
+            errorLoading: function () {
+                return 'Não foi possível carregar os resultados.';
+            },
+            inputTooLong: function (args) {
+                var excedente = args.input.length - args.maximum;
+                return 'Apague ' + excedente + (excedente === 1 ? ' caractere' : ' caracteres');
+            },
+            inputTooShort: function (args) {
+                var restante = args.minimum - args.input.length;
+                return 'Digite ' + restante + (restante === 1 ? ' caractere' : ' caracteres');
+            },
+            loadingMore: function () {
+                return 'Carregando mais resultados…';
+            },
+            maximumSelected: function (args) {
+                return 'Você só pode selecionar ' + args.maximum + (args.maximum === 1 ? ' item' : ' itens');
+            },
+            noResults: function () {
+                return 'Nenhum resultado encontrado';
+            },
+            searching: function () {
+                return 'Buscando…';
+            },
+            removeAllItems: function () {
+                return 'Remover todos os itens';
+            }
+        };
+
+        $('.select_2').select2({
+            language: linguagemSelect2,
+            width: 'style'
+        });
+
+        $('.select_2').on('select2:open', function () {
+            var campo = document.querySelector('.select2-container--open .select2-search__field');
+            if (campo) {
+                campo.setAttribute('aria-label', 'Buscar');
+                campo.setAttribute('placeholder', 'Buscar');
+            }
+        });
     }
 
-    $('#add-to-cart-form .wsus__product_quantity .plus').on('click', function () {
-        var input = $('#add-to-cart-form input[name="quantity"]');
+    $('#formulario-adicionar-carrinho .wsus__product_quantity .plus').on('click', function () {
+        var input = $('#formulario-adicionar-carrinho input[name="quantidade"]');
         var value = parseInt(input.val(), 10) || 1;
         input.val(value + 1);
     });
 
-    $('#add-to-cart-form .wsus__product_quantity .minus').on('click', function () {
-        var input = $('#add-to-cart-form input[name="quantity"]');
+    $('#formulario-adicionar-carrinho .wsus__product_quantity .minus').on('click', function () {
+        var input = $('#formulario-adicionar-carrinho input[name="quantidade"]');
         var value = parseInt(input.val(), 10) || 1;
         if (value > 1) {
             input.val(value - 1);
         }
     });
 
-    var syncCartQtyPending = function (form) {
-        var input = form.find('input[name="quantity"]');
-        var pending = form.find('.cart-qty-pending');
-        var saved = parseInt(input.data('saved'), 10);
-        var current = parseInt(input.val(), 10);
-        if (current !== saved) {
-            pending.removeClass('d-none');
+    var sincronizarQtdCarrinhoPendente = function (form) {
+        var input = form.find('input[name="quantidade"]');
+        var pendente = form.find('.qtd-carrinho-pendente');
+        var salvo = parseInt(input.data('salvo'), 10);
+        var atual = parseInt(input.val(), 10);
+        if (atual !== salvo) {
+            pendente.removeClass('d-none');
         } else {
-            pending.addClass('d-none');
+            pendente.addClass('d-none');
         }
     };
 
-    $('.cart-qty-form .plus').on('click', function () {
-        var form = $(this).closest('.cart-qty-form');
-        var input = form.find('input[name="quantity"]');
+    $('.formulario-qtd-carrinho .plus').on('click', function () {
+        var form = $(this).closest('.formulario-qtd-carrinho');
+        var input = form.find('input[name="quantidade"]');
         var value = parseInt(input.val(), 10) || 1;
         input.val(value + 1);
-        syncCartQtyPending(form);
+        sincronizarQtdCarrinhoPendente(form);
     });
 
-    $('.cart-qty-form .minus').on('click', function () {
-        var form = $(this).closest('.cart-qty-form');
-        var input = form.find('input[name="quantity"]');
+    $('.formulario-qtd-carrinho .minus').on('click', function () {
+        var form = $(this).closest('.formulario-qtd-carrinho');
+        var input = form.find('input[name="quantidade"]');
         var value = parseInt(input.val(), 10) || 1;
         if (value > 1) {
             input.val(value - 1);
         }
-        syncCartQtyPending(form);
+        sincronizarQtdCarrinhoPendente(form);
     });
 
-    $('.cart-qty-form input[name="quantity"]').on('input', function () {
-        syncCartQtyPending($(this).closest('.cart-qty-form'));
+    $('.formulario-qtd-carrinho input[name="quantidade"]').on('input', function () {
+        sincronizarQtdCarrinhoPendente($(this).closest('.formulario-qtd-carrinho'));
     });
 
 });

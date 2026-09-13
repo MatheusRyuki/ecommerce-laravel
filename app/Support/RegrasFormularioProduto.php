@@ -8,9 +8,9 @@ use Illuminate\Validation\Rule;
 
 final class RegrasFormularioProduto
 {
-    public const MAX_QTY = 4_294_967_295;
+    public const QUANTIDADE_MAXIMA = 4_294_967_295;
 
-    public static function prepare(FormRequest $request): void
+    public static function preparar(FormRequest $request): void
     {
         if (is_string($request->sku)) {
             $request->merge([
@@ -18,9 +18,9 @@ final class RegrasFormularioProduto
             ]);
         }
 
-        if (is_string($request->description)) {
+        if (is_string($request->descricao)) {
             $request->merge([
-                'description' => app(SanitizadorDescricaoProduto::class)->sanitizar($request->description),
+                'descricao' => app(SanitizadorDescricaoProduto::class)->sanitizar($request->descricao),
             ]);
         }
     }
@@ -28,23 +28,23 @@ final class RegrasFormularioProduto
     /**
      * @return array<string, mixed>
      */
-    public static function attributes(?Produto $ignoredForSku = null): array
+    public static function regrasCampos(?Produto $produtoIgnoradoNoSku = null): array
     {
-        $skuUnique = Rule::unique('products', 'sku');
+        $skuUnico = Rule::unique('produtos', 'sku');
 
-        if ($ignoredForSku !== null) {
-            $skuUnique = $skuUnique->ignore($ignoredForSku);
+        if ($produtoIgnoradoNoSku !== null) {
+            $skuUnico = $skuUnico->ignore($produtoIgnoradoNoSku);
         }
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric', 'min:0', 'decimal:0,2', 'max:99999999.99'],
-            'colors' => ['required', 'array', 'min:1', 'distinct'],
-            'colors.*' => ['required', 'string', Rule::in(CoresProduto::todas())],
-            'short_description' => ['required', 'string', 'max:500'],
-            'qty' => ['required', 'integer', 'min:0', 'max:'.self::MAX_QTY],
-            'sku' => ['required', 'string', 'max:100', $skuUnique],
-            'description' => [
+            'nome' => ['required', 'string', 'max:255'],
+            'preco' => ['required', 'numeric', 'min:0', 'decimal:0,2', 'max:99999999.99'],
+            'cores' => ['required', 'array', 'min:1', 'distinct'],
+            'cores.*' => ['required', 'string', Rule::in(CoresProduto::todas())],
+            'descricao_curta' => ['required', 'string', 'max:500'],
+            'quantidade' => ['required', 'integer', 'min:0', 'max:'.self::QUANTIDADE_MAXIMA],
+            'sku' => ['required', 'string', 'max:100', $skuUnico],
+            'descricao' => [
                 'required',
                 'string',
                 'max:10000',
@@ -60,13 +60,13 @@ final class RegrasFormularioProduto
     /**
      * @return array<string, mixed>
      */
-    public static function newImages(bool $required): array
+    public static function novasImagens(bool $obrigatorio): array
     {
         return [
-            'images' => $required
+            'imagens' => $obrigatorio
                 ? ['required', 'array', 'min:1', 'max:5']
                 : ['sometimes', 'array', 'max:5'],
-            'images.*' => [
+            'imagens.*' => [
                 'required',
                 'file',
                 'max:2048',
@@ -78,12 +78,12 @@ final class RegrasFormularioProduto
     /**
      * @return array<string, string>
      */
-    public static function messages(): array
+    public static function mensagens(): array
     {
         return [
-            'images.required' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
-            'images.min' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
-            'images.max' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
+            'imagens.required' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
+            'imagens.min' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
+            'imagens.max' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
             'sku.unique' => 'Este SKU já está em uso.',
         ];
     }

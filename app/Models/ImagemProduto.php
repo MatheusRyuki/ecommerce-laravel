@@ -13,15 +13,15 @@ class ImagemProduto extends Model
     /** @use HasFactory<ImagemProdutoFactory> */
     use HasFactory;
 
-    protected $table = 'product_images';
+    protected $table = 'imagens_produto';
 
     /**
      * @var list<string>
      */
     protected $fillable = [
-        'product_id',
+        'produto_id',
         'path',
-        'position',
+        'posicao',
     ];
 
     /**
@@ -30,7 +30,7 @@ class ImagemProduto extends Model
     protected function casts(): array
     {
         return [
-            'position' => 'integer',
+            'posicao' => 'integer',
         ];
     }
 
@@ -39,7 +39,7 @@ class ImagemProduto extends Model
      */
     public function produto(): BelongsTo
     {
-        return $this->belongsTo(Produto::class, 'product_id');
+        return $this->belongsTo(Produto::class, 'produto_id');
     }
 
     public function url(): string

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,7 +19,7 @@ class AuthenticationTest extends TestCase
 
     public function test_usuarios_podem_autenticar_pela_tela_de_login(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -32,7 +32,7 @@ class AuthenticationTest extends TestCase
 
     public function test_usuarios_nao_autenticam_com_senha_invalida(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $this->post('/login', [
             'email' => $user->email,
@@ -44,7 +44,7 @@ class AuthenticationTest extends TestCase
 
     public function test_usuarios_podem_sair(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this->actingAs($user)->post('/logout');
 

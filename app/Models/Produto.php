@@ -14,19 +14,19 @@ class Produto extends Model
     /** @use HasFactory<ProdutoFactory> */
     use HasFactory;
 
-    protected $table = 'products';
+    protected $table = 'produtos';
 
     /**
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'price',
-        'colors',
-        'short_description',
-        'qty',
+        'nome',
+        'preco',
+        'cores',
+        'descricao_curta',
+        'quantidade',
         'sku',
-        'description',
+        'descricao',
     ];
 
     /**
@@ -35,9 +35,9 @@ class Produto extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'colors' => 'array',
-            'qty' => 'integer',
+            'preco' => 'decimal:2',
+            'cores' => 'array',
+            'quantidade' => 'integer',
         ];
     }
 
@@ -46,7 +46,7 @@ class Produto extends Model
      */
     public function imagens(): HasMany
     {
-        return $this->hasMany(ImagemProduto::class, 'product_id')->orderBy('position');
+        return $this->hasMany(ImagemProduto::class, 'produto_id')->orderBy('posicao');
     }
 
     public function imagemCapa(): ?ImagemProduto
@@ -67,12 +67,12 @@ class Produto extends Model
 
     public function estaDisponivel(): bool
     {
-        return $this->qty > 0;
+        return $this->quantidade > 0;
     }
 
     public function precoFormatado(): string
     {
-        return 'R$ '.number_format((float) $this->price, 2, ',', '.');
+        return 'R$ '.number_format((float) $this->preco, 2, ',', '.');
     }
 
     /**
@@ -80,11 +80,20 @@ class Produto extends Model
      */
     public function coresExibidas(): array
     {
-        $permitidas = CoresProduto::todas();
+        $cores = [];
 
-        return array_values(array_filter(
-            $this->colors ?? [],
-            fn (mixed $cor): bool => is_string($cor) && in_array($cor, $permitidas, true),
-        ));
+        foreach ($this->cores ?? [] as $cor) {
+            if (! is_string($cor) || $cor === '') {
+                continue;
+            }
+
+            $normalizada = CoresProduto::normalizar($cor);
+
+            if (CoresProduto::ehPermitida($normalizada) && ! in_array($normalizada, $cores, true)) {
+                $cores[] = $normalizada;
+            }
+        }
+
+        return $cores;
     }
 }

@@ -3,13 +3,13 @@
         Informe o e-mail para receber um link e definir uma senha nova.
     </div>
 
-    <!-- Session Status -->
+    <!-- Estado da sessão -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('password.email') }}">
         @csrf
 
-        <!-- Email Address -->
+        <!-- E-mail -->
         <div>
             <x-input-label for="email" :value="'E-mail'" />
             <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />

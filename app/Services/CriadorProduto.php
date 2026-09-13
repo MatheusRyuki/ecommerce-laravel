@@ -25,13 +25,13 @@ class CriadorProduto
         try {
             return DB::transaction(function () use ($atributos, $imagens, &$caminhos): Produto {
                 $produto = Produto::query()->create([
-                    'name' => $atributos['name'],
-                    'price' => $atributos['price'],
-                    'colors' => array_values($atributos['colors']),
-                    'short_description' => $atributos['short_description'],
-                    'qty' => $atributos['qty'],
+                    'nome' => $atributos['nome'],
+                    'preco' => $atributos['preco'],
+                    'cores' => array_values($atributos['cores']),
+                    'descricao_curta' => $atributos['descricao_curta'],
+                    'quantidade' => $atributos['quantidade'],
                     'sku' => $atributos['sku'],
-                    'description' => $atributos['description'],
+                    'descricao' => $atributos['descricao'],
                 ]);
 
                 foreach (array_values($imagens) as $posicao => $imagem) {
@@ -46,7 +46,7 @@ class CriadorProduto
 
                     $produto->imagens()->create([
                         'path' => $caminho,
-                        'position' => $posicao,
+                        'posicao' => $posicao,
                     ]);
                 }
 

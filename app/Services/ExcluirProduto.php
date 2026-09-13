@@ -56,7 +56,7 @@ class ExcluirProduto
     {
         Log::warning('Limpeza pendente de imagem após exclusão do produto.', array_filter([
             'disk' => 'public',
-            'product_id' => $idProduto,
+            'id_produto' => $idProduto,
             'path' => $caminho,
             'exception' => $excecao,
         ]));

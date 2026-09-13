@@ -7,7 +7,7 @@ return [
     | Credenciais do administrador local
     |--------------------------------------------------------------------------
     |
-    | Usadas pelo AdminUserSeeder. Não defina senha no .env.example.
+    | Usadas pelo AdministradorSeeder. Não defina senha no .env.example.
     | A senha gerada na primeira execução é gravada apenas no .env local.
     |
     */

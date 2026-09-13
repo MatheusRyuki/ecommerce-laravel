@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,7 +19,7 @@ class AdminDashboardTest extends TestCase
 
     public function test_usuario_comum_e_proibido(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = Usuario::factory()->create(['administrador' => false]);
 
         $response = $this->actingAs($user)->get(route('admin.painel'));
 
@@ -28,7 +28,7 @@ class AdminDashboardTest extends TestCase
 
     public function test_administrador_pode_acessar_o_painel(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         $response = $this->actingAs($admin)->get(route('admin.painel'));
 
@@ -45,34 +45,34 @@ class AdminDashboardTest extends TestCase
             'email' => 'visitante@example.test',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'is_admin' => true,
+            'administrador' => true,
         ]);
 
         $response->assertRedirect(route('dashboard', absolute: false));
         $this->assertAuthenticated();
 
-        $user = User::query()->where('email', 'visitante@example.test')->first();
+        $user = Usuario::query()->where('email', 'visitante@example.test')->first();
 
         $this->assertNotNull($user);
-        $this->assertFalse($user->is_admin);
+        $this->assertFalse($user->administrador);
     }
 
     public function test_atualizacao_de_perfil_nao_atribui_papel_admin(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = Usuario::factory()->create(['administrador' => false]);
 
         $this->actingAs($user)->patch('/profile', [
             'name' => $user->name,
             'email' => $user->email,
-            'is_admin' => true,
+            'administrador' => true,
         ])->assertRedirect('/profile');
 
-        $this->assertFalse($user->fresh()->is_admin);
+        $this->assertFalse($user->fresh()->administrador);
     }
 
     public function test_usuario_comum_nao_ve_link_de_administracao(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $this->actingAs($user)
             ->get(route('dashboard'))
@@ -83,7 +83,7 @@ class AdminDashboardTest extends TestCase
 
     public function test_administrador_ve_link_de_administracao(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get(route('dashboard'))

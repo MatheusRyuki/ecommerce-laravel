@@ -35,16 +35,16 @@ class CarrinhoController extends Controller
 
         try {
             $this->carrinho->adicionar(
-                (int) $request->validated('product_id'),
-                (string) $request->validated('color'),
-                (int) $request->validated('quantity'),
+                (int) $request->validated('produto_id'),
+                (string) $request->validated('cor'),
+                (int) $request->validated('quantidade'),
             );
         } catch (ExcecaoCarrinho $excecao) {
-            $request->session()->put(CarrinhoSessao::CHAVE_SESSAO, $itensAnteriores);
+            $this->carrinho->restaurar($itensAnteriores);
 
             return back()
                 ->withInput()
-                ->withErrors(['cart' => $excecao->getMessage()]);
+                ->withErrors(['carrinho' => $excecao->getMessage()]);
         }
 
         return redirect()
@@ -57,15 +57,15 @@ class CarrinhoController extends Controller
         $itensAnteriores = $this->carrinho->itens();
 
         try {
-            $this->carrinho->atualizarQuantidade($item, (int) $request->validated('quantity'));
+            $this->carrinho->atualizarQuantidade($item, (int) $request->validated('quantidade'));
         } catch (ExcecaoItemCarrinhoAusente) {
             throw new NotFoundHttpException;
         } catch (ExcecaoCarrinho $excecao) {
-            $request->session()->put(CarrinhoSessao::CHAVE_SESSAO, $itensAnteriores);
+            $this->carrinho->restaurar($itensAnteriores);
 
             return back()
                 ->withInput()
-                ->withErrors(['cart_items.'.$item => $excecao->getMessage()]);
+                ->withErrors(['itens_carrinho.'.$item => $excecao->getMessage()]);
         }
 
         return redirect()

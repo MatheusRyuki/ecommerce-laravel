@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Produto;
 use App\Models\ImagemProduto;
-use App\Models\User;
+use App\Models\Produto;
+use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -22,7 +22,7 @@ class AdminProdutoIndexTest extends TestCase
 
     public function test_usuario_comum_e_proibido(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = Usuario::factory()->create(['administrador' => false]);
 
         $this->actingAs($user)
             ->get(route('admin.produtos.index'))
@@ -31,7 +31,7 @@ class AdminProdutoIndexTest extends TestCase
 
     public function test_administrador_ve_estado_vazio(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.produtos.index'))
@@ -44,23 +44,23 @@ class AdminProdutoIndexTest extends TestCase
     public function test_administrador_ve_dados_preco_sku_e_capa(): void
     {
         Storage::fake('public');
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         $coverPath = 'products/cover-demo.png';
         Storage::disk('public')->put($coverPath, UploadedFile::fake()->image('cover-demo.png')->get());
 
         $produto = Produto::factory()->create([
-            'name' => 'Bolsa Demo Curso',
+            'nome' => 'Bolsa Demo Curso',
             'sku' => 'DEMO-0001',
-            'price' => '49.90',
-            'qty' => 12,
-            'colors' => ['Red', 'Yellow'],
+            'preco' => '49.90',
+            'quantidade' => 12,
+            'cores' => ['Vermelho', 'Amarelo'],
         ]);
 
         ImagemProduto::factory()->create([
-            'product_id' => $produto->id,
+            'produto_id' => $produto->id,
             'path' => $coverPath,
-            'position' => 0,
+            'posicao' => 0,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.produtos.index'));
@@ -73,17 +73,17 @@ class AdminProdutoIndexTest extends TestCase
         $response->assertSee('Vermelho');
         $response->assertSee('Amarelo');
         $response->assertSee(Storage::disk('public')->url($coverPath), false);
-        $response->assertDontSee($produto->description, false);
+        $response->assertDontSee($produto->descricao, false);
     }
 
     public function test_produtos_sao_ordenados_e_paginados_em_dezesseis(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
         $now = now();
 
         foreach (range(1, 16) as $index) {
             Produto::factory()->create([
-                'name' => 'Listed Product '.$index,
+                'nome' => 'Produto listado '.$index,
                 'sku' => sprintf('PAGE-%02d', $index),
                 'created_at' => $now->copy()->subMinutes(16 - $index),
                 'updated_at' => $now->copy()->subMinutes(16 - $index),
@@ -99,7 +99,7 @@ class AdminProdutoIndexTest extends TestCase
 
         $secondPage = $this->actingAs($admin)->get(route('admin.produtos.index', ['page' => 2]));
         $secondPage->assertOk();
-        $secondPage->assertSee('Listed Product 1');
+        $secondPage->assertSee('Produto listado 1');
         $secondPage->assertSee('PAGE-01');
         $secondPage->assertDontSee('PAGE-16');
     }
@@ -107,24 +107,24 @@ class AdminProdutoIndexTest extends TestCase
     public function test_cadastro_redireciona_a_listagem_com_status_e_produto_novo_primeiro(): void
     {
         Storage::fake('public');
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         Produto::factory()->create([
-            'name' => 'Older Product',
+            'nome' => 'Produto antigo',
             'sku' => 'OLD-1',
             'created_at' => now()->subHour(),
         ]);
 
         $this->actingAs($admin)
             ->post(route('admin.produtos.salvar'), [
-                'images' => [UploadedFile::fake()->image('cover.png', 20, 20)],
-                'name' => 'Fresh Product',
-                'price' => '10.00',
-                'colors' => ['Green'],
-                'short_description' => 'Newest item',
-                'qty' => 3,
+                'imagens' => [UploadedFile::fake()->image('cover.png', 20, 20)],
+                'nome' => 'Produto novo',
+                'preco' => '10.00',
+                'cores' => ['Verde'],
+                'descricao_curta' => 'Newest item',
+                'quantidade' => 3,
                 'sku' => 'fresh-1',
-                'description' => '<p>Newest item</p>',
+                'descricao' => '<p>Newest item</p>',
             ])
             ->assertRedirect(route('admin.produtos.index'))
             ->assertSessionHas('status', 'produto-criado');
@@ -133,19 +133,19 @@ class AdminProdutoIndexTest extends TestCase
             ->get(route('admin.produtos.index'))
             ->assertOk()
             ->assertSee('Produto cadastrado.')
-            ->assertSee('Fresh Product')
-            ->assertSee('Older Product')
+            ->assertSee('Produto novo')
+            ->assertSee('Produto antigo')
             ->getContent();
 
         $this->assertTrue(
-            strpos($html, 'Fresh Product') < strpos($html, 'Older Product'),
+            strpos($html, 'Produto novo') < strpos($html, 'Produto antigo'),
             'The newly created product should appear before older products.',
         );
     }
 
     public function test_administrador_ve_link_de_produtos_na_navegacao(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get(route('dashboard'))
@@ -156,7 +156,7 @@ class AdminProdutoIndexTest extends TestCase
 
     public function test_usuario_comum_nao_ve_link_de_produtos_na_navegacao(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = Usuario::factory()->create(['administrador' => false]);
 
         $this->actingAs($user)
             ->get(route('dashboard'))
@@ -166,13 +166,13 @@ class AdminProdutoIndexTest extends TestCase
 
     public function test_capa_ausente_usa_reserva(): void
     {
-        $admin = User::factory()->admin()->create();
-        Produto::factory()->create(['name' => 'No Image Product']);
+        $admin = Usuario::factory()->admin()->create();
+        Produto::factory()->create(['nome' => 'Produto sem imagem']);
 
         $this->actingAs($admin)
             ->get(route('admin.produtos.index'))
             ->assertOk()
             ->assertSee('Sem capa')
-            ->assertSee('No Image Product');
+            ->assertSee('Produto sem imagem');
     }
 }

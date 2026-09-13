@@ -1,6 +1,4 @@
-    <!--============================
-        FOOTER START
-    =============================-->
+    <!-- Início do rodapé -->
     <footer class="pt_100 pb_100">
         <div class="container">
             <div class="row">
@@ -14,12 +12,10 @@
                             <li><a href="#"><i class="fab fa-facebook-f" aria-hidden="true"></i></a></li>
                             <li><a href="#"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a></li>
                         </ul>
-                        <p>Copyright © 2025 All Rights Reserved by Freeit</p>
+                        <p>© 2025. Todos os direitos reservados por <span>Freeit</span>.</p>
                     </div>
                 </div>
             </div>
         </div>
     </footer>
-    <!--============================
-        FOOTER END
-    =============================-->
+    <!-- Fim do rodapé -->

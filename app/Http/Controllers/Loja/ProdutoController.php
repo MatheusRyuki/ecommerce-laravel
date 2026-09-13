@@ -8,7 +8,7 @@ use Illuminate\View\View;
 
 class ProdutoController extends Controller
 {
-    public function show(Produto $produto): View
+    public function exibir(Produto $produto): View
     {
         $produto->load('imagens');
 

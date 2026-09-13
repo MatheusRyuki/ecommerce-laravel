@@ -40,8 +40,8 @@
                                     <tbody>
                                         @foreach ($linhas as $linha)
                                             @php
-                                                $linhaErrorKey = 'cart_items.'.$linha->id;
-                                                $quantityValue = old('updating_item') === $linha->id ? old('quantity', $linha->quantidade) : $linha->quantidade;
+                                                $chaveErroLinha = 'itens_carrinho.'.$linha->id;
+                                                $valorQuantidade = old('item_em_atualizacao') === $linha->id ? old('quantidade', $linha->quantidade) : $linha->quantidade;
                                             @endphp
                                             <tr>
                                                 <td class="pro_img">
@@ -64,21 +64,21 @@
                                                     @endif
                                                 </td>
                                                 <td class="pro_select">
-                                                    <div class="cart-line-field">
-                                                        <span class="cart-line-field__label">{{ 'Quantidade' }}</span>
+                                                    <div class="campo-linha-carrinho">
+                                                        <span class="campo-linha-carrinho__rotulo">{{ 'Quantidade' }}</span>
                                                         <div>
                                                             @if ($linha->podeAlterarQuantidade())
-                                                                <form method="POST" action="{{ route('loja.carrinho.itens.atualizar', $linha->id) }}" class="cart-qty-form" id="cart-qty-form-{{ $linha->id }}">
+                                                                <form method="POST" action="{{ route('loja.carrinho.itens.atualizar', $linha->id) }}" class="formulario-qtd-carrinho" id="formulario-qtd-carrinho-{{ $linha->id }}">
                                                                     @csrf
                                                                     @method('PATCH')
-                                                                    <input type="hidden" name="updating_item" value="{{ $linha->id }}">
+                                                                    <input type="hidden" name="item_em_atualizacao" value="{{ $linha->id }}">
                                                                     <div class="quentity_btn">
                                                                         <button class="btn btn-danger minus" type="button" aria-label="{{ 'Diminuir quantidade' }}"><i class="fas fa-minus" aria-hidden="true"></i></button>
-                                                                        <input id="cart-qty-{{ $linha->id }}" type="number" name="quantity" min="1" step="1" required data-saved="{{ $linha->quantidade }}" value="{{ $quantityValue }}" aria-label="{{ 'Quantidade' }}">
+                                                                        <input id="qtd-carrinho-{{ $linha->id }}" type="number" name="quantidade" min="1" step="1" required data-salvo="{{ $linha->quantidade }}" value="{{ $valorQuantidade }}" aria-label="{{ 'Quantidade' }}">
                                                                         <button class="btn btn-success plus" type="button" aria-label="{{ 'Aumentar quantidade' }}"><i class="fas fa-plus" aria-hidden="true"></i></button>
                                                                     </div>
                                                                     <button type="submit" class="common_btn mt-2">{{ 'Atualizar' }}</button>
-                                                                    <div class="cart-qty-pending mt-2 d-none">
+                                                                    <div class="qtd-carrinho-pendente mt-2 d-none">
                                                                         @include('loja.partials.alert', ['type' => 'warning', 'message' => 'Quantidade ainda não salva', 'class' => 'mb-0'])
                                                                     </div>
                                                                 </form>
@@ -87,28 +87,28 @@
                                                                     <input type="text" value="{{ $linha->quantidade }}" readonly disabled aria-label="{{ 'Quantidade' }}">
                                                                 </div>
                                                             @endif
-                                                            @if ($errors->has($linhaErrorKey))
-                                                                @include('loja.partials.alert', ['type' => 'danger', 'message' => $errors->first($linhaErrorKey), 'class' => 'mt-2 mb-0'])
+                                                            @if ($errors->has($chaveErroLinha))
+                                                                @include('loja.partials.alert', ['type' => 'danger', 'message' => $errors->first($chaveErroLinha), 'class' => 'mt-2 mb-0'])
                                                             @endif
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td class="pro_tk">
-                                                    <dl class="cart-line-prices mb-0">
-                                                        <div class="cart-line-field">
-                                                            <dt class="cart-line-field__label">{{ 'Preço unitário' }}</dt>
+                                                    <dl class="precos-linha-carrinho mb-0">
+                                                        <div class="campo-linha-carrinho">
+                                                            <dt class="campo-linha-carrinho__rotulo">{{ 'Preço unitário' }}</dt>
                                                             <dd class="mb-0">{{ $linha->precoUnitarioFormatado() ?? '—' }}</dd>
                                                         </div>
-                                                        <div class="cart-line-field mt-2">
-                                                            <dt class="cart-line-field__label">Subtotal</dt>
+                                                        <div class="campo-linha-carrinho mt-2">
+                                                            <dt class="campo-linha-carrinho__rotulo">Subtotal</dt>
                                                             <dd class="mb-0">{{ $linha->subtotalFormatado() ?? '—' }}</dd>
                                                         </div>
                                                     </dl>
                                                 </td>
                                                 <td class="pro_icon">
-                                                    <div class="cart-line-field">
-                                                        <span class="cart-line-field__label">{{ 'Ação' }}</span>
-                                                        <form method="POST" action="{{ route('loja.carrinho.itens.remover', $linha->id) }}" id="cart-remove-form-{{ $linha->id }}">
+                                                    <div class="campo-linha-carrinho">
+                                                        <span class="campo-linha-carrinho__rotulo">{{ 'Ação' }}</span>
+                                                        <form method="POST" action="{{ route('loja.carrinho.itens.remover', $linha->id) }}" id="formulario-remover-carrinho-{{ $linha->id }}">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" aria-label="Remover">

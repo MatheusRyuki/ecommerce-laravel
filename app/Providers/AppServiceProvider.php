@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Cart\CarrinhoSessao;
-use App\Models\User;
+use App\Models\Usuario;
 use App\Services\AtualizadorProduto;
 use App\Services\CriadorProduto;
 use App\Services\ExcluirProduto;
@@ -30,8 +30,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('acessar-admin', function (User $user): bool {
-            return $user->is_admin === true;
+        Gate::define('acessar-admin', function (Usuario $usuario): bool {
+            return $usuario->administrador === true;
         });
 
         View::composer('loja.partials.header', function (\Illuminate\View\View $view): void {

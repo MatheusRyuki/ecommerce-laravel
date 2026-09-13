@@ -2,19 +2,31 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import '../css/formulario-produto-admin.css';
 
-const EMPTY_HTML = ['<p><br></p>', '<p></p>', ''];
+const HTML_VAZIO = ['<p><br></p>', '<p></p>', ''];
+
+const ROTULOS_BARRA = {
+    bold: 'Negrito',
+    italic: 'Itálico',
+    underline: 'Sublinhado',
+    strike: 'Riscado',
+    link: 'Inserir link',
+    clean: 'Limpar formatação',
+    'list-ordered': 'Lista numerada',
+    'list-bullet': 'Lista com marcadores',
+};
 
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('admin-product-form');
-    const descriptionField = document.getElementById('description');
-    const editorRoot = document.getElementById('description-editor');
+    const form = document.getElementById('formulario-produto-admin');
+    const campoDescricao = document.getElementById('descricao');
+    const raizEditor = document.getElementById('editor-descricao');
 
-    if (!form || !descriptionField || !editorRoot) {
+    if (!form || !campoDescricao || !raizEditor) {
         return;
     }
 
-    const quill = new Quill(editorRoot, {
+    const quill = new Quill(raizEditor, {
         theme: 'snow',
+        placeholder: 'Escreva a descrição do produto',
         modules: {
             toolbar: [
                 ['bold', 'italic', 'underline', 'strike'],
@@ -25,30 +37,53 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     });
 
-    const syncDescription = () => {
-        const text = quill.getText().replace(/\u00a0/g, ' ').trim();
+    const barra = raizEditor.previousElementSibling;
 
-        if (text === '') {
-            descriptionField.value = '';
+    if (barra?.classList.contains('ql-toolbar')) {
+        barra.querySelectorAll('button, .ql-picker').forEach((elemento) => {
+            const formato = [...elemento.classList]
+                .find((classe) => classe.startsWith('ql-') && classe !== 'ql-picker')
+                ?.slice(3);
+
+            if (!formato) {
+                return;
+            }
+
+            const valor = elemento.getAttribute('value') || elemento.dataset.value;
+            const chave = valor ? `${formato}-${valor}` : formato;
+            const rotulo = ROTULOS_BARRA[chave] ?? ROTULOS_BARRA[formato];
+
+            if (rotulo) {
+                elemento.setAttribute('aria-label', rotulo);
+                elemento.setAttribute('title', rotulo);
+            }
+        });
+    }
+
+    const sincronizarDescricao = () => {
+        const texto = quill.getText().replace(/\u00a0/g, ' ').trim();
+
+        if (texto === '') {
+            campoDescricao.value = '';
             return;
         }
 
         const html = quill.root.innerHTML.trim();
-        descriptionField.value = EMPTY_HTML.includes(html) ? '' : html;
+        campoDescricao.value = HTML_VAZIO.includes(html) ? '' : html;
     };
 
-    const initialHtml = descriptionField.value.trim();
+    const htmlInicial = campoDescricao.value.trim();
 
-    if (initialHtml !== '') {
-        quill.clipboard.dangerouslyPasteHTML(initialHtml);
+    if (htmlInicial !== '') {
+        quill.clipboard.dangerouslyPasteHTML(htmlInicial);
     }
 
-    quill.on('text-change', syncDescription);
-    syncDescription();
+    quill.on('text-change', sincronizarDescricao);
+    sincronizarDescricao();
 
     form.addEventListener('submit', () => {
-        syncDescription();
+        sincronizarDescricao();
     });
 
-    editorRoot._quill = quill;
+    raizEditor._quill = quill;
 });

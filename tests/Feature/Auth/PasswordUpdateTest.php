@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -13,7 +13,7 @@ class PasswordUpdateTest extends TestCase
 
     public function test_senha_pode_ser_atualizada(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this
             ->actingAs($user)
@@ -33,7 +33,7 @@ class PasswordUpdateTest extends TestCase
 
     public function test_senha_atual_correta_e_obrigatoria_para_atualizar(): void
     {
-        $user = User::factory()->create();
+        $user = Usuario::factory()->create();
 
         $response = $this
             ->actingAs($user)

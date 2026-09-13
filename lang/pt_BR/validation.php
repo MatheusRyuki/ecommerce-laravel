@@ -166,19 +166,20 @@ return [
 
     'attributes' => [
         'name' => 'nome',
+        'nome' => 'nome',
         'email' => 'e-mail',
         'password' => 'senha',
         'password_confirmation' => 'confirmação da senha',
         'current_password' => 'senha atual',
-        'price' => 'preço',
+        'preco' => 'preço',
         'sku' => 'SKU',
-        'qty' => 'estoque',
-        'quantity' => 'quantidade',
-        'color' => 'cor',
-        'colors' => 'cores',
-        'images' => 'imagens',
-        'description' => 'descrição',
-        'short_description' => 'descrição curta',
+        'quantidade' => 'quantidade',
+        'cor' => 'cor',
+        'cores' => 'cores',
+        'imagens' => 'imagens',
+        'descricao' => 'descrição',
+        'descricao_curta' => 'descrição curta',
+        'produto_id' => 'produto',
     ],
 
 ];

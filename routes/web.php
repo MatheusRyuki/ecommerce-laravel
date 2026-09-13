@@ -10,7 +10,7 @@ use App\Models\Produto;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', CatalogoController::class)->name('inicio');
-Route::get('/produtos/{produto}', [ProdutoLojaController::class, 'show'])->name('loja.produtos.exibir');
+Route::get('/produtos/{produto}', [ProdutoLojaController::class, 'exibir'])->name('loja.produtos.exibir');
 Route::get('/carrinho', [CarrinhoController::class, 'index'])->name('carrinho');
 Route::post('/carrinho/itens', [CarrinhoController::class, 'adicionarItem'])->name('loja.carrinho.itens.adicionar')->block(10, 10);
 Route::patch('/carrinho/itens/{item}', [CarrinhoController::class, 'atualizarItem'])->name('loja.carrinho.itens.atualizar')->block(10, 10);
@@ -29,11 +29,11 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'can:acessar-admin'])->group(function () {
     Route::get('/admin/painel', DashboardController::class)->name('admin.painel');
     Route::get('/admin/produtos', [ProdutoController::class, 'index'])->name('admin.produtos.index');
-    Route::get('/admin/produtos/criar', [ProdutoController::class, 'create'])->name('admin.produtos.criar');
-    Route::post('/admin/produtos', [ProdutoController::class, 'store'])->name('admin.produtos.salvar');
-    Route::get('/admin/produtos/{produto}/editar', [ProdutoController::class, 'edit'])->name('admin.produtos.editar');
-    Route::patch('/admin/produtos/{produto}', [ProdutoController::class, 'update'])->name('admin.produtos.atualizar');
-    Route::delete('/admin/produtos/{produto}', [ProdutoController::class, 'destroy'])->name('admin.produtos.excluir');
+    Route::get('/admin/produtos/criar', [ProdutoController::class, 'criar'])->name('admin.produtos.criar');
+    Route::post('/admin/produtos', [ProdutoController::class, 'salvar'])->name('admin.produtos.salvar');
+    Route::get('/admin/produtos/{produto}/editar', [ProdutoController::class, 'editar'])->name('admin.produtos.editar');
+    Route::patch('/admin/produtos/{produto}', [ProdutoController::class, 'atualizar'])->name('admin.produtos.atualizar');
+    Route::delete('/admin/produtos/{produto}', [ProdutoController::class, 'excluir'])->name('admin.produtos.excluir');
     Route::redirect('/admin/dashboard', '/admin/painel');
     Route::redirect('/admin/products', '/admin/produtos');
     Route::redirect('/admin/products/create', '/admin/produtos/criar');

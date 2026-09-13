@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +18,7 @@ class AdminProdutoCreateTest extends TestCase
 
     public function test_usuario_comum_e_proibido(): void
     {
-        $user = User::factory()->create(['is_admin' => false]);
+        $user = Usuario::factory()->create(['administrador' => false]);
 
         $this->actingAs($user)
             ->get(route('admin.produtos.criar'))
@@ -27,19 +27,19 @@ class AdminProdutoCreateTest extends TestCase
 
     public function test_administrador_pode_ver_formulario_de_cadastro(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         $response = $this->actingAs($admin)->get(route('admin.produtos.criar'));
 
         $response->assertOk();
-        $response->assertSee('name="images[]"', false);
-        $response->assertSee('name="name"', false);
-        $response->assertSee('name="price"', false);
-        $response->assertSee('name="colors[]"', false);
-        $response->assertSee('name="short_description"', false);
-        $response->assertSee('name="qty"', false);
+        $response->assertSee('name="imagens[]"', false);
+        $response->assertSee('name="nome"', false);
+        $response->assertSee('name="preco"', false);
+        $response->assertSee('name="cores[]"', false);
+        $response->assertSee('name="descricao_curta"', false);
+        $response->assertSee('name="quantidade"', false);
         $response->assertSee('name="sku"', false);
-        $response->assertSee('name="description"', false);
+        $response->assertSee('name="descricao"', false);
         $response->assertSee('Descrição curta');
         $response->assertSee('Voltar');
         $response->assertSee(route('admin.produtos.index'), false);
@@ -50,7 +50,7 @@ class AdminProdutoCreateTest extends TestCase
 
     public function test_administrador_ve_link_de_cadastro_no_painel(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = Usuario::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.painel'))

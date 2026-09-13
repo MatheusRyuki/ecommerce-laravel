@@ -30,24 +30,24 @@ class ProdutoController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function criar(): View
     {
         return view('admin.produtos.criar', [
             'cores' => CoresProduto::todas(),
         ]);
     }
 
-    public function store(RequisicaoCadastroProduto $request, CriadorProduto $criador): RedirectResponse
+    public function salvar(RequisicaoCadastroProduto $request, CriadorProduto $criador): RedirectResponse
     {
         try {
-            $criador->criar($request->validated(), $request->file('images', []));
+            $criador->criar($request->validated(), $request->file('imagens', []));
         } catch (UniqueConstraintViolationException) {
             return back()
                 ->withErrors(['sku' => 'Este SKU já está em uso.'])
                 ->withInput();
         } catch (RuntimeException $excecao) {
             return back()
-                ->withErrors(['images' => $excecao->getMessage()])
+                ->withErrors(['imagens' => $excecao->getMessage()])
                 ->withInput();
         }
 
@@ -56,7 +56,7 @@ class ProdutoController extends Controller
             ->with('status', 'produto-criado');
     }
 
-    public function edit(Produto $produto): View
+    public function editar(Produto $produto): View
     {
         $produto->load('imagens');
 
@@ -66,16 +66,16 @@ class ProdutoController extends Controller
         ]);
     }
 
-    public function update(RequisicaoAtualizacaoProduto $request, Produto $produto, AtualizadorProduto $atualizador): RedirectResponse
+    public function atualizar(RequisicaoAtualizacaoProduto $request, Produto $produto, AtualizadorProduto $atualizador): RedirectResponse
     {
-        $atributos = $request->safe()->except(['images', 'remove_image_ids']);
+        $atributos = $request->safe()->except(['imagens', 'ids_imagens_remover']);
 
         try {
             $atualizador->atualizar(
                 $produto,
                 $atributos,
                 $request->novosArquivosImagem(),
-                $request->validated('remove_image_ids') ?? [],
+                $request->validated('ids_imagens_remover') ?? [],
             );
         } catch (UniqueConstraintViolationException) {
             return back()
@@ -83,7 +83,7 @@ class ProdutoController extends Controller
                 ->withInput();
         } catch (RuntimeException $excecao) {
             return back()
-                ->withErrors(['images' => $excecao->getMessage()])
+                ->withErrors(['imagens' => $excecao->getMessage()])
                 ->withInput();
         }
 
@@ -92,7 +92,7 @@ class ProdutoController extends Controller
             ->with('status', 'produto-atualizado');
     }
 
-    public function destroy(Produto $produto, ExcluirProduto $excluir): RedirectResponse
+    public function excluir(Produto $produto, ExcluirProduto $excluir): RedirectResponse
     {
         $pendencias = $excluir->excluir($produto);
 

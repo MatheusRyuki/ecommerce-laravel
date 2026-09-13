@@ -20,7 +20,7 @@ class RequisicaoAtualizacaoItemCarrinho extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => ['required', 'integer', 'min:1'],
+            'quantidade' => ['required', 'integer', 'min:1'],
         ];
     }
 
@@ -28,12 +28,12 @@ class RequisicaoAtualizacaoItemCarrinho extends FormRequest
     {
         $item = (string) $this->route('item');
 
-        if ($validator->errors()->has('quantity')) {
+        if ($validator->errors()->has('quantidade')) {
             $validator->errors()->add(
-                'cart_items.'.$item,
-                $validator->errors()->first('quantity')
+                'itens_carrinho.'.$item,
+                $validator->errors()->first('quantidade')
             );
-            $validator->errors()->forget('quantity');
+            $validator->errors()->forget('quantidade');
         }
 
         throw new ValidationException($validator);

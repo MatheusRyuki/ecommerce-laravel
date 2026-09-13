@@ -84,7 +84,7 @@ Administração:
 O `DatabaseSeeder` **não** cria o administrador. Use:
 
 ```bash
-./vendor/bin/sail artisan db:seed --class=AdminUserSeeder
+./vendor/bin/sail artisan db:seed --class=AdministradorSeeder
 ```
 
 Variáveis no `.env` / `.env.example`: `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
@@ -97,10 +97,10 @@ Variáveis no `.env` / `.env.example`: `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSW
 ## Demonstração da galeria
 
 ```bash
-./vendor/bin/sail artisan db:seed --class=DemoGalleryProductSeeder
+./vendor/bin/sail artisan db:seed --class=ProdutoGaleriaDemoSeeder
 ```
 
-Cria **Bolsa Galeria Demo**, SKU `DEMO-GALLERY-01`, R$ 89,90, estoque 20, cores Azul e Verde (valores gravados `Blue` e `Green`), com três fotos. As origens versionáveis estão em `public/frontend/images/product_slide_show_{1,2,3}.jpg`. O seeder é idempotente: se o SKU já existir, não altera o registro.
+Cria **Bolsa Galeria Demo**, SKU `DEMO-GALLERY-01`, R$ 89,90, estoque 20, cores Azul e Verde, com três fotos. As origens versionáveis estão em `public/frontend/images/product_slide_show_{1,2,3}.jpg`. O seeder é idempotente: se o SKU já existir, não altera o registro.
 
 Outros produtos locais (por exemplo a Bolsa Demo Editada, SKU `DEMO-0001`) **não** são criados por esse seeder e devem ser preservados no banco de desenvolvimento. Após um clone limpo, só a galeria demo reaparece com o comando acima.
 
