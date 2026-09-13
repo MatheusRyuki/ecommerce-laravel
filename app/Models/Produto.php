@@ -6,8 +6,10 @@ use App\Support\CoresProduto;
 use App\Support\Dinheiro;
 use App\Support\DiscoArquivosProduto;
 use Database\Factories\ProdutoFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Produto extends Model
@@ -27,6 +29,8 @@ class Produto extends Model
         'descricao_curta',
         'quantidade',
         'sku',
+        'publicado',
+        'categoria_id',
         'descricao',
     ];
 
@@ -39,7 +43,17 @@ class Produto extends Model
             'preco' => 'decimal:2',
             'cores' => 'array',
             'quantidade' => 'integer',
+            'publicado' => 'boolean',
+            'categoria_id' => 'integer',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Categoria, $this>
+     */
+    public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(Categoria::class);
     }
 
     /**
@@ -66,9 +80,23 @@ class Produto extends Model
         return $capa->url();
     }
 
+    public function estaPublicado(): bool
+    {
+        return $this->publicado === true;
+    }
+
     public function estaDisponivel(): bool
     {
-        return $this->quantidade > 0;
+        return $this->estaPublicado() && $this->quantidade > 0;
+    }
+
+    /**
+     * @param  Builder<Produto>  $consulta
+     * @return Builder<Produto>
+     */
+    public function scopePublicados(Builder $consulta): Builder
+    {
+        return $consulta->where('publicado', true);
     }
 
     public function precoFormatado(): string

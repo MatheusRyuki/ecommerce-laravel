@@ -2,13 +2,13 @@
 
 A suíte em `testes/e2e` exercita o e-commerce **pelo navegador** contra Laravel e MySQL reais do ambiente **E2E**, isolado do app em `http://localhost:8002` e do banco `ecommerce`.
 
-Os testes PHPUnit em `tests/` continuam no SQLite em memória. Não usam `ecommerce` nem `ecommerce_e2e`.
+Os testes PHPUnit em `tests/Feature` e `tests/Unit` usam SQLite em memória. Não usam `ecommerce`. A suíte `phpunit.concorrencia.xml` usa o MySQL `ecommerce_e2e` (wipe só desse banco).
 
-## Fora de escopo (não implementado no produto)
+## Escopo do produto (E2E)
 
-Checkout, pagamento, frete, impostos, descontos e persistência do carrinho por conta. `Usuario` **não** implementa `MustVerifyEmail`: o painel Breeze abre sem exigir verificação; a tela `/verify-email` e o reenvio existem e são o fluxo atual.
+Checkout **sem pagamento**, frete por faixa de CEP, cupom, carrinho persistente após login, `MustVerifyEmail`. Cadastro cai em `/verify-email`. O admin recriado por `e2e:reiniciar` nasce verificado **somente** no banco E2E (não altera o admin de `ecommerce`).
 
-A loja pública tem Início, carrinho, Entrar/Criar conta (visitante) ou Conta (autenticado). Não há links de navegação só para `#`. Após o login, administradores vão para `/admin/produtos` e demais usuários para `/dashboard`. `/admin/painel` encaminha à listagem.
+A loja pública tem Início, categorias, Favoritos, Pedidos, carrinho, Entrar/Criar conta (visitante) ou Conta (autenticado). Após o login, administradores verificados vão para `/admin/produtos` e demais usuários para `/dashboard`. `/admin/painel` encaminha à listagem.
 
 ## Isolamento
 
@@ -90,9 +90,9 @@ Pré-condições: `./scripts/e2e/preparar-ambiente.sh` já rodou; `artisan serve
 | --- | --- | --- | --- |
 | 1 | — | Abrir `/`. | “Ainda não há produtos na loja.” |
 | 2 | `admin@e2e.test` + senha do `.env.e2e` | `/login` → Entrar → Produtos → Cadastrar. JPEG/PNG, nome, preço `15,00`, cor Verde, SKU `INT-MANUAL`, estoque 6, descrição no Quill. | Lista com o SKU; “Produto cadastrado.” |
-| 3 | outra janela anônima | Abrir `/`, clicar no cartão, adicionar, no carrinho mudar quantidade para 2 e Atualizar. | Total **R$ 30,00**. “Finalizar compra” desabilitado. |
+| 3 | outra janela anônima | Abrir `/`, clicar no cartão, adicionar, no carrinho mudar quantidade para 2 e Atualizar. | Total **R$ 30,00**. “Revisar pedido” só após login verificado, endereço e cobertura de frete. |
 | 4 | admin | Editar o produto: preço `18,50`, salvar. Recarregar a vitrine e o carrinho do visitante. | Nome/preço novos; subtotal **R$ 37,00**. |
-| 5 | visitante | `/register` senha curta e confirmação divergente; depois cadastro válido. | Erros de senha; depois `/dashboard`. |
+| 5 | visitante | `/register` senha curta e confirmação divergente; depois cadastro válido. | Erros de senha; depois `/verify-email`. |
 | 6 | conta de teste | `/forgot-password` → ver `storage/e2e/correio/mensagens.log` → abrir o link → redefinir. Abrir o mesmo link de novo. | Senha nova funciona; segundo uso rejeita o token. |
 | 7 | `/login` com “Lembrar de mim” | Nas ferramentas de desenvolvedor, apagar só o cookie `e2e_sessao`, manter `remember_web_*`, abrir `/perfil`. | Continua autenticado. |
 | 8 | `/perfil` | Excluir conta: Cancelar; senha errada; senha certa (só conta de teste). | Modal fecha; erro de senha; depois `/` e login falha. |
@@ -101,22 +101,23 @@ Pré-condições: `./scripts/e2e/preparar-ambiente.sh` já rodou; `artisan serve
 
 ## Matriz de cobertura (automação)
 
-Há **33 cenários únicos** (`test()` em `testes/e2e/*.spec.ts`). Sem retry. Tags: `@principal` (fluxos de autenticação, CRUD admin, galeria, carrinho principal, integrado e foco do modal) e `@somente-mobile` (menu da loja em emulação Pixel 5).
+Há **38 cenários únicos** (`test()` em `testes/e2e/*.spec.ts`). Sem retry. Tags: `@principal` (fluxos de autenticação, CRUD admin, galeria, carrinho principal, integrado, jornada de compra e foco do modal) e `@somente-mobile` (menu da loja em emulação Pixel 5).
 
 | Arquivo | Cenários únicos | Desktop (3 navegadores) | Emulação mobile |
 | --- | --- | --- | --- |
-| `isolamento.spec.ts` | 1 (diagnóstico HTTP vs 8002) | 3 | — |
-| `autenticacao.spec.ts` | 3 (cadastro, login/logout, lembrar) | 9 | 2 (`@principal`) |
-| `perfil.spec.ts` | 4 (perfil, senha, exclusão, verify-email + confirm-password) | 12 | — |
-| `recuperacao-senha.spec.ts` | 2 (link local + token inválido/reusado) | 6 | — |
-| `permissoes.spec.ts` | 3 (visitante, comum 403, admin) | 9 | — |
-| `admin-produtos.spec.ts` | 4 (CRUD, validações/Quill/imagens, paginação 15) | 12 | 2 (`@principal`) |
-| `vitrine.spec.ts` | 3 (vazio/ordem, galeria/sanitização, paginação 12) | 9 | 1 (`@principal`) |
-| `carrinho.spec.ts` | 8 (cores/totais, estoque, redução, exclusão, abas, autenticado, +/−, qty 0 e 1,5 nativa) | 24 | 2 (`@principal`) |
-| `fluxo-integrado.spec.ts` | 1 (admin UI → visitante → carrinho → alteração admin) | 3 | 1 (`@principal`) |
-| `navegacao.spec.ts` | 4 (teclado produto/carrinho, links `#` + teclado login, celular, modal Escape/Cancelar + foco) | 9 (sem `@somente-mobile`) | 2 (`@principal` + `@somente-mobile`) |
+| `isolamento.spec.ts` | 1 | 3 | — |
+| `autenticacao.spec.ts` | 4 | 12 | 2 (`@principal`) |
+| `perfil.spec.ts` | 4 | 12 | — |
+| `recuperacao-senha.spec.ts` | 2 | 6 | — |
+| `permissoes.spec.ts` | 3 | 9 | — |
+| `admin-produtos.spec.ts` | 5 | 15 | 2 (`@principal`) |
+| `vitrine.spec.ts` | 3 | 9 | 1 (`@principal`) |
+| `carrinho.spec.ts` | 9 | 27 | 3 (`@principal`) |
+| `fluxo-integrado.spec.ts` | 1 | 3 | 1 (`@principal`) |
+| `jornada-compra.spec.ts` | 1 | 3 | 1 (`@principal`) |
+| `navegacao.spec.ts` | 5 | 12 (sem `@somente-mobile`) | 2 (`@principal` + `@somente-mobile`) |
 
-Execuções por `npm run teste:e2e`: **32 × Chromium + 32 × Firefox + 32 × WebKit + 10 × mobile = 106**. Quantidade 0/fracionária no servidor continua coberta pelo PHPUnit (`LojaCarrinhoMutacaoTest`).
+Execuções por `npm run teste:e2e`: **37 × Chromium + 37 × Firefox + 37 × WebKit + 12 × mobile**. Quantidade 0/fracionária no servidor continua coberta pelo PHPUnit (`LojaCarrinhoMutacaoTest`).
 
 Preparação: `e2e:reiniciar` no `beforeEach` (ou no próprio teste quando usa `--com-catalogo`). Não é um teste extra.
 

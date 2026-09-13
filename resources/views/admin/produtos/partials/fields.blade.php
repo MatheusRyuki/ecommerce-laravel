@@ -14,6 +14,30 @@
     <x-erro-campo class="mt-2" :messages="$errors->get('preco')" />
 </div>
 
+<div>
+    <label for="categoria_id" class="block text-sm font-medium text-gray-700">Categoria</label>
+    <select id="categoria_id" name="categoria_id" class="{{ $classeCampo }}">
+        <option value="">Sem categoria</option>
+        @foreach ($categorias ?? [] as $categoria)
+            <option value="{{ $categoria->id }}" @selected((string) old('categoria_id', $valorCategoria ?? '') === (string) $categoria->id)>{{ $categoria->nome }}</option>
+        @endforeach
+    </select>
+    <x-erro-campo class="mt-2" :messages="$errors->get('categoria_id')" />
+</div>
+
+<label class="inline-flex items-center gap-2 text-sm text-gray-700">
+    @unless ($forcarOculto ?? false)
+        <input type="hidden" name="publicado" value="0">
+    @endunless
+    <input type="checkbox" name="publicado" value="1" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+        @checked(old('publicado', $publicado ?? false)) @disabled($forcarOculto ?? false)>
+    <span>Publicado na loja</span>
+</label>
+@if ($forcarOculto ?? false)
+    <input type="hidden" name="publicado" value="0">
+    <p class="text-xs text-gray-500">A cópia nasce oculta até você publicá-la na edição.</p>
+@endif
+
 <fieldset class="space-y-2">
     <legend class="block text-sm font-medium text-gray-700">Cores</legend>
     <div class="flex flex-wrap gap-3">
@@ -35,11 +59,17 @@
     <x-erro-campo class="mt-2" :messages="$errors->get('descricao_curta')" />
 </div>
 
-<div>
-    <label for="quantidade" class="block text-sm font-medium text-gray-700">Estoque</label>
-    <input id="quantidade" name="quantidade" type="number" value="{{ $valorQuantidade }}" inputmode="numeric" step="1" min="0" class="{{ $classeCampo }}">
-    <x-erro-campo class="mt-2" :messages="$errors->get('quantidade')" />
-</div>
+    @if ($somenteLeituraEstoque ?? false)
+        <span class="block text-sm font-medium text-gray-700">Estoque</span>
+        <p class="mt-1 text-sm text-gray-800">{{ $valorQuantidade }}</p>
+        @isset($produtoEstoque)
+            <a href="{{ route('admin.estoque.exibir', $produtoEstoque) }}" class="text-sm font-semibold text-blue-600">Movimentar estoque</a>
+        @endisset
+    @else
+        <label for="quantidade" class="block text-sm font-medium text-gray-700">Estoque</label>
+        <input id="quantidade" name="quantidade" type="number" value="{{ $valorQuantidade }}" inputmode="numeric" step="1" min="0" class="{{ $classeCampo }}">
+        <x-erro-campo class="mt-2" :messages="$errors->get('quantidade')" />
+    @endif
 
 <div>
     <label for="sku" class="block text-sm font-medium text-gray-700">{{ 'SKU' }}</label>

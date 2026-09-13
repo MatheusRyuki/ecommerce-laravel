@@ -23,8 +23,11 @@ class RequisicaoCadastroProduto extends FormRequest
      */
     public function rules(): array
     {
+        $imagensObrigatorias = ! $this->filled('produto_origem_id');
+
         return array_merge(
-            RegrasFormularioProduto::novasImagens(obrigatorio: true),
+            ['produto_origem_id' => ['nullable', 'integer', 'exists:produtos,id']],
+            RegrasFormularioProduto::novasImagens(obrigatorio: $imagensObrigatorias),
             RegrasFormularioProduto::regrasCampos(),
         );
     }

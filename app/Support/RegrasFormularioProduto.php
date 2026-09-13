@@ -23,12 +23,17 @@ final class RegrasFormularioProduto
                 'descricao' => app(SanitizadorDescricaoProduto::class)->sanitizar($request->descricao),
             ]);
         }
+
+        $request->merge([
+            'publicado' => $request->boolean('publicado'),
+            'categoria_id' => $request->filled('categoria_id') ? $request->categoria_id : null,
+        ]);
     }
 
     /**
      * @return array<string, mixed>
      */
-    public static function regrasCampos(?Produto $produtoIgnoradoNoSku = null): array
+    public static function regrasCampos(?Produto $produtoIgnoradoNoSku = null, bool $incluirQuantidade = true): array
     {
         $skuUnico = Rule::unique('produtos', 'sku');
 
@@ -36,14 +41,15 @@ final class RegrasFormularioProduto
             $skuUnico = $skuUnico->ignore($produtoIgnoradoNoSku);
         }
 
-        return [
+        $regras = [
             'nome' => ['required', 'string', 'max:255'],
             'preco' => ['required', 'numeric', 'min:0', 'decimal:0,2', 'max:99999999.99'],
             'cores' => ['required', 'array', 'min:1', 'distinct'],
             'cores.*' => ['required', 'string', Rule::in(CoresProduto::todas())],
             'descricao_curta' => ['required', 'string', 'max:500'],
-            'quantidade' => ['required', 'integer', 'min:0', 'max:'.self::QUANTIDADE_MAXIMA],
             'sku' => ['required', 'string', 'max:100', $skuUnico],
+            'publicado' => ['sometimes', 'boolean'],
+            'categoria_id' => ['nullable', 'integer', 'exists:categorias,id'],
             'descricao' => [
                 'required',
                 'string',
@@ -55,6 +61,12 @@ final class RegrasFormularioProduto
                 },
             ],
         ];
+
+        if ($incluirQuantidade) {
+            $regras['quantidade'] = ['required', 'integer', 'min:0', 'max:'.self::QUANTIDADE_MAXIMA];
+        }
+
+        return $regras;
     }
 
     /**

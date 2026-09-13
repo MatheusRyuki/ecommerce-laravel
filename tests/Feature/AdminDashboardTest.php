@@ -60,7 +60,7 @@ class AdminDashboardTest extends TestCase
             'administrador' => true,
         ]);
 
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.notice', absolute: false));
         $this->assertAuthenticated();
 
         $user = Usuario::query()->where('email', 'visitante@example.test')->first();

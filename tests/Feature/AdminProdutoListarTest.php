@@ -164,6 +164,19 @@ class AdminProdutoListarTest extends TestCase
             ->assertDontSee(route('admin.produtos.listar'), false);
     }
 
+    public function test_busca_filtra_por_nome_ou_sku(): void
+    {
+        $admin = Usuario::factory()->admin()->create();
+        Produto::factory()->create(['nome' => 'Bolsa Alfa', 'sku' => 'ALFA-1']);
+        Produto::factory()->create(['nome' => 'Mochila Beta', 'sku' => 'BETA-1']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.produtos.listar', ['q' => 'ALFA']))
+            ->assertOk()
+            ->assertSee('Bolsa Alfa')
+            ->assertDontSee('Mochila Beta');
+    }
+
     public function test_capa_ausente_usa_reserva(): void
     {
         $admin = Usuario::factory()->admin()->create();

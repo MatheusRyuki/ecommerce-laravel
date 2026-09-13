@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\ImagemProduto;
 use App\Models\Produto;
+use App\Models\Usuario;
 use App\Support\CoresProduto;
 use App\Support\DiscoArquivosProduto;
 use App\Support\IsolamentoE2e;
@@ -33,6 +34,10 @@ class ReiniciarAmbienteE2eCommand extends Command
         $this->call('db:seed', [
             '--class' => AdministradorSeeder::class,
             '--force' => true,
+        ]);
+
+        Usuario::query()->where('administrador', true)->whereNull('email_verified_at')->update([
+            'email_verified_at' => now(),
         ]);
 
         $extras = (int) $this->option('com-catalogo');

@@ -51,6 +51,7 @@ class AdminProdutoUpdateTest extends TestCase
             'quantidade' => $produto->quantidade,
             'sku' => $produto->sku,
             'descricao' => $produto->descricao,
+            'publicado' => '1',
         ], $overrides);
     }
 
@@ -131,7 +132,7 @@ class AdminProdutoUpdateTest extends TestCase
         $this->assertDatabaseHas('produtos', [
             'id' => $produto->id,
             'sku' => 'DEMO-0001',
-            'quantidade' => 20,
+            'quantidade' => 12,
         ]);
         $this->assertSame(1, $produto->imagens()->count());
         Storage::disk('public')->assertExists('products/cover.png');

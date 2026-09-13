@@ -82,7 +82,7 @@ export async function entrar(page: Page, email: string, senha = senhaPadrao, lem
     await page.getByLabel('Lembrar de mim').check();
   }
   await page.locator('form').filter({ has: page.getByLabel('E-mail') }).getByRole('button', { name: 'Entrar' }).click();
-  await expect(page).toHaveURL(/\/(dashboard|admin\/produtos|perfil)/);
+  await expect(page).toHaveURL(/\/(dashboard|admin\/produtos|perfil|verify-email)/);
 }
 
 export async function entrarComoAdmin(page: Page): Promise<void> {
@@ -159,6 +159,14 @@ export function ultimoLinkRedefinicao(): string {
   }
 
   return match[0].replace(/&amp;/g, '&');
+}
+
+export async function concluirVerificacao(page: Page): Promise<void> {
+  const link = ultimoLinkVerificacao();
+  if (!link) {
+    throw new Error('Link de verificação não encontrado no correio.');
+  }
+  await page.goto(link);
 }
 
 export function ultimoLinkVerificacao(): string | null {

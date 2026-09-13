@@ -25,7 +25,16 @@ class ProdutoFactory extends Factory
             'descricao_curta' => fake()->sentence(),
             'quantidade' => 10,
             'sku' => strtoupper(fake()->unique()->bothify('SKU-####??')),
+            'publicado' => true,
+            'categoria_id' => null,
             'descricao' => '<p>'.fake()->sentence().'</p>',
         ];
+    }
+
+    public function oculto(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'publicado' => false,
+        ]);
     }
 }

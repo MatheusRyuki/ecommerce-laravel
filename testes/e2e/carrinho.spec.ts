@@ -8,6 +8,7 @@ import {
   entrarComoAdmin,
   expectTotal,
   reiniciar,
+  sairDaConta,
   senhaPadrao,
 } from './suporte/aplicacao';
 
@@ -21,6 +22,7 @@ async function prepararProduto(page: Parameters<typeof entrarComoAdmin>[0], extr
     cores: extra?.cores ?? ['Vermelho', 'Amarelo'],
     arquivos: [arquivoFixture('capa.jpg')],
   });
+  await sairDaConta(page, 'Administrador E2E');
   await page.goto('/');
   await page.getByRole('link', { name: extra?.sku === 'CARO' ? 'Produto caro' : 'Bolsa carrinho' }).first().click();
 }
@@ -58,7 +60,7 @@ test.describe('Carrinho', () => {
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
     await expect(page.getByText('Cor: Amarelo')).toBeVisible();
     await expectTotal(page, 'R$ 199,60');
-    await expect(page.getByText('Pagamento ainda não está disponível.')).toBeVisible();
+    await expect(page.getByText(/Conclua login|Nenhum pagamento/)).toBeVisible();
     await expect(page.locator('.checkout-indisponivel')).toHaveAttribute('aria-disabled', 'true');
   });
 
@@ -260,17 +262,24 @@ test.describe('Carrinho', () => {
     expect(rotuloVazio!.x).toBeLessThan(valorVazio!.x);
     expect(Math.abs((rotuloVazio!.y + rotuloVazio!.height / 2) - (valorVazio!.y + valorVazio!.height / 2))).toBeLessThan(4);
 
-    await prepararProduto(page, {
+    await entrarComoAdmin(page);
+    await cadastrarProdutoUi(page, {
+      nome: 'Bolsa carrinho',
       sku: 'ALINHA-01',
       cores: ['Verde'],
+      arquivos: [arquivoFixture('capa.jpg')],
     });
-    await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
     await cadastrarProdutoUi(page, {
       nome: 'Produto com nome bastante longo para quebrar o alinhamento da linha',
       sku: 'ALINHA-02',
       preco: '12.00',
       arquivos: [arquivoFixture('capa.jpg')],
     });
+    await sairDaConta(page, 'Administrador E2E');
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Bolsa carrinho' }).first().click();
+    await escolherCor(page, 'Verde');
+    await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
     await page.goto('/');
     await page.getByRole('link', { name: 'Produto com nome bastante longo para quebrar o alinhamento da linha' }).first().click();
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();

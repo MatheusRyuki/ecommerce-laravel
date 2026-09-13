@@ -114,11 +114,50 @@
                     </div>
                 @endif
 
-                @include('loja.partials.resumo-pedido', ['totalProdutosFormatado' => $totalProdutosFormatado])
+                @include('loja.partials.resumo-pedido', [
+                    'totalProdutosFormatado' => $totalProdutosFormatado,
+                    'checkout' => $checkout ?? null,
+                ])
+
+                @if ($errors->has('checkout') || $errors->has('cupom'))
+                    @include('loja.partials.alert', ['type' => 'erro', 'message' => $errors->first('checkout') ?: $errors->first('cupom')])
+                @endif
+
+                @if ($verificado ?? false)
+                    <form method="POST" action="{{ route('loja.carrinho.cupom') }}" class="mb-3">
+                        @csrf
+                        <label class="form-label" for="cupom">Cupom</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <input id="cupom" name="cupom" class="form-control" value="{{ old('cupom', $cupomCodigo) }}" maxlength="40">
+                            <button type="submit" class="common_btn">Aplicar cupom</button>
+                        </div>
+                    </form>
+
+                    @if ($enderecos->isNotEmpty())
+                        <form method="POST" action="{{ route('loja.carrinho.endereco') }}" class="mb-3">
+                            @csrf
+                            <label class="form-label" for="endereco_id">Endereço de entrega</label>
+                            <select id="endereco_id" name="endereco_id" class="form-select">
+                                @foreach ($enderecos as $endereco)
+                                    <option value="{{ $endereco->id }}" @selected((int) $enderecoId === $endereco->id || ($enderecoId === null && $endereco->padrao))>{{ $endereco->linhaCompleta() }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="common_btn mt-2">Usar este endereço</button>
+                        </form>
+                    @else
+                        <p><a href="{{ route('conta.enderecos.criar') }}">Cadastre um endereço</a> para calcular o frete.</p>
+                    @endif
+                @elseif ($autenticado ?? false)
+                    <p>Confirme seu e-mail para aplicar cupom, escolher entrega e finalizar o pedido.</p>
+                @endif
 
                 <div class="pagina-carrinho__acoes">
                     <a href="{{ route('inicio') }}" class="common_btn">{{ 'Continuar comprando' }}</a>
-                    <p class="checkout-indisponivel" aria-disabled="true">{{ 'Pagamento ainda não está disponível.' }}</p>
+                    @if (($verificado ?? false) && ($checkout['valido'] ?? false))
+                        <a href="{{ route('checkout.revisar') }}" class="common_btn">Revisar pedido</a>
+                    @else
+                        <p class="checkout-indisponivel" aria-disabled="true">{{ ($checkout['motivo'] ?? null) ?: 'Conclua login, verificação, endereço e itens válidos para revisar o pedido. Nenhum pagamento é processado nesta loja.' }}</p>
+                    @endif
                 </div>
             </div>
         </div>

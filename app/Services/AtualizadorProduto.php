@@ -46,8 +46,9 @@ class AtualizadorProduto
                     'preco' => $atributos['preco'],
                     'cores' => array_values($atributos['cores']),
                     'descricao_curta' => $atributos['descricao_curta'],
-                    'quantidade' => $atributos['quantidade'],
                     'sku' => $atributos['sku'],
+                    'publicado' => (bool) ($atributos['publicado'] ?? false),
+                    'categoria_id' => $atributos['categoria_id'] ?? null,
                     'descricao' => $atributos['descricao'],
                 ]);
 

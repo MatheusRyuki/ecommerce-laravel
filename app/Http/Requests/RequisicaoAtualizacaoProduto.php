@@ -45,7 +45,7 @@ class RequisicaoAtualizacaoProduto extends FormRequest
 
         return array_merge(
             RegrasFormularioProduto::novasImagens(obrigatorio: false),
-            RegrasFormularioProduto::regrasCampos($produto),
+            RegrasFormularioProduto::regrasCampos($produto, incluirQuantidade: false),
             [
                 'ids_imagens_remover' => ['sometimes', 'array', 'distinct'],
                 'ids_imagens_remover.*' => [

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { artisan, entrar, reiniciar, senhaPadrao } from './suporte/aplicacao';
+import { artisan, entrar, reiniciar, senhaPadrao, concluirVerificacao } from './suporte/aplicacao';
 
 test.describe('Perfil, verificação e confirmação de senha', () => {
   test.beforeEach(() => {
@@ -78,6 +78,7 @@ test.describe('Perfil, verificação e confirmação de senha', () => {
     await page.goto('/verify-email');
     await expect(page.getByText('Obrigado por se cadastrar')).toBeVisible();
     await page.getByRole('button', { name: 'Reenviar e-mail de verificação' }).click();
+    await concluirVerificacao(page);
 
     await page.goto('/dashboard');
     await expect(page.getByRole('heading', { name: 'Conta' })).toBeVisible();

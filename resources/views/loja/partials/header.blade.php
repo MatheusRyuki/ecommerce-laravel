@@ -9,9 +9,20 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('inicio') ? 'active' : '' }}" href="{{ route('inicio') }}">Início</a>
                     </li>
+                    @foreach ($categoriasMenu as $categoria)
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('loja.categorias.exibir') && optional(request()->route('categoria'))->is($categoria) ? 'active' : '' }}" href="{{ route('loja.categorias.exibir', $categoria) }}">{{ $categoria->nome }}</a>
+                        </li>
+                    @endforeach
                     @auth
                         <li class="nav-item d-lg-none">
-                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Conta</a>
+                            <a class="nav-link {{ request()->routeIs('dashboard', 'perfil.*', 'conta.*') ? 'active' : '' }}" href="{{ route('dashboard') }}">Conta</a>
+                        </li>
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link {{ request()->routeIs('conta.favoritos') ? 'active' : '' }}" href="{{ route('conta.favoritos') }}">Favoritos</a>
+                        </li>
+                        <li class="nav-item d-lg-none">
+                            <a class="nav-link {{ request()->routeIs('conta.pedidos.*') ? 'active' : '' }}" href="{{ route('conta.pedidos.listar') }}">Pedidos</a>
                         </li>
                     @else
                         <li class="nav-item d-lg-none">
@@ -38,7 +49,9 @@
                     </span>
                 </a>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex {{ request()->routeIs('dashboard') ? 'ativo' : '' }}">Conta</a>
+                    <a href="{{ route('conta.favoritos') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex {{ request()->routeIs('conta.favoritos') ? 'ativo' : '' }}">Favoritos</a>
+                    <a href="{{ route('conta.pedidos.listar') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex {{ request()->routeIs('conta.pedidos.*') ? 'ativo' : '' }}">Pedidos</a>
+                    <a href="{{ route('dashboard') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex {{ request()->routeIs('dashboard', 'perfil.*') ? 'ativo' : '' }}">Conta</a>
                 @else
                     <a href="{{ route('login') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex">Entrar</a>
                     <a href="{{ route('register') }}" class="cabecalho-loja__conta d-none d-lg-inline-flex">Criar conta</a>

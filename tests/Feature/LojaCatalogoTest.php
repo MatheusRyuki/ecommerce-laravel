@@ -213,9 +213,9 @@ class LojaCatalogoTest extends TestCase
             'preco' => $produto->preco,
             'cores' => $produto->cores,
             'descricao_curta' => $produto->descricao_curta,
-            'quantidade' => $produto->quantidade,
             'sku' => $produto->sku,
             'descricao' => $produto->descricao,
+            'publicado' => '1',
         ])->assertRedirect(route('admin.produtos.listar'));
 
         $this->get(route('inicio'))

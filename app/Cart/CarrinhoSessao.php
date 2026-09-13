@@ -170,32 +170,12 @@ class CarrinhoSessao
      */
     public function linhas(): Collection
     {
-        $itens = $this->itensNormalizados();
-        $ids = array_values(array_unique(array_column($itens, 'produto_id')));
-        $produtos = Produto::query()
-            ->with('imagens')
-            ->whereIn('id', $ids)
-            ->get()
-            ->keyBy('id');
+        return MontadorLinhas::deItens($this->itensNormalizados());
+    }
 
-        $pedidoPorProduto = [];
-
-        foreach ($itens as $item) {
-            $pedidoPorProduto[$item['produto_id']] = ($pedidoPorProduto[$item['produto_id']] ?? 0) + $item['quantidade'];
-        }
-
-        return collect($itens)->map(function (array $item) use ($produtos, $pedidoPorProduto): LinhaCarrinho {
-            $produto = $produtos->get($item['produto_id']);
-
-            return new LinhaCarrinho(
-                id: $item['id'],
-                idProduto: $item['produto_id'],
-                cor: $item['cor'],
-                quantidade: $item['quantidade'],
-                produto: $produto,
-                situacao: $this->situacaoDe($produto, $item['cor'], $pedidoPorProduto[$item['produto_id']]),
-            );
-        })->values();
+    public function limpar(): void
+    {
+        $this->gravar([]);
     }
 
     /**
@@ -250,18 +230,5 @@ class CarrinhoSessao
     {
         $this->sessao->put(self::CHAVE_SESSAO, $itens);
         $this->sessao->forget(self::CHAVE_SESSAO_LEGADA);
-    }
-
-    private function situacaoDe(?Produto $produto, string $cor, int $pedidoDoProduto): string
-    {
-        if ($produto === null || ! $produto->estaDisponivel()) {
-            return LinhaCarrinho::SITUACAO_INDISPONIVEL;
-        }
-
-        if (! in_array($cor, $produto->coresExibidas(), true) || $pedidoDoProduto > $produto->quantidade) {
-            return LinhaCarrinho::SITUACAO_AJUSTAR;
-        }
-
-        return LinhaCarrinho::SITUACAO_DISPONIVEL;
     }
 }

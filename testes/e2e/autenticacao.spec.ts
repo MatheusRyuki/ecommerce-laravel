@@ -6,6 +6,7 @@ import {
   reiniciar,
   senhaPadrao,
   sairDaConta,
+  concluirVerificacao,
 } from './suporte/aplicacao';
 
 test.describe('Autenticação', () => {
@@ -28,6 +29,8 @@ test.describe('Autenticação', () => {
     await page.getByLabel('Senha', { exact: true }).fill(senhaPadrao);
     await page.getByLabel('Confirmar senha').fill(senhaPadrao);
     await page.getByRole('button', { name: 'Cadastrar' }).click();
+    await expect(page).toHaveURL(/verify-email/);
+    await concluirVerificacao(page);
     await expect(page).toHaveURL(/dashboard/);
 
     await sairDaConta(page, 'Maria E2E');

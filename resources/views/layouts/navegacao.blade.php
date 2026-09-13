@@ -24,6 +24,13 @@
                     >
                         Conta
                     </x-link-navegacao>
+                    @auth
+                        @if (Auth::user()->hasVerifiedEmail())
+                            <x-link-navegacao :href="route('conta.favoritos')" :active="request()->routeIs('conta.favoritos')">Favoritos</x-link-navegacao>
+                            <x-link-navegacao :href="route('conta.pedidos.listar')" :active="request()->routeIs('conta.pedidos.*')">Pedidos</x-link-navegacao>
+                            <x-link-navegacao :href="route('conta.enderecos.listar')" :active="request()->routeIs('conta.enderecos.*')">Endereços</x-link-navegacao>
+                        @endif
+                    @endauth
                     @can('acessar-admin')
                         <x-link-navegacao
                             id="nav-produtos"
@@ -33,6 +40,11 @@
                         >
                             Produtos
                         </x-link-navegacao>
+                        <x-link-navegacao :href="route('admin.categorias.listar')" :active="request()->routeIs('admin.categorias.*')">Categorias</x-link-navegacao>
+                        <x-link-navegacao :href="route('admin.cupons.listar')" :active="request()->routeIs('admin.cupons.*')">Cupons</x-link-navegacao>
+                        <x-link-navegacao :href="route('admin.frete.listar')" :active="request()->routeIs('admin.frete.*')">Frete</x-link-navegacao>
+                        <x-link-navegacao :href="route('admin.pedidos.listar')" :active="request()->routeIs('admin.pedidos.*')">Pedidos</x-link-navegacao>
+                        <x-link-navegacao :href="route('admin.usuarios.listar')" :active="request()->routeIs('admin.usuarios.*')">Usuários</x-link-navegacao>
                     @endcan
                 </div>
             </div>
@@ -98,6 +110,13 @@
             >
                 Conta
             </x-link-navegacao-responsivo>
+            @auth
+                @if (Auth::user()->hasVerifiedEmail())
+                    <x-link-navegacao-responsivo :href="route('conta.favoritos')" :active="request()->routeIs('conta.favoritos')">Favoritos</x-link-navegacao-responsivo>
+                    <x-link-navegacao-responsivo :href="route('conta.pedidos.listar')" :active="request()->routeIs('conta.pedidos.*')">Pedidos</x-link-navegacao-responsivo>
+                    <x-link-navegacao-responsivo :href="route('conta.enderecos.listar')" :active="request()->routeIs('conta.enderecos.*')">Endereços</x-link-navegacao-responsivo>
+                @endif
+            @endauth
             @can('acessar-admin')
                 <x-link-navegacao-responsivo
                     id="nav-produtos-movel"
@@ -107,6 +126,11 @@
                 >
                     Produtos
                 </x-link-navegacao-responsivo>
+                <x-link-navegacao-responsivo :href="route('admin.categorias.listar')" :active="request()->routeIs('admin.categorias.*')">Categorias</x-link-navegacao-responsivo>
+                <x-link-navegacao-responsivo :href="route('admin.cupons.listar')" :active="request()->routeIs('admin.cupons.*')">Cupons</x-link-navegacao-responsivo>
+                <x-link-navegacao-responsivo :href="route('admin.frete.listar')" :active="request()->routeIs('admin.frete.*')">Frete</x-link-navegacao-responsivo>
+                <x-link-navegacao-responsivo :href="route('admin.pedidos.listar')" :active="request()->routeIs('admin.pedidos.*')">Pedidos</x-link-navegacao-responsivo>
+                <x-link-navegacao-responsivo :href="route('admin.usuarios.listar')" :active="request()->routeIs('admin.usuarios.*')">Usuários</x-link-navegacao-responsivo>
             @endcan
         </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\MovimentacaoEstoque;
 use App\Models\Produto;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
@@ -29,10 +30,20 @@ class CriadorProduto
                     'preco' => $atributos['preco'],
                     'cores' => array_values($atributos['cores']),
                     'descricao_curta' => $atributos['descricao_curta'],
-                    'quantidade' => $atributos['quantidade'],
+                    'quantidade' => 0,
                     'sku' => $atributos['sku'],
+                    'publicado' => (bool) ($atributos['publicado'] ?? false),
+                    'categoria_id' => $atributos['categoria_id'] ?? null,
                     'descricao' => $atributos['descricao'],
                 ]);
+
+                app(RegistradorEstoque::class)->definir(
+                    $produto,
+                    (int) $atributos['quantidade'],
+                    MovimentacaoEstoque::TIPO_ENTRADA,
+                    'Estoque inicial no cadastro.',
+                    auth()->user(),
+                );
 
                 foreach (array_values($imagens) as $posicao => $imagem) {
                     $nome = Str::uuid()->toString().'.'.$this->extensao($imagem);

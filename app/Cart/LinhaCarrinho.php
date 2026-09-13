@@ -81,7 +81,7 @@ final readonly class LinhaCarrinho
 
     public function podeAbrirDetalhes(): bool
     {
-        return $this->produto !== null;
+        return $this->produto !== null && $this->produto->estaPublicado();
     }
 
     public function estaIndisponivel(): bool

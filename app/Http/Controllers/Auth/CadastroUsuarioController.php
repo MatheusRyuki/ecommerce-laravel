@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Cart\CarrinhoSessao;
+use App\Cart\MescladorCarrinho;
 use App\Http\Controllers\Controller;
 use App\Models\Usuario;
-use App\Support\DestinoAposAutenticacao;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,13 +25,15 @@ class CadastroUsuarioController extends Controller
     /**
      * @throws ValidationException
      */
-    public function cadastrar(Request $request): RedirectResponse
+    public function cadastrar(Request $request, CarrinhoSessao $sessao, MescladorCarrinho $mesclador): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.Usuario::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        $visitante = $sessao->itens();
 
         $usuario = Usuario::create([
             'name' => $request->name,
@@ -42,6 +45,10 @@ class CadastroUsuarioController extends Controller
 
         Auth::login($usuario);
 
-        return redirect(DestinoAposAutenticacao::url());
+        $request->session()->regenerate();
+
+        $mesclador->mesclar($usuario, $visitante, $sessao);
+
+        return redirect()->route('verification.notice');
     }
 }

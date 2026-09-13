@@ -71,6 +71,30 @@
                                 {{ 'Indisponível' }}
                             @endif
                         </p>
+                        @if ($produto->categoria)
+                            <p>Categoria: <a href="{{ route('loja.categorias.exibir', $produto->categoria) }}">{{ $produto->categoria->nome }}</a></p>
+                        @endif
+
+                        @if (session('status'))
+                            @include('loja.partials.alert', ['type' => 'sucesso', 'dismissible' => true, 'message' => session('status')])
+                        @endif
+
+                        @auth
+                            @if ($favorito)
+                                <form method="POST" action="{{ route('conta.favoritos.remover', $produto) }}" class="mb-3">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-secondary">Remover dos favoritos</button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('conta.favoritos.adicionar', $produto) }}" class="mb-3">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-primary">Salvar nos favoritos</button>
+                                </form>
+                            @endif
+                        @else
+                            <p class="mb-3"><a href="{{ route('conta.favoritos.convidado', $produto) }}">Entre</a> para salvar este produto nos favoritos.</p>
+                        @endauth
 
                         @if ($errors->has('carrinho'))
                             @include('loja.partials.alert', ['type' => 'erro', 'message' => $errors->first('carrinho')])

@@ -96,4 +96,16 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_ultimo_administrador_nao_pode_excluir_a_conta(): void
+    {
+        $admin = Usuario::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->from('/perfil')
+            ->delete('/perfil', ['password' => 'password'])
+            ->assertSessionHasErrors('exclusao_usuario');
+
+        $this->assertNotNull($admin->fresh());
+    }
 }

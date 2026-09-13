@@ -1,17 +1,18 @@
 # e-Commerce
 
-Projeto de estudo em Laravel: uma loja com vitrine, detalhes de produto, carrinho por sessão e painel administrativo de produtos. O visual da loja vem do template em Blade; os dados de produto vêm do banco.
+Projeto de estudo em Laravel: loja com vitrine, detalhes de produto, carrinho (sessão para visitante e persistente após o login), checkout sem pagamento e painel administrativo. O visual da loja usa Bootstrap (template em Blade); o admin usa Tailwind/Breeze.
 
-Não é um checkout completo. Pagamento, frete, impostos e descontos ficam fora do escopo.
+Não processa pagamento. Pedidos ficam em *aguardando pagamento*.
 
 ## Funcionalidades
 
-- Vitrine pública (`GET /`): produtos do banco, 12 por página, mais recentes primeiro. Estoque zero permanece visível como indisponível.
+- Vitrine pública (`GET /`): produtos **publicados**, 12 por página, mais recentes primeiro. Filtros por busca (`q`), cor, disponibilidade e categoria (`/categorias/{slug}`). Estoque zero permanece visível como indisponível; produto oculto não aparece e o detalhe responde 404.
 - Detalhes (`GET /produtos/{produto}`). A URL antiga `/product-details` redireciona para a vitrine; `/products/{id}` redireciona para `/produtos/{id}` quando o registro existe.
-- Carrinho por sessão Laravel (`/carrinho`): adicionar, alterar quantidade e remover linhas. Cada linha é produto + cor. Não há persistência por conta nem sincronização entre dispositivos.
-- Painel administrativo (`/admin/produtos`): cadastro, edição e exclusão definitiva de produtos (imagens, cores, preço, estoque, SKU).
-- Autenticação Breeze (cadastro, login, painel). O acesso à administração exige a permissão `acessar-admin`.
-- Checkout desabilitado. O carrinho não reserva estoque nem cria pedido.
+- Carrinho: visitante na sessão Laravel; após login/cadastro as linhas da sessão **mesclam** com o carrinho da conta (conta primeiro, depois visitante até o estoque). Cupom, endereço e revisão exigem e-mail verificado.
+- Checkout (`/checkout`): confirma pedido com snapshot de valores, baixa estoque com bloqueio de linha, cupom e frete por faixa de CEP. Idempotente por `usuario` + chave. **Nenhum pagamento é cobrado.**
+- Conta: verificação de e-mail (`MustVerifyEmail`), favoritos, endereços (um padrão), pedidos.
+- Painel (`/admin/...`, `verified` + `acessar-admin`): produtos (busca, publicação, duplicar cópia oculta), estoque com histórico, categorias, cupons, faixas de frete, pedidos, usuários (promover/rebaixar; último admin não pode ser excluído).
+- Autenticação Breeze. Perfil (`/perfil`) permanece acessível sem e-mail verificado para corrigir o endereço.
 
 ## Tecnologias e requisitos
 
@@ -65,7 +66,7 @@ Suba o ambiente, gere a chave, rode as migrations, o link de storage e o build d
 
 `storage:link` é necessário para as imagens de produto no disco `public`. A coluna `caminho` em `imagens_produto` guarda o caminho relativo no disco; uploads novos e já existentes usam o prefixo `products/` nesse disco (compatibilidade com arquivos gravados antes da consolidação do schema).
 
-Uma instalação nova aplica **cinco** migrations de criação (usuários/sessões do Laravel, cache, filas, `produtos` e `imagens_produto`). As tabelas de produto já nascem com os nomes e colunas finais (`nome`, `preco`, `caminho`, `administrador` em `users`, etc.).
+Uma instalação nova aplica as migrations consolidadas de usuários/cache/filas/produtos/imagens **e** as incrementais de catálogo (categorias, publicação, carrinho persistente, favoritos, endereços, estoque, cupons, frete, pedidos). Não altere os cinco arquivos consolidados; novas tabelas entram só em migrations posteriores.
 
 Não use `migrate:fresh` se já houver dados locais que devam ser preservados.
 
@@ -95,6 +96,14 @@ Administração:
 - Painel: [http://localhost:8002/admin/painel](http://localhost:8002/admin/painel)
 - Produtos: [http://localhost:8002/admin/produtos](http://localhost:8002/admin/produtos)
 
+Administradores **novos** (incluindo o seeder local) nascem **sem** e-mail verificado. O painel exige verificação. Com a conta autenticada, gere o link local (não altera a senha):
+
+```bash
+./vendor/bin/sail artisan verificacao:url admin@example.test
+```
+
+Abra a URL no mesmo navegador. Reenvio: `/verify-email`. Não marque `email_verified_at` à mão no banco de desenvolvimento.
+
 ## Administrador local
 
 O `DatabaseSeeder` **não** cria o administrador. Use:
@@ -122,16 +131,22 @@ Outros produtos locais (por exemplo a Bolsa Demo Editada, SKU `DEMO-0001`) **nã
 
 ## Limitações atuais
 
-- Sem checkout, pagamento, frete, impostos ou descontos. No carrinho o pagamento permanece indisponível, com o aviso correspondente.
-- Carrinho só na sessão atual (visitante ou autenticado). Visitantes veem Entrar e Criar conta no cabeçalho da loja; quem autenticou acessa a conta pelo mesmo cabeçalho e pelo layout Breeze.
-- Totais do carrinho consideram apenas preço × quantidade (BCMath, duas casas).
+- Pagamento, impostos e gateway ficam de fora: o pedido é gravado como aguardando pagamento.
+- Frete é faixa de CEP cadastrada no admin (não há cotação de transportadora).
+- Edição de produto **não** altera quantidade; use a tela de estoque.
 
 ## Testes
 
-Os testes PHPUnit usam SQLite em memória (`phpunit.xml`) e **não** usam o MySQL `ecommerce`.
+Os testes PHPUnit em `tests/Feature` e `tests/Unit` usam SQLite em memória (`phpunit.xml`) e **não** usam o MySQL `ecommerce`.
 
 ```bash
 ./vendor/bin/sail artisan test
+```
+
+Provas de estoque/cupom no **MySQL isolado** `ecommerce_e2e` (recria esse banco; não toca `ecommerce`):
+
+```bash
+./vendor/bin/sail artisan test --env=e2e --configuration=phpunit.concorrencia.xml
 ```
 
 Há uma suíte E2E com Playwright (navegador, Laravel e MySQL `ecommerce_e2e` na porta **8003**). Isolamento, matriz de cenários e comandos: [docs/e2e.md](docs/e2e.md).
@@ -146,6 +161,27 @@ O build de assets da loja (quando necessário):
 ```bash
 ./vendor/bin/sail npm run build
 ```
+
+## Matriz das 14 entregas
+
+| # | Entrega | Implementação | Validação |
+| --- | --- | --- | --- |
+| 1 | Busca na vitrine e no admin | Query `q` + paginação com query string | PHPUnit catálogo/listagem; E2E vitrine |
+| 2 | Publicação | `publicado`; `scopePublicados` | PHPUnit oculto 404 |
+| 3 | Duplicar produto | Cópia oculta, imagens novas, estoque via movimentação | PHPUnit `AdminProdutoSalvarTest` |
+| 4 | Verificação de e-mail | `MustVerifyEmail`; `verificacao:url` local | PHPUnit auth; E2E cadastro/perfil |
+| 5 | Carrinho persistente e mescla | `itens_carrinho` + `MescladorCarrinho` | PHPUnit; E2E jornada |
+| 6 | Categorias | CRUD admin + vitrine por slug | PHPUnit; E2E jornada |
+| 7 | Favoritos | Conta verificada | PHPUnit; E2E jornada |
+| 8 | Endereços | Um padrão; exclusão promove o mais antigo | PHPUnit; E2E jornada |
+| 9 | Estoque | Lock + histórico; edição de produto não muda qty | PHPUnit produto/estoque; concorrência MySQL |
+| 10 | Checkout e pedidos | Snapshot, idempotência, sem pagamento | PHPUnit; E2E jornada |
+| 11 | Cupons | Fixo/percentual, uso único | PHPUnit; E2E jornada; concorrência MySQL |
+| 12 | Frete por CEP | Faixas no admin | PHPUnit CEP sem cobertura; E2E jornada |
+| 13 | Usuários admin | Promover/rebaixar; último admin protegido | PHPUnit `AdminUsuarioTest` / perfil |
+| 14 | Filtros de catálogo (cor/disponível) | `ConsultaCatalogo` | PHPUnit `PublicacaoCatalogoFavoritoTest` |
+
+Pendências conhecidas: disputa **simultânea** de duas transações no mesmo instante (a suíte MySQL cobre a ordem sequencial com `lockForUpdate`; não prova dois processos em paralelo).
 
 ## Capturas
 

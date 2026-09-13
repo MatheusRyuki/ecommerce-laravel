@@ -5,6 +5,20 @@
             <span>{{ 'Total dos produtos' }}</span>
             <span class="resumo-pedido-carrinho__valor">{{ $totalProdutosFormatado }}</span>
         </div>
+        @if (! empty($checkout['valido']))
+            <div class="resumo-pedido-carrinho__linha">
+                <span>Desconto</span>
+                <span class="resumo-pedido-carrinho__valor">{{ \App\Support\Dinheiro::formatarBrl($checkout['desconto']) }}</span>
+            </div>
+            <div class="resumo-pedido-carrinho__linha">
+                <span>Frete</span>
+                <span class="resumo-pedido-carrinho__valor">{{ \App\Support\Dinheiro::formatarBrl($checkout['frete']) }}</span>
+            </div>
+            <div class="resumo-pedido-carrinho__linha">
+                <span>Total</span>
+                <span class="resumo-pedido-carrinho__valor">{{ \App\Support\Dinheiro::formatarBrl($checkout['total']) }}</span>
+            </div>
+        @endif
     @else
         @include('loja.partials.alert', ['type' => 'aviso', 'message' => 'O total dos produtos só aparece quando todos os itens estão disponíveis.', 'class' => 'mb-0'])
     @endif

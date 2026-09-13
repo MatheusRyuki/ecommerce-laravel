@@ -8,7 +8,17 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
-                <div class="flex items-center justify-end px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+                    <form method="GET" action="{{ route('admin.produtos.listar') }}" class="flex flex-wrap items-end gap-2">
+                        <div>
+                            <label for="q" class="block text-xs font-medium text-gray-600">Buscar por nome ou SKU</label>
+                            <input id="q" name="q" type="search" value="{{ $q ?? '' }}" class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <button type="submit" class="inline-flex items-center px-3 py-2 bg-gray-800 text-white text-xs font-semibold uppercase rounded-md">Buscar</button>
+                        @if (($q ?? '') !== '')
+                            <a href="{{ route('admin.produtos.listar') }}" class="text-sm text-blue-600">Limpar busca</a>
+                        @endif
+                    </form>
                     <a id="link-cadastrar-produto" href="{{ route('admin.produtos.criar') }}" class="relative z-10 inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         Cadastrar produto
                     </a>
@@ -30,10 +40,14 @@
 
                     @if ($produtos->isEmpty())
                         <div class="text-center py-10 space-y-4">
-                            <p class="text-sm text-gray-600">Nenhum produto cadastrado ainda.</p>
+                            <p class="text-sm text-gray-600">{{ ($q ?? '') !== '' ? 'Nenhum produto encontrado para esta busca.' : 'Nenhum produto cadastrado ainda.' }}</p>
+                            @if (($q ?? '') !== '')
+                                <a href="{{ route('admin.produtos.listar') }}" class="text-sm font-semibold text-blue-600">Limpar busca</a>
+                            @else
                             <a href="{{ route('admin.produtos.criar') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                 Cadastrar produto
                             </a>
+                            @endif
                         </div>
                     @else
                         <div class="overflow-x-auto">
@@ -45,6 +59,7 @@
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">{{ 'SKU' }}</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Preço (BRL)</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Estoque</th>
+                                        <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Visibilidade</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Cores</th>
                                         <th scope="col" class="px-3 py-3 text-left font-medium text-gray-600">Ações</th>
                                     </tr>
@@ -66,11 +81,18 @@
                                             <td class="px-3 py-3 text-gray-700 font-mono whitespace-nowrap">{{ $produto->sku }}</td>
                                             <td class="px-3 py-3 text-gray-700 whitespace-nowrap">{{ $produto->precoFormatado() }}</td>
                                             <td class="px-3 py-3 text-gray-700 whitespace-nowrap">{{ $produto->quantidade }}</td>
+                                            <td class="px-3 py-3 text-gray-700 whitespace-nowrap">{{ $produto->estaPublicado() ? 'Publicado' : 'Oculto' }}</td>
                                             <td class="px-3 py-3 text-gray-700">{{ implode(', ', array_map(fn (string $cor): string => \App\Support\CoresProduto::rotulo($cor), $produto->coresExibidas())) }}</td>
                                             <td class="px-3 py-3 whitespace-nowrap">
                                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                                                     <a id="editar-produto-{{ $produto->id }}" href="{{ route('admin.produtos.editar', $produto) }}" class="relative z-10 font-semibold text-blue-600 hover:text-blue-500">
                                                         Editar
+                                                    </a>
+                                                    <a href="{{ route('admin.produtos.criar', ['origem' => $produto->id]) }}" class="relative z-10 font-semibold text-blue-600 hover:text-blue-500">
+                                                        Duplicar
+                                                    </a>
+                                                    <a href="{{ route('admin.estoque.exibir', $produto) }}" class="relative z-10 font-semibold text-blue-600 hover:text-blue-500">
+                                                        Estoque
                                                     </a>
                                                     <button
                                                         type="button"

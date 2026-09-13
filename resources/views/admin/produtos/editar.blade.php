@@ -80,10 +80,15 @@
                     @include('admin.produtos.partials.fields', [
                         'cores' => $cores,
                         'coresSelecionadas' => $coresSelecionadas,
+                        'categorias' => $categorias ?? collect(),
+                        'valorCategoria' => old('categoria_id', $produto->categoria_id),
+                        'publicado' => old('publicado', $produto->publicado),
                         'valorNome' => old('nome', $produto->nome),
                         'valorPreco' => old('preco', $produto->preco),
                         'valorDescricaoCurta' => old('descricao_curta', $produto->descricao_curta),
-                        'valorQuantidade' => old('quantidade', $produto->quantidade),
+                        'valorQuantidade' => $produto->quantidade,
+                        'somenteLeituraEstoque' => true,
+                        'produtoEstoque' => $produto,
                         'sku' => old('sku', $produto->sku),
                         'valorDescricao' => old('descricao', $produto->descricao),
                     ])

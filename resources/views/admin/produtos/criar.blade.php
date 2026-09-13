@@ -3,14 +3,15 @@
 @endpush
 
 @php
-    $classeCampo = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500';
-    $coresSelecionadas = old('cores', []);
+    $origem = $origem ?? null;
+    $duplicando = $origem !== null;
+    $coresSelecionadas = old('cores', $duplicando ? ($origem->coresExibidas()) : []);
 @endphp
 
 <x-layout-aplicacao>
     <x-slot name="cabecalho">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Cadastrar produto
+            {{ $duplicando ? 'Duplicar produto' : 'Cadastrar produto' }}
         </h2>
     </x-slot>
 
@@ -18,7 +19,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-800">Cadastrar produto</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">{{ $duplicando ? 'Duplicar produto' : 'Cadastrar produto' }}</h3>
                     <a id="voltar-produtos" href="{{ route('admin.produtos.listar') }}" class="relative z-10 inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         {{ 'Voltar' }}
                     </a>
@@ -26,12 +27,16 @@
 
                 <form id="formulario-produto-admin" method="POST" action="{{ route('admin.produtos.salvar') }}" enctype="multipart/form-data" class="p-4 sm:p-6 space-y-5">
                     @csrf
+                    @if ($duplicando)
+                        <input type="hidden" name="produto_origem_id" value="{{ $origem->id }}">
+                    @endif
 
                     @if ($errors->any())
                         <x-alerta-admin class="mb-4" :status="'Corrija os campos destacados.'" tom="erro" :dismissible="false" />
                     @endif
                     <x-alerta-admin class="mb-4" :status="session('status') === 'produto-criado' ? 'Produto cadastrado.' : session('status')" />
 
+                    @unless ($duplicando)
                     <div class="seletor-imagens" data-seletor-imagens>
                         <span class="block text-sm font-medium text-gray-700" id="rotulo-imagens">{{ 'Imagens' }}</span>
                         <input id="imagens" name="imagens[]" type="file" accept="image/jpeg,image/png,image/webp" multiple
@@ -44,22 +49,29 @@
                         <x-erro-campo class="mt-2" :messages="$errors->get('imagens')" />
                         <x-erro-campo class="mt-2" :messages="$errors->get('imagens.*')" />
                     </div>
+                    @else
+                        <p class="text-sm text-gray-600">As imagens do original serão copiadas para arquivos novos ao salvar. Nada é gravado ao abrir ou cancelar.</p>
+                    @endunless
 
                     @include('admin.produtos.partials.fields', [
                         'cores' => $cores,
                         'coresSelecionadas' => $coresSelecionadas,
-                        'valorNome' => old('nome'),
-                        'valorPreco' => old('preco'),
-                        'valorDescricaoCurta' => old('descricao_curta'),
-                        'valorQuantidade' => old('quantidade'),
-                        'sku' => old('sku'),
-                        'valorDescricao' => old('descricao'),
+                        'categorias' => $categorias ?? collect(),
+                        'valorCategoria' => old('categoria_id', $origem?->categoria_id),
+                        'publicado' => $duplicando ? false : true,
+                        'forcarOculto' => $duplicando,
+                        'valorNome' => old('nome', $origem?->nome),
+                        'valorPreco' => old('preco', $origem?->preco),
+                        'valorDescricaoCurta' => old('descricao_curta', $origem?->descricao_curta),
+                        'valorQuantidade' => old('quantidade', $origem?->quantidade),
+                        'sku' => old('sku', $duplicando ? '' : null),
+                        'valorDescricao' => old('descricao', $origem?->descricao),
                     ])
 
                     <div>
                         <button type="submit"
                             class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            Cadastrar produto
+                            {{ $duplicando ? 'Salvar cópia' : 'Cadastrar produto' }}
                         </button>
                     </div>
                 </form>

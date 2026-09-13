@@ -36,6 +36,7 @@ class AdminProdutoSalvarTest extends TestCase
             'quantidade' => 7,
             'sku' => 'tote-001',
             'descricao' => '<p>Bolsa de <strong>lona</strong> macia.</p>',
+            'publicado' => '1',
         ], $overrides);
     }
 
@@ -219,6 +220,43 @@ class AdminProdutoSalvarTest extends TestCase
 
         $this->assertSame(0, Produto::query()->count());
         $this->assertSame(0, ImagemProduto::query()->count());
+    }
+
+    public function test_duplicar_copia_imagens_em_caminhos_novos_e_nasce_oculto(): void
+    {
+        Storage::fake('public');
+        $admin = Usuario::factory()->admin()->create();
+        $origem = Produto::factory()->create(['sku' => 'ORIG-1', 'publicado' => true, 'quantidade' => 9]);
+        $caminho = 'products/origem.png';
+        Storage::disk('public')->put($caminho, 'img');
+        ImagemProduto::factory()->create([
+            'produto_id' => $origem->id,
+            'caminho' => $caminho,
+            'posicao' => 0,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.produtos.salvar'), [
+                'produto_origem_id' => $origem->id,
+                'nome' => 'Cópia da origem',
+                'preco' => '19.90',
+                'cores' => ['Vermelho'],
+                'descricao_curta' => 'Cópia',
+                'quantidade' => 3,
+                'sku' => 'COPIA-1',
+                'descricao' => '<p>Cópia</p>',
+                'publicado' => '1',
+            ])
+            ->assertRedirect(route('admin.produtos.listar'));
+
+        $copia = Produto::query()->where('sku', 'COPIA-1')->first();
+        $this->assertNotNull($copia);
+        $this->assertFalse($copia->publicado);
+        $this->assertSame(3, $copia->quantidade);
+        $this->assertNotSame($caminho, $copia->imagens()->first()->caminho);
+        Storage::disk('public')->assertExists($caminho);
+        Storage::disk('public')->assertExists($copia->imagens()->first()->caminho);
+        $this->assertSame(9, $origem->fresh()->quantidade);
     }
 
     public function test_visitante_nao_pode_cadastrar_produto(): void
