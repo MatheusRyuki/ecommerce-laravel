@@ -249,4 +249,47 @@ test.describe('Carrinho', () => {
     await expect(quantidade).toHaveAttribute('data-salvo', '1');
     await expectTotal(page, 'R$ 49,90');
   });
+
+  test('resumo, badge e colunas permanecem alinhados com quantidade pendente @principal', async ({ page }) => {
+    await page.goto('/carrinho');
+    const linhaVazia = page.locator('.resumo-pedido-carrinho__linha');
+    const rotuloVazio = await linhaVazia.locator('span').first().boundingBox();
+    const valorVazio = await linhaVazia.locator('.resumo-pedido-carrinho__valor').boundingBox();
+    expect(rotuloVazio).toBeTruthy();
+    expect(valorVazio).toBeTruthy();
+    expect(rotuloVazio!.x).toBeLessThan(valorVazio!.x);
+    expect(Math.abs((rotuloVazio!.y + rotuloVazio!.height / 2) - (valorVazio!.y + valorVazio!.height / 2))).toBeLessThan(4);
+
+    await prepararProduto(page, {
+      sku: 'ALINHA-01',
+      cores: ['Verde'],
+    });
+    await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
+    await cadastrarProdutoUi(page, {
+      nome: 'Produto com nome bastante longo para quebrar o alinhamento da linha',
+      sku: 'ALINHA-02',
+      preco: '12.00',
+      arquivos: [arquivoFixture('capa.jpg')],
+    });
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Produto com nome bastante longo para quebrar o alinhamento da linha' }).first().click();
+    await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
+
+    const qtdBolsa = page.locator('tr', { hasText: 'Bolsa carrinho' }).locator('.formulario-qtd-carrinho input[name="quantidade"]');
+    await qtdBolsa.fill('3');
+    await qtdBolsa.dispatchEvent('input');
+    await expect(page.locator('.qtd-carrinho-pendente').filter({ visible: true })).toHaveCount(1);
+    await expectTotal(page, 'R$ 61,90');
+    await expect(page.getByText('R$ 49,90').first()).toBeVisible();
+
+    const icone = await page.locator('.cabecalho-loja__carrinho-icone').boundingBox();
+    const badge = await page.locator('.cabecalho-loja__carrinho-contador').boundingBox();
+    expect(icone).toBeTruthy();
+    expect(badge).toBeTruthy();
+    expect(badge!.y + badge!.height).toBeLessThan(icone!.y + icone!.height);
+    expect(badge!.x).toBeGreaterThan(icone!.x);
+
+    const excesso = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(excesso).toBeLessThanOrEqual(1);
+  });
 });

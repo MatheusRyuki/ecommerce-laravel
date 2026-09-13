@@ -11,10 +11,10 @@
                         ? 'Carrinho, 1 item'
                         : 'Carrinho, '.$itensCarrinho.' itens';
                 @endphp
-                <a href="{{ route('carrinho') }}" class="wsus__manu_cart icon {{ request()->routeIs('carrinho') ? 'ativo' : '' }}" aria-label="{{ $rotuloCarrinho }}">
-                    <span>
+                <a href="{{ route('carrinho') }}" class="cabecalho-loja__carrinho wsus__manu_cart {{ request()->routeIs('carrinho') ? 'ativo' : '' }}" aria-label="{{ $rotuloCarrinho }}">
+                    <span class="cabecalho-loja__carrinho-icone">
                         <img src="{{ asset('frontend/images/cart_icon_black.svg') }}" alt="" class="img-fluid" aria-hidden="true">
-                        <b aria-hidden="true">{{ $itensCarrinho }}</b>
+                        <b class="cabecalho-loja__carrinho-contador" aria-hidden="true">{{ $itensCarrinho }}</b>
                     </span>
                 </a>
                 @auth
