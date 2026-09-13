@@ -26,7 +26,7 @@
                 <button
                     type="button"
                     class="shrink-0 rounded p-1 text-current focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    aria-label="{{ __('Close') }}"
+                    aria-label="Fechar"
                     @click="show = false"
                 >
                     <span aria-hidden="true">&times;</span>

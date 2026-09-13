@@ -2,94 +2,100 @@
 
 namespace App\Cart;
 
-use App\Models\Product;
-use App\Support\Money;
+use App\Models\Produto;
+use App\Support\CoresProduto;
+use App\Support\Dinheiro;
 
-final readonly class CartLine
+final readonly class LinhaCarrinho
 {
-    public const STATUS_AVAILABLE = 'available';
+    public const SITUACAO_DISPONIVEL = 'disponivel';
 
-    public const STATUS_UNAVAILABLE = 'unavailable';
+    public const SITUACAO_INDISPONIVEL = 'indisponivel';
 
-    public const STATUS_NEEDS_ADJUSTMENT = 'needs_adjustment';
+    public const SITUACAO_AJUSTAR = 'ajustar';
 
     public function __construct(
         public string $id,
-        public int $productId,
-        public string $color,
-        public int $quantity,
-        public ?Product $product,
-        public string $status,
+        public int $idProduto,
+        public string $cor,
+        public int $quantidade,
+        public ?Produto $produto,
+        public string $situacao,
     ) {}
 
-    public function name(): string
+    public function nome(): string
     {
-        return $this->product?->name ?? __('Unavailable item');
+        return $this->produto?->name ?? 'Item indisponível';
     }
 
-    public function unitPrice(): ?string
+    public function precoUnitario(): ?string
     {
-        if ($this->product === null) {
+        if ($this->produto === null) {
             return null;
         }
 
-        return (string) $this->product->price;
+        return (string) $this->produto->price;
     }
 
-    public function formattedUnitPrice(): ?string
+    public function precoUnitarioFormatado(): ?string
     {
-        $unitPrice = $this->unitPrice();
+        $preco = $this->precoUnitario();
 
-        return $unitPrice === null ? null : Money::formatBrl($unitPrice);
+        return $preco === null ? null : Dinheiro::formatarBrl($preco);
     }
 
     public function subtotal(): ?string
     {
-        $unitPrice = $this->unitPrice();
+        $preco = $this->precoUnitario();
 
-        if ($unitPrice === null) {
+        if ($preco === null) {
             return null;
         }
 
-        return Money::multiply($unitPrice, $this->quantity);
+        return Dinheiro::multiplicar($preco, $this->quantidade);
     }
 
-    public function formattedSubtotal(): ?string
+    public function subtotalFormatado(): ?string
     {
         $subtotal = $this->subtotal();
 
-        return $subtotal === null ? null : Money::formatBrl($subtotal);
+        return $subtotal === null ? null : Dinheiro::formatarBrl($subtotal);
     }
 
-    public function canChangeQuantity(): bool
+    public function podeAlterarQuantidade(): bool
     {
-        return $this->product !== null
-            && $this->product->isAvailable()
-            && in_array($this->color, $this->product->displayColors(), true);
+        return $this->produto !== null
+            && $this->produto->estaDisponivel()
+            && in_array($this->cor, $this->produto->coresExibidas(), true);
     }
 
-    public function contributesToProductTotal(): bool
+    public function entraNoTotal(): bool
     {
-        return $this->status === self::STATUS_AVAILABLE && $this->subtotal() !== null;
+        return $this->situacao === self::SITUACAO_DISPONIVEL && $this->subtotal() !== null;
     }
 
-    public function coverUrl(): ?string
+    public function urlCapa(): ?string
     {
-        return $this->product?->coverUrl();
+        return $this->produto?->urlCapa();
     }
 
-    public function canOpenDetails(): bool
+    public function podeAbrirDetalhes(): bool
     {
-        return $this->product !== null;
+        return $this->produto !== null;
     }
 
-    public function isUnavailable(): bool
+    public function estaIndisponivel(): bool
     {
-        return $this->status === self::STATUS_UNAVAILABLE;
+        return $this->situacao === self::SITUACAO_INDISPONIVEL;
     }
 
-    public function needsAdjustment(): bool
+    public function precisaAjuste(): bool
     {
-        return $this->status === self::STATUS_NEEDS_ADJUSTMENT;
+        return $this->situacao === self::SITUACAO_AJUSTAR;
+    }
+
+    public function rotuloCor(): string
+    {
+        return CoresProduto::rotulo($this->cor);
     }
 }

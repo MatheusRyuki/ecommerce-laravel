@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Product;
-use App\Support\ProductFormRules;
+use App\Models\Produto;
+use App\Support\RegrasFormularioProduto;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
@@ -11,26 +11,26 @@ use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class UpdateProductRequest extends FormRequest
+class RequisicaoAtualizacaoProduto extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('access-admin') === true;
+        return $this->user()?->can('acessar-admin') === true;
     }
 
     protected function prepareForValidation(): void
     {
-        ProductFormRules::prepare($this);
+        RegrasFormularioProduto::prepare($this);
 
-        $removeIds = $this->input('remove_image_ids', []);
+        $ids = $this->input('remove_image_ids', []);
 
-        if (! is_array($removeIds)) {
-            $removeIds = [];
+        if (! is_array($ids)) {
+            $ids = [];
         }
 
         $this->merge([
             'remove_image_ids' => array_values(array_filter(
-                array_map(static fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null, $removeIds),
+                array_map(static fn (mixed $id): ?int => is_numeric($id) ? (int) $id : null, $ids),
                 static fn (?int $id): bool => $id !== null,
             )),
         ]);
@@ -41,16 +41,16 @@ class UpdateProductRequest extends FormRequest
      */
     public function rules(): array
     {
-        $product = $this->product();
+        $produto = $this->produto();
 
         return array_merge(
-            ProductFormRules::newImages(required: false),
-            ProductFormRules::attributes($product),
+            RegrasFormularioProduto::newImages(required: false),
+            RegrasFormularioProduto::attributes($produto),
             [
                 'remove_image_ids' => ['sometimes', 'array', 'distinct'],
                 'remove_image_ids.*' => [
                     'integer',
-                    Rule::exists('product_images', 'id')->where('product_id', $product->id),
+                    Rule::exists('product_images', 'id')->where('product_id', $produto->id),
                 ],
             ],
         );
@@ -63,16 +63,16 @@ class UpdateProductRequest extends FormRequest
                 return;
             }
 
-            $product = $this->product()->loadMissing('images');
-            $removeIds = $this->input('remove_image_ids', []);
-            $kept = $product->images->whereNotIn('id', $removeIds)->count();
-            $incoming = count($this->newImageFiles());
-            $total = $kept + $incoming;
+            $produto = $this->produto()->loadMissing('imagens');
+            $ids = $this->input('remove_image_ids', []);
+            $mantidas = $produto->imagens->whereNotIn('id', $ids)->count();
+            $novas = count($this->novosArquivosImagem());
+            $total = $mantidas + $novas;
 
             if ($total < 1 || $total > 5) {
                 $validator->errors()->add(
                     'images',
-                    __('The product must have between 1 and 5 images after the update. Files must be chosen again if validation fails.'),
+                    'O produto deve ficar com 1 a 5 imagens após a atualização. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
                 );
             }
         });
@@ -83,27 +83,27 @@ class UpdateProductRequest extends FormRequest
      */
     public function messages(): array
     {
-        return array_merge(ProductFormRules::messages(), [
-            'remove_image_ids.*.exists' => __('The selected image does not belong to this product.'),
+        return array_merge(RegrasFormularioProduto::messages(), [
+            'remove_image_ids.*.exists' => 'A imagem selecionada não pertence a este produto.',
         ]);
     }
 
-    public function product(): Product
+    public function produto(): Produto
     {
-        /** @var Product $product */
-        $product = $this->route('product');
+        /** @var Produto $produto */
+        $produto = $this->route('produto');
 
-        return $product;
+        return $produto;
     }
 
     /**
      * @return list<UploadedFile>
      */
-    public function newImageFiles(): array
+    public function novosArquivosImagem(): array
     {
         return array_values(array_filter(
             Arr::wrap($this->file('images')),
-            static fn (mixed $file): bool => $file instanceof UploadedFile,
+            static fn (mixed $arquivo): bool => $arquivo instanceof UploadedFile,
         ));
     }
 }

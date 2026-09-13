@@ -1,34 +1,42 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProdutoController;
+use App\Http\Controllers\Loja\CarrinhoController;
+use App\Http\Controllers\Loja\CatalogoController;
+use App\Http\Controllers\Loja\ProdutoController as ProdutoLojaController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Store\CartController;
-use App\Http\Controllers\Store\CatalogController;
-use App\Http\Controllers\Store\ProductController as StoreProductController;
+use App\Models\Produto;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', CatalogController::class)->name('home');
-Route::get('/products/{product}', [StoreProductController::class, 'show'])->name('store.products.show');
-Route::redirect('/product-details', '/', 302);
+Route::get('/', CatalogoController::class)->name('inicio');
+Route::get('/produtos/{produto}', [ProdutoLojaController::class, 'show'])->name('loja.produtos.exibir');
+Route::get('/carrinho', [CarrinhoController::class, 'index'])->name('carrinho');
+Route::post('/carrinho/itens', [CarrinhoController::class, 'adicionarItem'])->name('loja.carrinho.itens.adicionar')->block(10, 10);
+Route::patch('/carrinho/itens/{item}', [CarrinhoController::class, 'atualizarItem'])->name('loja.carrinho.itens.atualizar')->block(10, 10);
+Route::delete('/carrinho/itens/{item}', [CarrinhoController::class, 'removerItem'])->name('loja.carrinho.itens.remover')->block(10, 10);
 
-Route::get('/cart', [CartController::class, 'index'])->name('cart');
-Route::post('/cart/items', [CartController::class, 'storeItem'])->name('store.cart.items.store')->block(10, 10);
-Route::patch('/cart/items/{item}', [CartController::class, 'updateItem'])->name('store.cart.items.update')->block(10, 10);
-Route::delete('/cart/items/{item}', [CartController::class, 'destroyItem'])->name('store.cart.items.destroy')->block(10, 10);
+Route::redirect('/product-details', '/', 302);
+Route::get('/products/{produto}', function (Produto $produto) {
+    return redirect()->route('loja.produtos.exibir', $produto);
+});
+Route::redirect('/cart', '/carrinho');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'can:access-admin'])->group(function () {
-    Route::get('/admin/dashboard', DashboardController::class)->name('admin.dashboard');
-    Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products.index');
-    Route::get('/admin/products/create', [ProductController::class, 'create'])->name('admin.products.create');
-    Route::post('/admin/products', [ProductController::class, 'store'])->name('admin.products.store');
-    Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
-    Route::patch('/admin/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
-    Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+Route::middleware(['auth', 'can:acessar-admin'])->group(function () {
+    Route::get('/admin/painel', DashboardController::class)->name('admin.painel');
+    Route::get('/admin/produtos', [ProdutoController::class, 'index'])->name('admin.produtos.index');
+    Route::get('/admin/produtos/criar', [ProdutoController::class, 'create'])->name('admin.produtos.criar');
+    Route::post('/admin/produtos', [ProdutoController::class, 'store'])->name('admin.produtos.salvar');
+    Route::get('/admin/produtos/{produto}/editar', [ProdutoController::class, 'edit'])->name('admin.produtos.editar');
+    Route::patch('/admin/produtos/{produto}', [ProdutoController::class, 'update'])->name('admin.produtos.atualizar');
+    Route::delete('/admin/produtos/{produto}', [ProdutoController::class, 'destroy'])->name('admin.produtos.excluir');
+    Route::redirect('/admin/dashboard', '/admin/painel');
+    Route::redirect('/admin/products', '/admin/produtos');
+    Route::redirect('/admin/products/create', '/admin/produtos/criar');
 });
 
 Route::middleware('auth')->group(function () {

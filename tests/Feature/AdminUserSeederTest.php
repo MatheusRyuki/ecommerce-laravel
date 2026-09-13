@@ -13,7 +13,7 @@ class AdminUserSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeder_creates_administrator_with_hashed_password(): void
+    public function test_seeder_cria_administrador_com_senha_hasheada(): void
     {
         config([
             'admin.name' => 'Administrador',
@@ -32,7 +32,7 @@ class AdminUserSeederTest extends TestCase
         $this->assertTrue(Hash::check('senha-forte-de-teste-123', $admin->password));
     }
 
-    public function test_seeder_can_run_again_without_duplicating_or_changing_password(): void
+    public function test_seeder_pode_rodar_de_novo_sem_duplicar_nem_trocar_senha(): void
     {
         config([
             'admin.name' => 'Administrador',
@@ -54,7 +54,7 @@ class AdminUserSeederTest extends TestCase
         $this->assertTrue(Hash::check('senha-inicial-123456789', $admin->fresh()->password));
     }
 
-    public function test_seeder_refuses_to_promote_an_existing_regular_user(): void
+    public function test_seeder_recusa_promover_usuario_comum_existente(): void
     {
         $user = User::factory()->create([
             'name' => 'Usuário Comum',

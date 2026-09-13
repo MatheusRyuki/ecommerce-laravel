@@ -2,4 +2,4 @@
 
 namespace App\Cart;
 
-class CannotAddToCartException extends CartException {}
+class ExcecaoNaoPodeAdicionarCarrinho extends ExcecaoCarrinho {}

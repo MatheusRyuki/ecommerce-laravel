@@ -7,7 +7,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'resources/js/admin-product-form.js',
+                'resources/js/formulario-produto-admin.js',
             ],
             refresh: true,
         }),

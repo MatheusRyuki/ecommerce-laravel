@@ -2,41 +2,41 @@
 
 namespace App\Support;
 
-final class Money
+final class Dinheiro
 {
-    public static function multiply(string $amount, int $quantity): string
+    public static function multiplicar(string $valor, int $quantidade): string
     {
-        return self::scale(bcmul($amount, (string) $quantity, 4));
+        return self::casas(bcmul($valor, (string) $quantidade, 4));
     }
 
-    public static function add(string ...$amounts): string
+    public static function somar(string ...$valores): string
     {
-        $sum = '0';
+        $soma = '0';
 
-        foreach ($amounts as $amount) {
-            $sum = bcadd($sum, $amount, 4);
+        foreach ($valores as $valor) {
+            $soma = bcadd($soma, $valor, 4);
         }
 
-        return self::scale($sum);
+        return self::casas($soma);
     }
 
-    public static function formatBrl(string $amount): string
+    public static function formatarBrl(string $valor): string
     {
-        $normalized = self::scale($amount);
-        $negative = str_starts_with($normalized, '-');
+        $normalizado = self::casas($valor);
+        $negativo = str_starts_with($normalizado, '-');
 
-        if ($negative) {
-            $normalized = substr($normalized, 1);
+        if ($negativo) {
+            $normalizado = substr($normalizado, 1);
         }
 
-        [$whole, $fraction] = array_pad(explode('.', $normalized, 2), 2, '00');
-        $grouped = preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $whole) ?? $whole;
+        [$inteiro, $fracao] = array_pad(explode('.', $normalizado, 2), 2, '00');
+        $agrupado = preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $inteiro) ?? $inteiro;
 
-        return ($negative ? '-' : '').'R$ '.$grouped.','.$fraction;
+        return ($negativo ? '-' : '').'R$ '.$agrupado.','.$fracao;
     }
 
-    private static function scale(string $amount): string
+    private static function casas(string $valor): string
     {
-        return bcadd($amount, '0', 2);
+        return bcadd($valor, '0', 2);
     }
 }

@@ -2,22 +2,24 @@
 
 namespace Database\Factories;
 
-use App\Models\Product;
-use App\Models\ProductImage;
+use App\Models\Produto;
+use App\Models\ImagemProduto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<ProductImage>
+ * @extends Factory<ImagemProduto>
  */
-class ProductImageFactory extends Factory
+class ImagemProdutoFactory extends Factory
 {
+    protected $model = ImagemProduto::class;
+
     /**
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'product_id' => Product::factory(),
+            'product_id' => Produto::factory(),
             'path' => 'products/'.fake()->uuid().'.jpg',
             'position' => 0,
         ];

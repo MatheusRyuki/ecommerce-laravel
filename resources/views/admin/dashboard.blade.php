@@ -24,11 +24,11 @@
                         {{ __('Não há template administrativo no pacote da loja; esta tela usa o layout autenticado do Breeze.') }}
                     </p>
                     <p class="flex flex-wrap gap-3">
-                        <a href="{{ route('admin.products.index') }}" class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            {{ __('Products') }}
+                        <a href="{{ route('admin.produtos.index') }}" class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Produtos
                         </a>
-                        <a id="create-product-link" href="{{ route('admin.products.create') }}" class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            {{ __('Create Product') }}
+                        <a id="create-product-link" href="{{ route('admin.produtos.criar') }}" class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Cadastrar produto
                         </a>
                     </p>
                 </div>

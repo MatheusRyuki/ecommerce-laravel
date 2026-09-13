@@ -6,7 +6,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="footer_text">
-                        <a class="footer_logo" href="{{ route('home') }}">
+                        <a class="footer_logo" href="{{ route('inicio') }}">
                             <img src="{{ asset('frontend/images/logo.png') }}" alt="Freeit" class="img-fluid">
                         </a>
                         <ul class="d-flex flex-wrap">

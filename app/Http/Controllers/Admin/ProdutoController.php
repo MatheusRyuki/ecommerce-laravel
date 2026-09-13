@@ -3,101 +3,101 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreProductRequest;
-use App\Http\Requests\UpdateProductRequest;
-use App\Models\Product;
-use App\Services\ProductCreator;
-use App\Services\ProductDeleter;
-use App\Services\ProductUpdater;
-use App\Support\ProductColors;
+use App\Http\Requests\RequisicaoAtualizacaoProduto;
+use App\Http\Requests\RequisicaoCadastroProduto;
+use App\Models\Produto;
+use App\Services\AtualizadorProduto;
+use App\Services\CriadorProduto;
+use App\Services\ExcluirProduto;
+use App\Support\CoresProduto;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use RuntimeException;
 
-class ProductController extends Controller
+class ProdutoController extends Controller
 {
     public function index(): View
     {
-        $products = Product::query()
-            ->with('images')
+        $produtos = Produto::query()
+            ->with('imagens')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(15);
 
-        return view('admin.products.index', [
-            'products' => $products,
+        return view('admin.produtos.index', [
+            'produtos' => $produtos,
         ]);
     }
 
     public function create(): View
     {
-        return view('admin.products.create', [
-            'colors' => ProductColors::all(),
+        return view('admin.produtos.criar', [
+            'cores' => CoresProduto::todas(),
         ]);
     }
 
-    public function store(StoreProductRequest $request, ProductCreator $creator): RedirectResponse
+    public function store(RequisicaoCadastroProduto $request, CriadorProduto $criador): RedirectResponse
     {
         try {
-            $creator->create($request->validated(), $request->file('images', []));
+            $criador->criar($request->validated(), $request->file('images', []));
         } catch (UniqueConstraintViolationException) {
             return back()
-                ->withErrors(['sku' => __('This SKU is already in use.')])
+                ->withErrors(['sku' => 'Este SKU já está em uso.'])
                 ->withInput();
-        } catch (RuntimeException $exception) {
+        } catch (RuntimeException $excecao) {
             return back()
-                ->withErrors(['images' => $exception->getMessage()])
+                ->withErrors(['images' => $excecao->getMessage()])
                 ->withInput();
         }
 
         return redirect()
-            ->route('admin.products.index')
-            ->with('status', 'product-created');
+            ->route('admin.produtos.index')
+            ->with('status', 'produto-criado');
     }
 
-    public function edit(Product $product): View
+    public function edit(Produto $produto): View
     {
-        $product->load('images');
+        $produto->load('imagens');
 
-        return view('admin.products.edit', [
-            'product' => $product,
-            'colors' => ProductColors::all(),
+        return view('admin.produtos.editar', [
+            'produto' => $produto,
+            'cores' => CoresProduto::todas(),
         ]);
     }
 
-    public function update(UpdateProductRequest $request, Product $product, ProductUpdater $updater): RedirectResponse
+    public function update(RequisicaoAtualizacaoProduto $request, Produto $produto, AtualizadorProduto $atualizador): RedirectResponse
     {
-        $attributes = $request->safe()->except(['images', 'remove_image_ids']);
+        $atributos = $request->safe()->except(['images', 'remove_image_ids']);
 
         try {
-            $updater->update(
-                $product,
-                $attributes,
-                $request->newImageFiles(),
+            $atualizador->atualizar(
+                $produto,
+                $atributos,
+                $request->novosArquivosImagem(),
                 $request->validated('remove_image_ids') ?? [],
             );
         } catch (UniqueConstraintViolationException) {
             return back()
-                ->withErrors(['sku' => __('This SKU is already in use.')])
+                ->withErrors(['sku' => 'Este SKU já está em uso.'])
                 ->withInput();
-        } catch (RuntimeException $exception) {
+        } catch (RuntimeException $excecao) {
             return back()
-                ->withErrors(['images' => $exception->getMessage()])
+                ->withErrors(['images' => $excecao->getMessage()])
                 ->withInput();
         }
 
         return redirect()
-            ->route('admin.products.index')
-            ->with('status', 'product-updated');
+            ->route('admin.produtos.index')
+            ->with('status', 'produto-atualizado');
     }
 
-    public function destroy(Product $product, ProductDeleter $deleter): RedirectResponse
+    public function destroy(Produto $produto, ExcluirProduto $excluir): RedirectResponse
     {
-        $pending = $deleter->delete($product);
+        $pendencias = $excluir->excluir($produto);
 
         return redirect()
-            ->route('admin.products.index')
-            ->with('status', $pending === [] ? 'product-deleted' : 'product-deleted-with-pending-cleanup');
+            ->route('admin.produtos.index')
+            ->with('status', $pendencias === [] ? 'produto-excluido' : 'produto-excluido-com-limpeza-pendente');
     }
 }

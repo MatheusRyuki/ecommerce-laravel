@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Store;
+namespace App\Http\Controllers\Loja;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Produto;
 use Illuminate\View\View;
 
-class ProductController extends Controller
+class ProdutoController extends Controller
 {
-    public function show(Product $product): View
+    public function show(Produto $produto): View
     {
-        $product->load('images');
+        $produto->load('imagens');
 
-        return view('store.product-details', [
-            'product' => $product,
+        return view('loja.detalhes-produto', [
+            'produto' => $produto,
         ]);
     }
 }

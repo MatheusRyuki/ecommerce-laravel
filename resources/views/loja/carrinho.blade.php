@@ -1,25 +1,25 @@
-@extends('store.layouts.app')
+@extends('loja.layouts.app')
 
-@section('title', 'Cart')
+@section('title', 'Carrinho')
 
 @section('content')
     <section class="wsus__cart mt_170 pb_100">
         <div class="container">
             @if (session('status'))
-                @include('store.partials.alert', ['type' => 'success', 'dismissible' => true, 'message' => session('status')])
+                @include('loja.partials.alert', ['type' => 'success', 'dismissible' => true, 'message' => session('status')])
             @endif
 
-            @if ($lines->isEmpty())
+            @if ($linhas->isEmpty())
                 <div class="row justify-content-center">
                     <div class="col-xl-10">
-                        <p>{{ __('Your cart is empty.') }}</p>
+                        <p>{{ 'Seu carrinho está vazio.' }}</p>
                         <div class="wsus__cart_summary">
-                            <h2>{{ __('Order summary') }}</h2>
+                            <h2>{{ 'Resumo do pedido' }}</h2>
                             <div class="wsus__cart_list_pricing">
-                                <h6>{{ __('Product total') }} <span>{{ $formattedProductTotal }}</span></h6>
+                                <h6>{{ 'Total dos produtos' }} <span>{{ $totalProdutosFormatado }}</span></h6>
                             </div>
                         </div>
-                        <a href="{{ route('home') }}" class="common_btn">{{ __('Continue Shopping') }}</a>
+                        <a href="{{ route('inicio') }}" class="common_btn">{{ 'Continuar comprando' }}</a>
                     </div>
                 </div>
             @else
@@ -30,65 +30,65 @@
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th class="pro_img">{{ __('Item') }}</th>
-                                            <th class="pro_name">{{ __('Name') }}</th>
-                                            <th class="pro_select">{{ __('Quantity') }}</th>
-                                            <th class="pro_tk">{{ __('Price') }}</th>
-                                            <th class="pro_icon">{{ __('Action') }}</th>
+                                            <th class="pro_img">{{ 'Item' }}</th>
+                                            <th class="pro_name">Nome</th>
+                                            <th class="pro_select">{{ 'Quantidade' }}</th>
+                                            <th class="pro_tk">{{ 'Preço' }}</th>
+                                            <th class="pro_icon">{{ 'Ação' }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($lines as $line)
+                                        @foreach ($linhas as $linha)
                                             @php
-                                                $lineErrorKey = 'cart_items.'.$line->id;
-                                                $quantityValue = old('updating_item') === $line->id ? old('quantity', $line->quantity) : $line->quantity;
+                                                $linhaErrorKey = 'cart_items.'.$linha->id;
+                                                $quantityValue = old('updating_item') === $linha->id ? old('quantity', $linha->quantidade) : $linha->quantidade;
                                             @endphp
                                             <tr>
                                                 <td class="pro_img">
-                                                    @include('store.partials.product-photo', [
-                                                        'url' => $line->coverUrl(),
-                                                        'alt' => $line->name().' ('.$line->color.')',
+                                                    @include('loja.partials.foto-produto', [
+                                                        'url' => $linha->urlCapa(),
+                                                        'alt' => $linha->nome().' ('.$linha->cor.')',
                                                     ])
                                                 </td>
                                                 <td class="pro_name">
-                                                    @if ($line->canOpenDetails())
-                                                        <a href="{{ route('store.products.show', $line->product) }}">{{ $line->name() }}</a>
+                                                    @if ($linha->podeAbrirDetalhes())
+                                                        <a href="{{ route('loja.produtos.exibir', $linha->produto) }}">{{ $linha->nome() }}</a>
                                                     @else
-                                                        <span>{{ $line->name() }}</span>
+                                                        <span>{{ $linha->nome() }}</span>
                                                     @endif
-                                                    <p class="mb-0">{{ __('Color') }}: {{ $line->color }}</p>
-                                                    @if ($line->isUnavailable())
-                                                        @include('store.partials.alert', ['type' => 'warning', 'message' => __('Unavailable'), 'class' => 'mt-2 mb-0'])
-                                                    @elseif ($line->needsAdjustment())
-                                                        @include('store.partials.alert', ['type' => 'warning', 'message' => __('This item needs adjustment'), 'class' => 'mt-2 mb-0'])
+                                                    <p class="mb-0">Cor: {{ $linha->rotuloCor() }}</p>
+                                                    @if ($linha->estaIndisponivel())
+                                                        @include('loja.partials.alert', ['type' => 'warning', 'message' => 'Indisponível', 'class' => 'mt-2 mb-0'])
+                                                    @elseif ($linha->precisaAjuste())
+                                                        @include('loja.partials.alert', ['type' => 'warning', 'message' => 'Este item precisa de ajuste', 'class' => 'mt-2 mb-0'])
                                                     @endif
                                                 </td>
                                                 <td class="pro_select">
                                                     <div class="cart-line-field">
-                                                        <span class="cart-line-field__label">{{ __('Quantity') }}</span>
+                                                        <span class="cart-line-field__label">{{ 'Quantidade' }}</span>
                                                         <div>
-                                                            @if ($line->canChangeQuantity())
-                                                                <form method="POST" action="{{ route('store.cart.items.update', $line->id) }}" class="cart-qty-form" id="cart-qty-form-{{ $line->id }}">
+                                                            @if ($linha->podeAlterarQuantidade())
+                                                                <form method="POST" action="{{ route('loja.carrinho.itens.atualizar', $linha->id) }}" class="cart-qty-form" id="cart-qty-form-{{ $linha->id }}">
                                                                     @csrf
                                                                     @method('PATCH')
-                                                                    <input type="hidden" name="updating_item" value="{{ $line->id }}">
+                                                                    <input type="hidden" name="updating_item" value="{{ $linha->id }}">
                                                                     <div class="quentity_btn">
-                                                                        <button class="btn btn-danger minus" type="button" aria-label="{{ __('Decrease quantity') }}"><i class="fas fa-minus" aria-hidden="true"></i></button>
-                                                                        <input id="cart-qty-{{ $line->id }}" type="number" name="quantity" min="1" step="1" required data-saved="{{ $line->quantity }}" value="{{ $quantityValue }}" aria-label="{{ __('Quantity') }}">
-                                                                        <button class="btn btn-success plus" type="button" aria-label="{{ __('Increase quantity') }}"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                                                                        <button class="btn btn-danger minus" type="button" aria-label="{{ 'Diminuir quantidade' }}"><i class="fas fa-minus" aria-hidden="true"></i></button>
+                                                                        <input id="cart-qty-{{ $linha->id }}" type="number" name="quantity" min="1" step="1" required data-saved="{{ $linha->quantidade }}" value="{{ $quantityValue }}" aria-label="{{ 'Quantidade' }}">
+                                                                        <button class="btn btn-success plus" type="button" aria-label="{{ 'Aumentar quantidade' }}"><i class="fas fa-plus" aria-hidden="true"></i></button>
                                                                     </div>
-                                                                    <button type="submit" class="common_btn mt-2">{{ __('Update') }}</button>
+                                                                    <button type="submit" class="common_btn mt-2">{{ 'Atualizar' }}</button>
                                                                     <div class="cart-qty-pending mt-2 d-none">
-                                                                        @include('store.partials.alert', ['type' => 'warning', 'message' => __('Unsaved quantity'), 'class' => 'mb-0'])
+                                                                        @include('loja.partials.alert', ['type' => 'warning', 'message' => 'Quantidade ainda não salva', 'class' => 'mb-0'])
                                                                     </div>
                                                                 </form>
                                                             @else
                                                                 <div class="quentity_btn">
-                                                                    <input type="text" value="{{ $line->quantity }}" readonly disabled aria-label="{{ __('Quantity') }}">
+                                                                    <input type="text" value="{{ $linha->quantidade }}" readonly disabled aria-label="{{ 'Quantidade' }}">
                                                                 </div>
                                                             @endif
-                                                            @if ($errors->has($lineErrorKey))
-                                                                @include('store.partials.alert', ['type' => 'danger', 'message' => $errors->first($lineErrorKey), 'class' => 'mt-2 mb-0'])
+                                                            @if ($errors->has($linhaErrorKey))
+                                                                @include('loja.partials.alert', ['type' => 'danger', 'message' => $errors->first($linhaErrorKey), 'class' => 'mt-2 mb-0'])
                                                             @endif
                                                         </div>
                                                     </div>
@@ -96,22 +96,22 @@
                                                 <td class="pro_tk">
                                                     <dl class="cart-line-prices mb-0">
                                                         <div class="cart-line-field">
-                                                            <dt class="cart-line-field__label">{{ __('Unit price') }}</dt>
-                                                            <dd class="mb-0">{{ $line->formattedUnitPrice() ?? '—' }}</dd>
+                                                            <dt class="cart-line-field__label">{{ 'Preço unitário' }}</dt>
+                                                            <dd class="mb-0">{{ $linha->precoUnitarioFormatado() ?? '—' }}</dd>
                                                         </div>
                                                         <div class="cart-line-field mt-2">
-                                                            <dt class="cart-line-field__label">{{ __('Subtotal') }}</dt>
-                                                            <dd class="mb-0">{{ $line->formattedSubtotal() ?? '—' }}</dd>
+                                                            <dt class="cart-line-field__label">Subtotal</dt>
+                                                            <dd class="mb-0">{{ $linha->subtotalFormatado() ?? '—' }}</dd>
                                                         </div>
                                                     </dl>
                                                 </td>
                                                 <td class="pro_icon">
                                                     <div class="cart-line-field">
-                                                        <span class="cart-line-field__label">{{ __('Action') }}</span>
-                                                        <form method="POST" action="{{ route('store.cart.items.destroy', $line->id) }}" id="cart-remove-form-{{ $line->id }}">
+                                                        <span class="cart-line-field__label">{{ 'Ação' }}</span>
+                                                        <form method="POST" action="{{ route('loja.carrinho.itens.remover', $linha->id) }}" id="cart-remove-form-{{ $linha->id }}">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" aria-label="{{ __('Remove') }}">
+                                                            <button type="submit" aria-label="Remover">
                                                                 <i class="fas fa-times" aria-hidden="true"></i>
                                                             </button>
                                                         </form>
@@ -129,13 +129,13 @@
                 <div class="row justify-content-center">
                     <div class="col-xl-10">
                         <div class="wsus__cart_summary">
-                            <h2>{{ __('Order summary') }}</h2>
-                            @if ($formattedProductTotal !== null)
+                            <h2>{{ 'Resumo do pedido' }}</h2>
+                            @if ($totalProdutosFormatado !== null)
                                 <div class="wsus__cart_list_pricing">
-                                    <h6>{{ __('Product total') }} <span>{{ $formattedProductTotal }}</span></h6>
+                                    <h6>{{ 'Total dos produtos' }} <span>{{ $totalProdutosFormatado }}</span></h6>
                                 </div>
                             @else
-                                @include('store.partials.alert', ['type' => 'warning', 'message' => __('The product total cannot be calculated until every item is available.'), 'class' => 'mb-0'])
+                                @include('loja.partials.alert', ['type' => 'warning', 'message' => 'O total dos produtos só aparece quando todos os itens estão disponíveis.', 'class' => 'mb-0'])
                             @endif
                         </div>
                     </div>
@@ -145,10 +145,10 @@
                     <div class="col-xl-10">
                         <ul class="wsus__cart_list_bottom_btn">
                             <li>
-                                <a href="{{ route('home') }}" class="common_btn cont_shop">{{ __('Continue Shopping') }}</a>
+                                <a href="{{ route('inicio') }}" class="common_btn cont_shop">{{ 'Continuar comprando' }}</a>
                             </li>
                             <li>
-                                <span class="common_btn common_btn_2 pe-none opacity-50" aria-disabled="true">{{ __('Checkout') }}</span>
+                                <span class="common_btn common_btn_2 pe-none opacity-50" aria-disabled="true">{{ 'Finalizar compra' }}</span>
                             </li>
                         </ul>
                     </div>

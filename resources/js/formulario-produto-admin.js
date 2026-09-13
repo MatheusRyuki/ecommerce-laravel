@@ -1,6 +1,6 @@
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
-import '../css/admin-product-form.css';
+import '../css/formulario-produto-admin.css';
 
 const EMPTY_HTML = ['<p><br></p>', '<p></p>', ''];
 

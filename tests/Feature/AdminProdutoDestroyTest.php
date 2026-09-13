@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Product;
-use App\Models\ProductImage;
+use App\Models\Produto;
+use App\Models\ImagemProduto;
 use App\Models\User;
-use App\Services\ProductDeleter;
+use App\Services\ExcluirProduto;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
@@ -14,77 +14,77 @@ use Mockery;
 use RuntimeException;
 use Tests\TestCase;
 
-class AdminProductDestroyTest extends TestCase
+class AdminProdutoDestroyTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * @param  list<string>  $paths
      */
-    private function productWithImages(array $overrides = [], array $paths = ['products/cover.png']): Product
+    private function productWithImages(array $overrides = [], array $paths = ['products/cover.png']): Produto
     {
-        $product = Product::factory()->create($overrides);
+        $produto = Produto::factory()->create($overrides);
 
         foreach (array_values($paths) as $position => $path) {
             Storage::disk('public')->put($path, 'image-'.$position);
-            ProductImage::factory()->create([
-                'product_id' => $product->id,
+            ImagemProduto::factory()->create([
+                'product_id' => $produto->id,
                 'path' => $path,
                 'position' => $position,
             ]);
         }
 
-        return $product->refresh()->load('images');
+        return $produto->refresh()->load('imagens');
     }
 
-    public function test_guest_cannot_delete_a_product(): void
+    public function test_visitante_nao_pode_excluir_produto(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages();
+        $produto = $this->productWithImages();
 
-        $this->delete(route('admin.products.destroy', $product))
+        $this->delete(route('admin.produtos.excluir', $produto))
             ->assertRedirect(route('login'));
 
-        $this->assertDatabaseHas('products', ['id' => $product->id]);
+        $this->assertDatabaseHas('products', ['id' => $produto->id]);
         Storage::disk('public')->assertExists('products/cover.png');
     }
 
-    public function test_regular_user_cannot_delete_a_product(): void
+    public function test_usuario_comum_nao_pode_excluir_produto(): void
     {
         Storage::fake('public');
         $user = User::factory()->create(['is_admin' => false]);
-        $product = $this->productWithImages();
+        $produto = $this->productWithImages();
 
         $this->actingAs($user)
-            ->delete(route('admin.products.destroy', $product))
+            ->delete(route('admin.produtos.excluir', $produto))
             ->assertForbidden();
 
-        $this->assertDatabaseHas('products', ['id' => $product->id]);
+        $this->assertDatabaseHas('products', ['id' => $produto->id]);
         Storage::disk('public')->assertExists('products/cover.png');
     }
 
-    public function test_administrator_can_delete_a_product_with_multiple_images(): void
+    public function test_administrador_pode_excluir_produto_com_varias_imagens(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages(['name' => 'Temp Delete', 'sku' => 'TEMP-DEL-1'], [
+        $produto = $this->productWithImages(['name' => 'Temp Delete', 'sku' => 'TEMP-DEL-1'], [
             'products/temp-a.png',
             'products/temp-b.png',
         ]);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.index'))
-            ->delete(route('admin.products.destroy', $product))
-            ->assertRedirect(route('admin.products.index'))
-            ->assertSessionHas('status', 'product-deleted');
+            ->from(route('admin.produtos.index'))
+            ->delete(route('admin.produtos.excluir', $produto))
+            ->assertRedirect(route('admin.produtos.index'))
+            ->assertSessionHas('status', 'produto-excluido');
 
-        $this->assertDatabaseMissing('products', ['id' => $product->id]);
-        $this->assertDatabaseMissing('product_images', ['product_id' => $product->id]);
+        $this->assertDatabaseMissing('products', ['id' => $produto->id]);
+        $this->assertDatabaseMissing('product_images', ['product_id' => $produto->id]);
         Storage::disk('public')->assertMissing('products/temp-a.png');
         Storage::disk('public')->assertMissing('products/temp-b.png');
     }
 
-    public function test_deleting_a_product_does_not_affect_another_product_or_its_images(): void
+    public function test_exclusao_nao_afeta_outro_produto_nem_imagens(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
@@ -92,8 +92,8 @@ class AdminProductDestroyTest extends TestCase
         $remove = $this->productWithImages(['sku' => 'GONE-1'], ['products/gone.png']);
 
         $this->actingAs($admin)
-            ->delete(route('admin.products.destroy', $remove))
-            ->assertRedirect(route('admin.products.index'));
+            ->delete(route('admin.produtos.excluir', $remove))
+            ->assertRedirect(route('admin.produtos.index'));
 
         $this->assertDatabaseHas('products', ['id' => $keep->id, 'sku' => 'KEEP-1']);
         $this->assertDatabaseHas('product_images', ['product_id' => $keep->id, 'path' => 'products/keep.png']);
@@ -101,86 +101,86 @@ class AdminProductDestroyTest extends TestCase
         Storage::disk('public')->assertMissing('products/gone.png');
     }
 
-    public function test_missing_product_and_repeated_delete_return_not_found(): void
+    public function test_produto_ausente_e_exclusao_repetida_retornam_nao_encontrado(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages();
-        $id = $product->id;
+        $produto = $this->productWithImages();
+        $id = $produto->id;
 
         $this->actingAs($admin)
-            ->delete('/admin/products/99999')
+            ->delete('/admin/produtos/99999')
             ->assertNotFound();
 
         $this->actingAs($admin)
-            ->delete(route('admin.products.destroy', $product))
-            ->assertRedirect(route('admin.products.index'));
+            ->delete(route('admin.produtos.excluir', $produto))
+            ->assertRedirect(route('admin.produtos.index'));
 
         $this->actingAs($admin)
-            ->delete('/admin/products/'.$id)
+            ->delete('/admin/produtos/'.$id)
             ->assertNotFound();
     }
 
-    public function test_get_request_does_not_delete_a_product(): void
+    public function test_get_nao_exclui_produto(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages();
+        $produto = $this->productWithImages();
 
         $this->actingAs($admin)
-            ->get('/admin/products/'.$product->id)
+            ->get('/admin/produtos/'.$produto->id)
             ->assertMethodNotAllowed();
 
-        $this->assertDatabaseHas('products', ['id' => $product->id]);
+        $this->assertDatabaseHas('products', ['id' => $produto->id]);
         Storage::disk('public')->assertExists('products/cover.png');
     }
 
-    public function test_delete_succeeds_when_one_image_file_is_already_missing(): void
+    public function test_exclusao_segue_se_um_arquivo_de_imagem_ja_faltava(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages(['sku' => 'MISS-1'], [
+        $produto = $this->productWithImages(['sku' => 'MISS-1'], [
             'products/exists.png',
             'products/already-gone.png',
         ]);
         Storage::disk('public')->delete('products/already-gone.png');
 
         $this->actingAs($admin)
-            ->delete(route('admin.products.destroy', $product))
-            ->assertRedirect(route('admin.products.index'))
-            ->assertSessionHas('status', 'product-deleted');
+            ->delete(route('admin.produtos.excluir', $produto))
+            ->assertRedirect(route('admin.produtos.index'))
+            ->assertSessionHas('status', 'produto-excluido');
 
-        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+        $this->assertDatabaseMissing('products', ['id' => $produto->id]);
         Storage::disk('public')->assertMissing('products/exists.png');
     }
 
-    public function test_database_failure_preserves_records_and_files(): void
+    public function test_falha_no_banco_preserva_registros_e_arquivos(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages(['sku' => 'FAIL-DB']);
+        $produto = $this->productWithImages(['sku' => 'FAIL-DB']);
 
-        Product::deleting(function (): void {
+        Produto::deleting(function (): void {
             throw new RuntimeException('Forced database failure.');
         });
 
         try {
             $this->actingAs($admin)
-                ->delete(route('admin.products.destroy', $product));
+                ->delete(route('admin.produtos.excluir', $produto));
         } finally {
-            Product::flushEventListeners();
+            Produto::flushEventListeners();
         }
 
-        $this->assertDatabaseHas('products', ['id' => $product->id, 'sku' => 'FAIL-DB']);
-        $this->assertDatabaseHas('product_images', ['product_id' => $product->id]);
+        $this->assertDatabaseHas('products', ['id' => $produto->id, 'sku' => 'FAIL-DB']);
+        $this->assertDatabaseHas('product_images', ['product_id' => $produto->id]);
         Storage::disk('public')->assertExists('products/cover.png');
     }
 
-    public function test_physical_delete_failure_after_commit_keeps_database_deleted_and_tries_remaining_files(): void
+    public function test_falha_fisica_apos_commit_mantem_exclusao_no_banco(): void
     {
         Storage::fake('public');
         Log::spy();
-        $product = $this->productWithImages(['sku' => 'PEND-1'], [
+        $produto = $this->productWithImages(['sku' => 'PEND-1'], [
             'products/fail.png',
             'products/ok.png',
         ]);
@@ -191,55 +191,55 @@ class AdminProductDestroyTest extends TestCase
         $disk->shouldReceive('exists')->with('products/ok.png')->once()->andReturn(true);
         $disk->shouldReceive('delete')->with('products/ok.png')->once()->andReturn(true);
 
-        $this->app->instance(ProductDeleter::class, new ProductDeleter($disk));
+        $this->app->instance(ExcluirProduto::class, new ExcluirProduto($disk));
 
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->delete(route('admin.products.destroy', $product))
-            ->assertRedirect(route('admin.products.index'))
-            ->assertSessionHas('status', 'product-deleted-with-pending-cleanup');
+            ->delete(route('admin.produtos.excluir', $produto))
+            ->assertRedirect(route('admin.produtos.index'))
+            ->assertSessionHas('status', 'produto-excluido-com-limpeza-pendente');
 
-        $this->assertDatabaseMissing('products', ['id' => $product->id]);
-        $this->assertDatabaseMissing('product_images', ['product_id' => $product->id]);
+        $this->assertDatabaseMissing('products', ['id' => $produto->id]);
+        $this->assertDatabaseMissing('product_images', ['product_id' => $produto->id]);
         Log::shouldHaveReceived('warning')->once();
     }
 
-    public function test_deleting_the_last_product_shows_empty_state_on_the_first_page(): void
+    public function test_excluir_ultimo_produto_mostra_estado_vazio(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages(['name' => 'Only Product', 'sku' => 'ONLY-1']);
+        $produto = $this->productWithImages(['name' => 'Only Product', 'sku' => 'ONLY-1']);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.index', ['page' => 2]))
-            ->delete(route('admin.products.destroy', $product))
-            ->assertRedirect(route('admin.products.index'));
+            ->from(route('admin.produtos.index', ['page' => 2]))
+            ->delete(route('admin.produtos.excluir', $produto))
+            ->assertRedirect(route('admin.produtos.index'));
 
         $this->actingAs($admin)
-            ->get(route('admin.products.index'))
+            ->get(route('admin.produtos.index'))
             ->assertOk()
-            ->assertSee(__('Product deleted successfully.'))
-            ->assertSee(__('No products have been registered yet.'))
+            ->assertSee('Produto excluído.')
+            ->assertSee('Nenhum produto cadastrado ainda.')
             ->assertDontSee('Only Product')
             ->assertDontSee('page=2', false);
     }
 
-    public function test_index_includes_delete_confirmation_for_the_product(): void
+    public function test_listagem_inclui_confirmacao_de_exclusao(): void
     {
         $admin = User::factory()->admin()->create();
-        $product = Product::factory()->create([
+        $produto = Produto::factory()->create([
             'name' => 'Listed For Delete',
             'sku' => 'DEL-UI-1',
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.products.index'))
+            ->get(route('admin.produtos.index'))
             ->assertOk()
-            ->assertSee(__('Delete'))
+            ->assertSee('Excluir')
             ->assertSee('Listed For Delete')
             ->assertSee('DEL-UI-1')
-            ->assertSee(route('admin.products.destroy', $product), false)
+            ->assertSee(route('admin.produtos.excluir', $produto), false)
             ->assertSee('name="_method"', false)
             ->assertSee('value="DELETE"', false);
     }

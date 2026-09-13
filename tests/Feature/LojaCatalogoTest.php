@@ -2,78 +2,78 @@
 
 namespace Tests\Feature;
 
-use App\Models\Product;
-use App\Models\ProductImage;
+use App\Models\Produto;
+use App\Models\ImagemProduto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-class StoreCatalogTest extends TestCase
+class LojaCatalogoTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * @param  list<string>  $paths
      */
-    private function productWithImages(array $overrides = [], array $paths = ['products/cover.png']): Product
+    private function productWithImages(array $overrides = [], array $paths = ['products/cover.png']): Produto
     {
-        $product = Product::factory()->create($overrides);
+        $produto = Produto::factory()->create($overrides);
 
         foreach (array_values($paths) as $position => $path) {
             Storage::disk('public')->put($path, 'img-'.$position);
-            ProductImage::factory()->create([
-                'product_id' => $product->id,
+            ImagemProduto::factory()->create([
+                'product_id' => $produto->id,
                 'path' => $path,
                 'position' => $position,
             ]);
         }
 
-        return $product->refresh()->load('images');
+        return $produto->refresh()->load('imagens');
     }
 
-    public function test_catalog_and_details_are_public(): void
+    public function test_catalogo_e_detalhes_sao_publicos(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages(['name' => 'Public Bag']);
+        $produto = $this->productWithImages(['name' => 'Public Bag']);
 
-        $this->get(route('home'))->assertOk()->assertSee('Public Bag');
-        $this->get(route('store.products.show', $product))->assertOk()->assertSee('Public Bag');
+        $this->get(route('inicio'))->assertOk()->assertSee('Public Bag');
+        $this->get(route('loja.produtos.exibir', $produto))->assertOk()->assertSee('Public Bag');
     }
 
-    public function test_catalog_shows_empty_state(): void
+    public function test_catalogo_mostra_estado_vazio(): void
     {
-        $this->get(route('home'))
+        $this->get(route('inicio'))
             ->assertOk()
-            ->assertSee(__('No products are available in the store yet.'))
+            ->assertSee('Ainda não há produtos na loja.')
             ->assertDontSee('Smart Watch');
     }
 
-    public function test_catalog_shows_real_data_price_cover_and_detail_links(): void
+    public function test_catalogo_mostra_dados_preco_capa_e_links(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages([
+        $produto = $this->productWithImages([
             'name' => 'Bolsa Demo Editada',
             'sku' => 'DEMO-0001',
             'price' => '49.90',
             'qty' => 15,
         ], ['products/demo-cover.png']);
 
-        $this->get(route('home'))
+        $this->get(route('inicio'))
             ->assertOk()
             ->assertSee('Bolsa Demo Editada')
             ->assertSee('R$ 49,90')
             ->assertSee(Storage::disk('public')->url('products/demo-cover.png'), false)
-            ->assertSee(route('store.products.show', $product), false)
-            ->assertDontSee(route('store.products.show', ['product' => $product->id + 99]), false);
+            ->assertSee(route('loja.produtos.exibir', $produto), false)
+            ->assertDontSee(route('loja.produtos.exibir', ['produto' => $produto->id + 99]), false);
     }
 
-    public function test_catalog_orders_and_paginates_thirteen_products(): void
+    public function test_catalogo_ordena_e_pagina_treze_produtos(): void
     {
         $now = now();
 
         foreach (range(1, 13) as $index) {
-            Product::factory()->create([
+            Produto::factory()->create([
                 'name' => sprintf('Vitrine %02d', $index),
                 'sku' => sprintf('CAT-%02d', $index),
                 'created_at' => $now->copy()->subMinutes(13 - $index),
@@ -81,20 +81,20 @@ class StoreCatalogTest extends TestCase
             ]);
         }
 
-        $firstPage = $this->get(route('home'));
+        $firstPage = $this->get(route('inicio'));
         $firstPage->assertOk();
         $firstPage->assertSee('Vitrine 13');
         $firstPage->assertSee('Vitrine 02');
         $firstPage->assertDontSee('Vitrine 01');
         $firstPage->assertSee('page=2', false);
 
-        $this->get(route('home', ['page' => 2]))
+        $this->get(route('inicio', ['page' => 2]))
             ->assertOk()
             ->assertSee('Vitrine 01')
             ->assertDontSee('Vitrine 13');
     }
 
-    public function test_two_products_have_isolated_details_and_images(): void
+    public function test_dois_produtos_tem_detalhes_e_imagens_isolados(): void
     {
         Storage::fake('public');
         $first = $this->productWithImages([
@@ -108,7 +108,7 @@ class StoreCatalogTest extends TestCase
             'description' => '<p>Second body</p>',
         ], ['products/second.png']);
 
-        $this->get(route('store.products.show', $first))
+        $this->get(route('loja.produtos.exibir', $first))
             ->assertOk()
             ->assertSee('First Isolated')
             ->assertSee('ISO-1')
@@ -117,7 +117,7 @@ class StoreCatalogTest extends TestCase
             ->assertDontSee('Second Isolated')
             ->assertDontSee('products/second.png');
 
-        $this->get(route('store.products.show', $second))
+        $this->get(route('loja.produtos.exibir', $second))
             ->assertOk()
             ->assertSee('Second Isolated')
             ->assertSee('ISO-2')
@@ -125,18 +125,18 @@ class StoreCatalogTest extends TestCase
             ->assertDontSee('products/first.png');
     }
 
-    public function test_missing_and_deleted_products_return_not_found(): void
+    public function test_produtos_ausentes_e_excluidos_retornam_nao_encontrado(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages();
-        $id = $product->id;
-        $product->delete();
+        $produto = $this->productWithImages();
+        $id = $produto->id;
+        $produto->delete();
 
         $this->get('/products/99999')->assertNotFound();
         $this->get('/products/'.$id)->assertNotFound();
     }
 
-    public function test_gallery_handles_one_image_many_images_and_missing_file(): void
+    public function test_galeria_lida_com_uma_varias_e_arquivo_ausente(): void
     {
         Storage::fake('public');
         $single = $this->productWithImages(['sku' => 'GAL-1'], ['products/only.png']);
@@ -147,51 +147,51 @@ class StoreCatalogTest extends TestCase
         $missing = $this->productWithImages(['sku' => 'GAL-3'], ['products/gone.png']);
         Storage::disk('public')->delete('products/gone.png');
 
-        $this->get(route('store.products.show', $single))
+        $this->get(route('loja.produtos.exibir', $single))
             ->assertOk()
             ->assertSee(Storage::disk('public')->url('products/only.png'), false)
             ->assertDontSee('slider-navFive');
 
-        $manyResponse = $this->get(route('store.products.show', $many));
+        $manyResponse = $this->get(route('loja.produtos.exibir', $many));
         $manyResponse->assertOk();
         $manyResponse->assertSee(Storage::disk('public')->url('products/a.png'), false);
         $manyResponse->assertSee(Storage::disk('public')->url('products/b.png'), false);
         $manyResponse->assertSee('slider-navFive', false);
 
-        $this->get(route('store.products.show', $missing))
+        $this->get(route('loja.produtos.exibir', $missing))
             ->assertOk()
-            ->assertSee(__('No cover'));
+            ->assertSee('Sem capa');
     }
 
-    public function test_zero_stock_product_is_visible_and_marked_unavailable(): void
+    public function test_produto_sem_estoque_aparece_como_indisponivel(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages([
+        $produto = $this->productWithImages([
             'name' => 'Out of Stock Bag',
             'qty' => 0,
         ]);
 
-        $this->get(route('home'))
+        $this->get(route('inicio'))
             ->assertOk()
             ->assertSee('Out of Stock Bag')
-            ->assertSee(__('Unavailable'));
+            ->assertSee('Indisponível');
 
-        $this->get(route('store.products.show', $product))
+        $this->get(route('loja.produtos.exibir', $produto))
             ->assertOk()
-            ->assertSee(__('Unavailable'));
+            ->assertSee('Indisponível');
     }
 
-    public function test_plain_text_is_escaped_and_rich_description_is_sanitized(): void
+    public function test_texto_simples_e_escapado_e_descricao_rica_e_sanitizada(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages([
+        $produto = $this->productWithImages([
             'name' => '<script>alert(1)</script>',
             'sku' => 'XSS-1',
             'short_description' => '<b>plain</b>',
             'description' => '<p>Safe <strong>bold</strong><script>alert(1)</script></p><a href="javascript:alert(1)">bad</a>',
         ]);
 
-        $response = $this->get(route('store.products.show', $product));
+        $response = $this->get(route('loja.produtos.exibir', $produto));
         $response->assertOk();
         $response->assertDontSee('<script>alert(1)</script>', false);
         $response->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false);
@@ -200,55 +200,55 @@ class StoreCatalogTest extends TestCase
         $response->assertSee('&lt;b&gt;plain&lt;/b&gt;', false);
     }
 
-    public function test_admin_changes_and_deletes_appear_on_the_catalog(): void
+    public function test_alteracoes_e_exclusoes_admin_aparecem_no_catalogo(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages(['name' => 'Before Store', 'sku' => 'SYNC-1']);
+        $produto = $this->productWithImages(['name' => 'Before Store', 'sku' => 'SYNC-1']);
 
-        $this->get(route('home'))->assertSee('Before Store');
+        $this->get(route('inicio'))->assertSee('Before Store');
 
-        $this->actingAs($admin)->patch(route('admin.products.update', $product), [
+        $this->actingAs($admin)->patch(route('admin.produtos.atualizar', $produto), [
             'name' => 'After Store',
-            'price' => $product->price,
-            'colors' => $product->colors,
-            'short_description' => $product->short_description,
-            'qty' => $product->qty,
-            'sku' => $product->sku,
-            'description' => $product->description,
-        ])->assertRedirect(route('admin.products.index'));
+            'price' => $produto->price,
+            'colors' => $produto->colors,
+            'short_description' => $produto->short_description,
+            'qty' => $produto->qty,
+            'sku' => $produto->sku,
+            'description' => $produto->description,
+        ])->assertRedirect(route('admin.produtos.index'));
 
-        $this->get(route('home'))
+        $this->get(route('inicio'))
             ->assertSee('After Store')
             ->assertDontSee('Before Store');
 
         $this->actingAs($admin)
-            ->delete(route('admin.products.destroy', $product))
-            ->assertRedirect(route('admin.products.index'));
+            ->delete(route('admin.produtos.excluir', $produto))
+            ->assertRedirect(route('admin.produtos.index'));
 
-        $this->get(route('home'))
+        $this->get(route('inicio'))
             ->assertDontSee('After Store')
-            ->assertSee(__('No products are available in the store yet.'));
+            ->assertSee('Ainda não há produtos na loja.');
     }
 
-    public function test_legacy_product_details_url_redirects_to_the_catalog(): void
+    public function test_url_antiga_de_detalhes_redireciona_ao_catalogo(): void
     {
-        $this->get('/product-details')->assertRedirect(route('home'));
+        $this->get('/product-details')->assertRedirect(route('inicio'));
     }
 
-    public function test_purchase_controls_are_disabled_on_the_storefront(): void
+    public function test_controles_de_compra_ficam_desabilitados_na_vitrine(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages();
+        $produto = $this->productWithImages();
 
-        $this->get(route('home'))
-            ->assertSee(__('Add To Cart'))
-            ->assertSee(route('store.products.show', $product), false)
-            ->assertDontSee(route('store.cart.items.store'), false);
+        $this->get(route('inicio'))
+            ->assertSee('Adicionar ao carrinho')
+            ->assertSee(route('loja.produtos.exibir', $produto), false)
+            ->assertDontSee(route('loja.carrinho.itens.adicionar'), false);
 
-        $this->get(route('store.products.show', $product))
-            ->assertSee(__('Buy Now'))
+        $this->get(route('loja.produtos.exibir', $produto))
+            ->assertSee('Comprar agora')
             ->assertSee('pe-none', false)
-            ->assertSee(route('store.cart.items.store'), false);
+            ->assertSee(route('loja.carrinho.itens.adicionar'), false);
     }
 }

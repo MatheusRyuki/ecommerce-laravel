@@ -2,65 +2,63 @@
 
 namespace App\Services;
 
-use App\Models\Product;
+use App\Models\Produto;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class ProductDeleter
+class ExcluirProduto
 {
-    public function __construct(private Filesystem $disk) {}
+    public function __construct(private Filesystem $disco) {}
 
     /**
-     * Permanently delete a product and its image records, then attempt to remove files.
-     *
-     * @return list<string> Paths that remain on disk after a confirmed database delete.
+     * @return list<string> Caminhos que permaneceram no disco após a exclusão no banco.
      */
-    public function delete(Product $product): array
+    public function excluir(Produto $produto): array
     {
-        $product->loadMissing('images');
+        $produto->loadMissing('imagens');
 
-        $productId = $product->id;
-        $paths = $product->images
+        $idProduto = $produto->id;
+        $caminhos = $produto->imagens
             ->pluck('path')
-            ->filter(fn (mixed $path): bool => is_string($path) && $path !== '')
+            ->filter(fn (mixed $caminho): bool => is_string($caminho) && $caminho !== '')
             ->unique()
             ->values()
             ->all();
 
-        DB::transaction(function () use ($product): void {
-            $product->delete();
+        DB::transaction(function () use ($produto): void {
+            $produto->delete();
         });
 
-        $pending = [];
+        $pendencias = [];
 
-        foreach ($paths as $path) {
+        foreach ($caminhos as $caminho) {
             try {
-                if (! $this->disk->exists($path)) {
+                if (! $this->disco->exists($caminho)) {
                     continue;
                 }
 
-                if ($this->disk->delete($path) === false) {
-                    $pending[] = $path;
-                    $this->logPendingCleanup($productId, $path);
+                if ($this->disco->delete($caminho) === false) {
+                    $pendencias[] = $caminho;
+                    $this->registrarLimpezaPendente($idProduto, $caminho);
                 }
-            } catch (Throwable $exception) {
-                $pending[] = $path;
-                $this->logPendingCleanup($productId, $path, $exception->getMessage());
+            } catch (Throwable $excecao) {
+                $pendencias[] = $caminho;
+                $this->registrarLimpezaPendente($idProduto, $caminho, $excecao->getMessage());
             }
         }
 
-        return $pending;
+        return $pendencias;
     }
 
-    private function logPendingCleanup(int $productId, string $path, ?string $exception = null): void
+    private function registrarLimpezaPendente(int $idProduto, string $caminho, ?string $excecao = null): void
     {
-        Log::warning('Pending product image cleanup after delete.', array_filter([
+        Log::warning('Limpeza pendente de imagem após exclusão do produto.', array_filter([
             'disk' => 'public',
-            'product_id' => $productId,
-            'path' => $path,
-            'exception' => $exception,
+            'product_id' => $idProduto,
+            'path' => $caminho,
+            'exception' => $excecao,
         ]));
     }
 }

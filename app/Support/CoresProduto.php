@@ -2,20 +2,31 @@
 
 namespace App\Support;
 
-final class ProductColors
+final class CoresProduto
 {
     /**
-     * Allowed storefront colors (original-template/product_details.html).
+     * Valores gravados no banco (opções do template original). Não alterar.
      *
      * @var list<string>
      */
-    public const VALUES = ['Red', 'Yellow', 'Blue', 'Green'];
+    public const VALORES = ['Red', 'Yellow', 'Blue', 'Green'];
 
     /**
      * @return list<string>
      */
-    public static function all(): array
+    public static function todas(): array
     {
-        return self::VALUES;
+        return self::VALORES;
+    }
+
+    public static function rotulo(string $valor): string
+    {
+        return match ($valor) {
+            'Red' => 'Vermelho',
+            'Yellow' => 'Amarelo',
+            'Blue' => 'Azul',
+            'Green' => 'Verde',
+            default => $valor,
+        };
     }
 }

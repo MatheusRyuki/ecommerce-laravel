@@ -5,7 +5,7 @@ namespace App\Support;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
-class ProductDescriptionSanitizer
+class SanitizadorDescricaoProduto
 {
     private HtmlSanitizer $sanitizer;
 
@@ -30,12 +30,12 @@ class ProductDescriptionSanitizer
         $this->sanitizer = new HtmlSanitizer($config);
     }
 
-    public function sanitize(string $html): string
+    public function sanitizar(string $html): string
     {
         return trim($this->sanitizer->sanitize($html));
     }
 
-    public function hasEffectiveText(string $html): bool
+    public function temTextoEfetivo(string $html): bool
     {
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = preg_replace('/\x{00a0}/u', ' ', $text) ?? $text;

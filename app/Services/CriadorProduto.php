@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Product;
+use App\Models\Produto;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -10,64 +10,64 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
 
-class ProductCreator
+class CriadorProduto
 {
-    public function __construct(private Filesystem $disk) {}
+    public function __construct(private Filesystem $disco) {}
 
     /**
-     * @param  array<string, mixed>  $attributes
-     * @param  list<UploadedFile>  $images
+     * @param  array<string, mixed>  $atributos
+     * @param  list<UploadedFile>  $imagens
      */
-    public function create(array $attributes, array $images): Product
+    public function criar(array $atributos, array $imagens): Produto
     {
-        $storedPaths = [];
+        $caminhos = [];
 
         try {
-            return DB::transaction(function () use ($attributes, $images, &$storedPaths): Product {
-                $product = Product::query()->create([
-                    'name' => $attributes['name'],
-                    'price' => $attributes['price'],
-                    'colors' => array_values($attributes['colors']),
-                    'short_description' => $attributes['short_description'],
-                    'qty' => $attributes['qty'],
-                    'sku' => $attributes['sku'],
-                    'description' => $attributes['description'],
+            return DB::transaction(function () use ($atributos, $imagens, &$caminhos): Produto {
+                $produto = Produto::query()->create([
+                    'name' => $atributos['name'],
+                    'price' => $atributos['price'],
+                    'colors' => array_values($atributos['colors']),
+                    'short_description' => $atributos['short_description'],
+                    'qty' => $atributos['qty'],
+                    'sku' => $atributos['sku'],
+                    'description' => $atributos['description'],
                 ]);
 
-                foreach (array_values($images) as $position => $image) {
-                    $filename = Str::uuid()->toString().'.'.$this->extensionFor($image);
-                    $path = $this->disk->putFileAs('products', $image, $filename);
+                foreach (array_values($imagens) as $posicao => $imagem) {
+                    $nome = Str::uuid()->toString().'.'.$this->extensao($imagem);
+                    $caminho = $this->disco->putFileAs('products', $imagem, $nome);
 
-                    if ($path === false) {
-                        throw new RuntimeException('Unable to store the product image.');
+                    if ($caminho === false) {
+                        throw new RuntimeException('Não foi possível gravar a imagem do produto.');
                     }
 
-                    $storedPaths[] = $path;
+                    $caminhos[] = $caminho;
 
-                    $product->images()->create([
-                        'path' => $path,
-                        'position' => $position,
+                    $produto->imagens()->create([
+                        'path' => $caminho,
+                        'position' => $posicao,
                     ]);
                 }
 
-                return $product->load('images');
+                return $produto->load('imagens');
             });
-        } catch (Throwable $exception) {
-            foreach ($storedPaths as $path) {
-                $this->disk->delete($path);
+        } catch (Throwable $excecao) {
+            foreach ($caminhos as $caminho) {
+                $this->disco->delete($caminho);
             }
 
-            throw $exception;
+            throw $excecao;
         }
     }
 
-    private function extensionFor(UploadedFile $image): string
+    private function extensao(UploadedFile $imagem): string
     {
-        return match ($image->getMimeType()) {
+        return match ($imagem->getMimeType()) {
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
             'image/webp' => 'webp',
-            default => throw new RuntimeException('Unsupported image type.'),
+            default => throw new RuntimeException('Tipo de imagem não suportado.'),
         };
     }
 }

@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
-use Database\Factories\ProductImageFactory;
+use Database\Factories\ImagemProdutoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
-class ProductImage extends Model
+class ImagemProduto extends Model
 {
-    /** @use HasFactory<ProductImageFactory> */
+    /** @use HasFactory<ImagemProdutoFactory> */
     use HasFactory;
+
+    protected $table = 'product_images';
 
     /**
      * @var list<string>
@@ -33,11 +35,11 @@ class ProductImage extends Model
     }
 
     /**
-     * @return BelongsTo<Product, $this>
+     * @return BelongsTo<Produto, $this>
      */
-    public function product(): BelongsTo
+    public function produto(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Produto::class, 'product_id');
     }
 
     public function url(): string
@@ -45,7 +47,7 @@ class ProductImage extends Model
         return Storage::disk('public')->url($this->path);
     }
 
-    public function availableUrl(): ?string
+    public function urlDisponivel(): ?string
     {
         if (! Storage::disk('public')->exists($this->path)) {
             return null;

@@ -7,10 +7,10 @@ Não é um checkout completo. Pagamento, frete, impostos e descontos ficam fora 
 ## Funcionalidades
 
 - Vitrine pública (`GET /`): produtos do banco, 12 por página, mais recentes primeiro. Estoque zero permanece visível como indisponível.
-- Detalhes (`GET /products/{product}`). A URL antiga `/product-details` redireciona para a vitrine.
-- Carrinho por sessão Laravel (`/cart`): adicionar, alterar quantidade e remover linhas. Cada linha é produto + cor. Não há persistência por conta nem sincronização entre dispositivos.
-- Painel administrativo (`/admin/products`): cadastro, edição e exclusão definitiva de produtos (imagens, cores, preço, estoque, SKU).
-- Autenticação Breeze (cadastro, login, dashboard). O acesso ao painel exige usuário administrador (`access-admin`).
+- Detalhes (`GET /produtos/{produto}`). A URL antiga `/product-details` redireciona para a vitrine; `/products/{id}` redireciona para `/produtos/{id}` quando o registro existe.
+- Carrinho por sessão Laravel (`/carrinho`): adicionar, alterar quantidade e remover linhas. Cada linha é produto + cor. Não há persistência por conta nem sincronização entre dispositivos.
+- Painel administrativo (`/admin/produtos`): cadastro, edição e exclusão definitiva de produtos (imagens, cores, preço, estoque, SKU).
+- Autenticação Breeze (cadastro, login, painel). O acesso à administração exige a permissão `acessar-admin`.
 - Checkout desabilitado. O carrinho não reserva estoque nem cria pedido.
 
 ## Tecnologias e requisitos
@@ -70,14 +70,14 @@ Suba o ambiente, gere a chave, rode as migrations, o link de storage e o build d
 Loja (após `sail up`):
 
 - Vitrine: [http://localhost:8002](http://localhost:8002)
-- Detalhes: [http://localhost:8002/products/{id}](http://localhost:8002/products/1)
-- Carrinho: [http://localhost:8002/cart](http://localhost:8002/cart)
+- Detalhes: [http://localhost:8002/produtos/{id}](http://localhost:8002/produtos/1)
+- Carrinho: [http://localhost:8002/carrinho](http://localhost:8002/carrinho)
 
 Administração:
 
 - Login: [http://localhost:8002/login](http://localhost:8002/login)
-- Painel: [http://localhost:8002/admin/dashboard](http://localhost:8002/admin/dashboard)
-- Produtos: [http://localhost:8002/admin/products](http://localhost:8002/admin/products)
+- Painel: [http://localhost:8002/admin/painel](http://localhost:8002/admin/painel)
+- Produtos: [http://localhost:8002/admin/produtos](http://localhost:8002/admin/produtos)
 
 ## Administrador local
 
@@ -100,7 +100,7 @@ Variáveis no `.env` / `.env.example`: `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSW
 ./vendor/bin/sail artisan db:seed --class=DemoGalleryProductSeeder
 ```
 
-Cria **Bolsa Galeria Demo**, SKU `DEMO-GALLERY-01`, R$ 89,90, estoque 20, cores Blue e Green, com três fotos. As origens versionáveis estão em `public/frontend/images/product_slide_show_{1,2,3}.jpg`. O seeder é idempotente: se o SKU já existir, não altera o registro.
+Cria **Bolsa Galeria Demo**, SKU `DEMO-GALLERY-01`, R$ 89,90, estoque 20, cores Azul e Verde (valores gravados `Blue` e `Green`), com três fotos. As origens versionáveis estão em `public/frontend/images/product_slide_show_{1,2,3}.jpg`. O seeder é idempotente: se o SKU já existir, não altera o registro.
 
 Outros produtos locais (por exemplo a Bolsa Demo Editada, SKU `DEMO-0001`) **não** são criados por esse seeder e devem ser preservados no banco de desenvolvimento. Após um clone limpo, só a galeria demo reaparece com o comando acima.
 
@@ -109,7 +109,7 @@ Outros produtos locais (por exemplo a Bolsa Demo Editada, SKU `DEMO-0001`) **nã
 - Sem checkout, pagamento, frete, impostos ou descontos.
 - Carrinho só na sessão atual (visitante ou autenticado).
 - Totais do carrinho consideram apenas preço × quantidade (BCMath, duas casas).
-- Buy Now permanece desabilitado.
+- Comprar agora permanece desabilitado.
 
 ## Testes
 

@@ -2,27 +2,27 @@
 
 namespace Tests\Feature;
 
-use App\Cart\SessionCart;
-use App\Models\Product;
-use App\Models\ProductImage;
+use App\Cart\CarrinhoSessao;
+use App\Models\Produto;
+use App\Models\ImagemProduto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-class StoreCartTest extends TestCase
+class LojaCarrinhoTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * @param  list<string>  $colors
      */
-    private function product(array $overrides = [], array $colors = ['Red', 'Yellow'], array $paths = ['products/cart-cover.png']): Product
+    private function product(array $overrides = [], array $colors = ['Red', 'Yellow'], array $paths = ['products/cart-cover.png']): Produto
     {
         Storage::fake('public');
 
-        $product = Product::factory()->create(array_merge([
+        $produto = Produto::factory()->create(array_merge([
             'name' => 'Cart Bag',
             'sku' => 'CART-0001',
             'price' => '49.90',
@@ -32,68 +32,68 @@ class StoreCartTest extends TestCase
 
         foreach (array_values($paths) as $position => $path) {
             Storage::disk('public')->put($path, 'img-'.$position);
-            ProductImage::factory()->create([
-                'product_id' => $product->id,
+            ImagemProduto::factory()->create([
+                'product_id' => $produto->id,
                 'path' => $path,
                 'position' => $position,
             ]);
         }
 
-        return $product->refresh()->load('images');
+        return $produto->refresh()->load('imagens');
     }
 
     /**
      * @param  array<string, mixed>  $overrides
      */
-    private function addItem(Product $product, array $overrides = []): TestResponse
+    private function addItem(Produto $produto, array $overrides = []): TestResponse
     {
-        return $this->from(route('store.products.show', $product))
-            ->post(route('store.cart.items.store'), array_merge([
-                'product_id' => $product->id,
+        return $this->from(route('loja.produtos.exibir', $produto))
+            ->post(route('loja.carrinho.itens.adicionar'), array_merge([
+                'product_id' => $produto->id,
                 'color' => 'Red',
                 'quantity' => 1,
             ], $overrides));
     }
 
-    public function test_empty_cart_is_public(): void
+    public function test_carrinho_vazio_e_publico(): void
     {
-        $this->get(route('cart'))
+        $this->get(route('carrinho'))
             ->assertOk()
-            ->assertSee(__('Your cart is empty.'))
-            ->assertSee(__('Continue Shopping'))
-            ->assertSee(route('home'), false);
+            ->assertSee('Seu carrinho está vazio.')
+            ->assertSee('Continuar comprando')
+            ->assertSee(route('inicio'), false);
     }
 
-    public function test_valid_add_persists_between_requests(): void
+    public function test_adicao_valida_persiste_entre_requisicoes(): void
     {
-        $product = $this->product();
+        $produto = $this->product();
 
-        $this->addItem($product, ['quantity' => 2])
-            ->assertRedirect(route('cart'))
+        $this->addItem($produto, ['quantity' => 2])
+            ->assertRedirect(route('carrinho'))
             ->assertSessionHas('status');
 
-        $this->get(route('cart'))
+        $this->get(route('carrinho'))
             ->assertOk()
             ->assertSee('Cart Bag')
-            ->assertSee('Red')
+            ->assertSee('Vermelho')
             ->assertSee('R$ 49,90')
             ->assertSee('value="2"', false)
-            ->assertSee(route('store.products.show', $product), false)
+            ->assertSee(route('loja.produtos.exibir', $produto), false)
             ->assertSee(Storage::disk('public')->url('products/cart-cover.png'), false)
-            ->assertSee(__('The product was added to the cart.'));
+            ->assertSee('O produto foi adicionado ao carrinho.');
 
-        $this->get(route('cart'))->assertSee('Cart Bag')->assertSee('>2</b>', false);
+        $this->get(route('carrinho'))->assertSee('Cart Bag')->assertSee('>2</b>', false);
     }
 
-    public function test_same_combination_accumulates_and_colors_are_separate_lines(): void
+    public function test_mesma_combinacao_acumula_e_cores_viram_linhas_separadas(): void
     {
-        $product = $this->product();
+        $produto = $this->product();
 
-        $this->addItem($product, ['color' => 'Red', 'quantity' => 2]);
-        $this->addItem($product, ['color' => 'Red', 'quantity' => 1]);
-        $this->addItem($product, ['color' => 'Yellow', 'quantity' => 1]);
+        $this->addItem($produto, ['color' => 'Red', 'quantity' => 2]);
+        $this->addItem($produto, ['color' => 'Red', 'quantity' => 1]);
+        $this->addItem($produto, ['color' => 'Yellow', 'quantity' => 1]);
 
-        $items = session(SessionCart::SESSION_KEY);
+        $items = session(CarrinhoSessao::CHAVE_SESSAO);
         $this->assertCount(2, $items);
         $this->assertSame(3, $items[0]['quantity']);
         $this->assertSame('Red', $items[0]['color']);
@@ -101,197 +101,197 @@ class StoreCartTest extends TestCase
         $this->assertSame('Yellow', $items[1]['color']);
         $this->assertNotSame($items[0]['id'], $items[1]['id']);
 
-        $this->get(route('cart'))
-            ->assertSee('Red')
-            ->assertSee('Yellow')
+        $this->get(route('carrinho'))
+            ->assertSee('Vermelho')
+            ->assertSee('Amarelo')
             ->assertSee('>4</b>', false);
     }
 
-    public function test_stock_limit_includes_quantities_of_all_colors(): void
+    public function test_limite_de_estoque_considera_todas_as_cores(): void
     {
-        $product = $this->product(['qty' => 5]);
+        $produto = $this->product(['qty' => 5]);
 
-        $this->addItem($product, ['color' => 'Red', 'quantity' => 3])->assertRedirect(route('cart'));
-        $this->addItem($product, ['color' => 'Yellow', 'quantity' => 3])
-            ->assertRedirect(route('store.products.show', $product))
+        $this->addItem($produto, ['color' => 'Red', 'quantity' => 3])->assertRedirect(route('carrinho'));
+        $this->addItem($produto, ['color' => 'Yellow', 'quantity' => 3])
+            ->assertRedirect(route('loja.produtos.exibir', $produto))
             ->assertSessionHasErrors('cart');
 
-        $items = session(SessionCart::SESSION_KEY);
+        $items = session(CarrinhoSessao::CHAVE_SESSAO);
         $this->assertCount(1, $items);
         $this->assertSame(3, $items[0]['quantity']);
         $this->assertSame('Red', $items[0]['color']);
     }
 
-    public function test_invalid_quantity_color_and_missing_product_are_rejected(): void
+    public function test_quantidade_cor_invalida_e_produto_ausente_sao_rejeitados(): void
     {
-        $product = $this->product();
+        $produto = $this->product();
 
-        $this->addItem($product, ['quantity' => 0])->assertSessionHasErrors('quantity');
-        $this->addItem($product, ['quantity' => 1.5])->assertSessionHasErrors('quantity');
-        $this->addItem($product, ['color' => 'Blue'])->assertSessionHasErrors('cart');
-        $this->from(route('home'))
-            ->post(route('store.cart.items.store'), [
+        $this->addItem($produto, ['quantity' => 0])->assertSessionHasErrors('quantity');
+        $this->addItem($produto, ['quantity' => 1.5])->assertSessionHasErrors('quantity');
+        $this->addItem($produto, ['color' => 'Blue'])->assertSessionHasErrors('cart');
+        $this->from(route('inicio'))
+            ->post(route('loja.carrinho.itens.adicionar'), [
                 'product_id' => 99999,
                 'color' => 'Red',
                 'quantity' => 1,
             ])
             ->assertSessionHasErrors('product_id');
 
-        $this->assertSame([], session(SessionCart::SESSION_KEY, []));
+        $this->assertSame([], session(CarrinhoSessao::CHAVE_SESSAO, []));
     }
 
-    public function test_rejected_add_preserves_previous_cart(): void
+    public function test_adicao_rejeitada_preserva_carrinho_anterior(): void
     {
-        $product = $this->product(['qty' => 4]);
+        $produto = $this->product(['qty' => 4]);
 
-        $this->addItem($product, ['quantity' => 2])->assertRedirect(route('cart'));
-        $previous = session(SessionCart::SESSION_KEY);
+        $this->addItem($produto, ['quantity' => 2])->assertRedirect(route('carrinho'));
+        $previous = session(CarrinhoSessao::CHAVE_SESSAO);
 
-        $this->addItem($product, ['quantity' => 5])
+        $this->addItem($produto, ['quantity' => 5])
             ->assertSessionHasErrors('cart');
 
-        $this->assertSame($previous, session(SessionCart::SESSION_KEY));
+        $this->assertSame($previous, session(CarrinhoSessao::CHAVE_SESSAO));
     }
 
-    public function test_client_price_does_not_change_displayed_price(): void
+    public function test_preco_enviado_pelo_cliente_nao_altera_preco_exibido(): void
     {
-        $product = $this->product(['price' => '49.90']);
+        $produto = $this->product(['price' => '49.90']);
 
-        $this->addItem($product, ['price' => '0.01'])->assertRedirect(route('cart'));
+        $this->addItem($produto, ['price' => '0.01'])->assertRedirect(route('carrinho'));
 
-        $this->get(route('cart'))
+        $this->get(route('carrinho'))
             ->assertSee('R$ 49,90')
             ->assertDontSee('R$ 0,01');
     }
 
-    public function test_carts_from_independent_sessions_stay_separated(): void
+    public function test_carrinhos_de_sessoes_independentes_permanecem_separados(): void
     {
         $first = $this->product(['name' => 'Session One Bag', 'sku' => 'S1']);
         $second = $this->product(['name' => 'Session Two Bag', 'sku' => 'S2'], ['Blue'], ['products/other.png']);
 
         $this->withSession([
-            SessionCart::SESSION_KEY => [[
+            CarrinhoSessao::CHAVE_SESSAO => [[
                 'id' => 'line-a',
                 'product_id' => $first->id,
                 'color' => 'Red',
                 'quantity' => 1,
             ]],
-        ])->get(route('cart'))
+        ])->get(route('carrinho'))
             ->assertSee('Session One Bag')
             ->assertDontSee('Session Two Bag');
 
         $this->withSession([
-            SessionCart::SESSION_KEY => [[
+            CarrinhoSessao::CHAVE_SESSAO => [[
                 'id' => 'line-b',
                 'product_id' => $second->id,
                 'color' => 'Blue',
                 'quantity' => 2,
             ]],
-        ])->get(route('cart'))
+        ])->get(route('carrinho'))
             ->assertSee('Session Two Bag')
             ->assertDontSee('Session One Bag');
     }
 
-    public function test_adding_does_not_change_product_stock(): void
+    public function test_adicionar_nao_altera_estoque_do_produto(): void
     {
-        $product = $this->product(['qty' => 15]);
+        $produto = $this->product(['qty' => 15]);
 
-        $this->addItem($product, ['quantity' => 3]);
+        $this->addItem($produto, ['quantity' => 3]);
 
-        $this->assertSame(15, $product->fresh()->qty);
+        $this->assertSame(15, $produto->fresh()->qty);
     }
 
-    public function test_get_does_not_add_items(): void
+    public function test_get_nao_adiciona_itens(): void
     {
-        $product = $this->product();
+        $produto = $this->product();
 
-        $this->get('/cart/items?product_id='.$product->id.'&color=Red&quantity=1')
+        $this->get('/carrinho/itens?product_id='.$produto->id.'&color=Red&quantity=1')
             ->assertMethodNotAllowed();
 
-        $this->assertSame([], session(SessionCart::SESSION_KEY, []));
+        $this->assertSame([], session(CarrinhoSessao::CHAVE_SESSAO, []));
     }
 
-    public function test_authenticated_guest_can_use_the_same_session_cart(): void
+    public function test_usuario_autenticado_usa_o_mesmo_carrinho_da_sessao(): void
     {
-        $product = $this->product();
+        $produto = $this->product();
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->addItem($product, ['quantity' => 1])
-            ->assertRedirect(route('cart'));
+            ->addItem($produto, ['quantity' => 1])
+            ->assertRedirect(route('carrinho'));
 
         $this->actingAs($user)
-            ->get(route('cart'))
+            ->get(route('carrinho'))
             ->assertOk()
             ->assertSee('Cart Bag');
     }
 
-    public function test_catalog_changes_after_add_are_flagged_without_silent_quantity_changes(): void
+    public function test_mudancas_no_catalogo_apos_adicionar_sao_sinalizadas(): void
     {
-        $product = $this->product(['qty' => 10, 'price' => '19.90', 'colors' => ['Red', 'Yellow']]);
+        $produto = $this->product(['qty' => 10, 'price' => '19.90', 'colors' => ['Red', 'Yellow']]);
 
-        $this->addItem($product, ['color' => 'Red', 'quantity' => 4]);
-        $this->addItem($product, ['color' => 'Yellow', 'quantity' => 2]);
+        $this->addItem($produto, ['color' => 'Red', 'quantity' => 4]);
+        $this->addItem($produto, ['color' => 'Yellow', 'quantity' => 2]);
 
-        $product->update([
+        $produto->update([
             'qty' => 3,
             'colors' => ['Yellow'],
             'price' => '29.90',
         ]);
 
-        $response = $this->get(route('cart'))
+        $response = $this->get(route('carrinho'))
             ->assertOk()
             ->assertSee('Cart Bag')
             ->assertSee('R$ 29,90')
             ->assertDontSee('R$ 19,90')
-            ->assertSee(__('This item needs adjustment'))
+            ->assertSee('Este item precisa de ajuste')
             ->assertSee('value="4"', false)
             ->assertSee('value="2"', false);
 
-        $this->assertCount(2, session(SessionCart::SESSION_KEY));
-        $this->assertSame(4, session(SessionCart::SESSION_KEY)[0]['quantity']);
-        $this->assertSame(2, session(SessionCart::SESSION_KEY)[1]['quantity']);
+        $this->assertCount(2, session(CarrinhoSessao::CHAVE_SESSAO));
+        $this->assertSame(4, session(CarrinhoSessao::CHAVE_SESSAO)[0]['quantity']);
+        $this->assertSame(2, session(CarrinhoSessao::CHAVE_SESSAO)[1]['quantity']);
         $this->assertTrue($response->baseResponse->isOk());
 
-        $product->update(['qty' => 0]);
+        $produto->update(['qty' => 0]);
 
-        $this->get(route('cart'))
+        $this->get(route('carrinho'))
             ->assertOk()
-            ->assertSee(__('Unavailable'))
+            ->assertSee('Indisponível')
             ->assertSee('value="4"', false);
 
-        $productId = $product->id;
-        $product->delete();
+        $produtoId = $produto->id;
+        $produto->delete();
 
-        $this->get(route('cart'))
+        $this->get(route('carrinho'))
             ->assertOk()
-            ->assertSee(__('Unavailable item'))
-            ->assertDontSee(route('store.products.show', $productId), false)
+            ->assertSee('Item indisponível')
+            ->assertDontSee(route('loja.produtos.exibir', $produtoId), false)
             ->assertDontSee('R$ 29,90')
             ->assertSee('—');
 
-        $this->assertCount(2, session(SessionCart::SESSION_KEY));
+        $this->assertCount(2, session(CarrinhoSessao::CHAVE_SESSAO));
     }
 
-    public function test_vitrine_add_to_cart_points_to_details(): void
+    public function test_adicionar_ao_carrinho_na_vitrine_aponta_para_detalhes(): void
     {
-        $product = $this->product(['name' => 'Vitrine Link Bag']);
+        $produto = $this->product(['name' => 'Vitrine Link Bag']);
 
-        $this->get(route('home'))
+        $this->get(route('inicio'))
             ->assertOk()
-            ->assertSee(route('store.products.show', $product), false)
-            ->assertDontSee(route('store.cart.items.store'), false);
+            ->assertSee(route('loja.produtos.exibir', $produto), false)
+            ->assertDontSee(route('loja.carrinho.itens.adicionar'), false);
     }
 
-    public function test_details_enable_add_to_cart_for_available_products(): void
+    public function test_detalhes_habilitam_adicionar_ao_carrinho_quando_disponivel(): void
     {
-        $product = $this->product();
+        $produto = $this->product();
 
-        $this->get(route('store.products.show', $product))
+        $this->get(route('loja.produtos.exibir', $produto))
             ->assertOk()
-            ->assertSee(route('store.cart.items.store'), false)
+            ->assertSee(route('loja.carrinho.itens.adicionar'), false)
             ->assertSee('name="quantity"', false)
             ->assertSee('name="color"', false)
-            ->assertSee(__('Select a color'));
+            ->assertSee('Selecione uma cor');
     }
 }

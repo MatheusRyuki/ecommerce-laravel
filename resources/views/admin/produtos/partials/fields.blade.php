@@ -3,49 +3,49 @@
 @endphp
 
 <div>
-    <label for="name" class="block text-sm font-medium text-gray-700">{{ __('Name') }}</label>
+    <label for="name" class="block text-sm font-medium text-gray-700">Nome</label>
     <input id="name" name="name" type="text" value="{{ $name }}" maxlength="255" autocomplete="off" class="{{ $fieldClass }}">
     <x-input-error class="mt-2" :messages="$errors->get('name')" />
 </div>
 
 <div>
-    <label for="price" class="block text-sm font-medium text-gray-700">{{ __('Price (BRL)') }}</label>
+    <label for="price" class="block text-sm font-medium text-gray-700">Preço (BRL)</label>
     <input id="price" name="price" type="number" value="{{ $price }}" inputmode="decimal" step="0.01" min="0" max="99999999.99" class="{{ $fieldClass }}">
     <x-input-error class="mt-2" :messages="$errors->get('price')" />
 </div>
 
 <div>
-    <label for="colors" class="block text-sm font-medium text-gray-700">{{ __('Colors') }}</label>
+    <label for="colors" class="block text-sm font-medium text-gray-700">Cores</label>
     <select id="colors" name="colors[]" multiple size="4" class="{{ $fieldClass }}">
-        @foreach ($colors as $color)
-            <option value="{{ $color }}" @selected(in_array($color, $selectedColors, true))>{{ $color }}</option>
+        @foreach ($cores as $color)
+            <option value="{{ $color }}" @selected(in_array($color, $selectedColors, true))>{{ \App\Support\CoresProduto::rotulo($color) }}</option>
         @endforeach
     </select>
-    <p class="mt-1 text-xs text-gray-500">{{ __('Hold Ctrl or Cmd to select more than one color.') }}</p>
+    <p class="mt-1 text-xs text-gray-500">{{ 'Use Ctrl ou Cmd para marcar mais de uma cor.' }}</p>
     <x-input-error class="mt-2" :messages="$errors->get('colors')" />
     <x-input-error class="mt-2" :messages="$errors->get('colors.*')" />
 </div>
 
 <div>
-    <label for="short_description" class="block text-sm font-medium text-gray-700">{{ __('Short Description') }}</label>
+    <label for="short_description" class="block text-sm font-medium text-gray-700">{{ 'Descrição curta' }}</label>
     <input id="short_description" name="short_description" type="text" value="{{ $shortDescription }}" maxlength="500" class="{{ $fieldClass }}">
     <x-input-error class="mt-2" :messages="$errors->get('short_description')" />
 </div>
 
 <div>
-    <label for="qty" class="block text-sm font-medium text-gray-700">{{ __('Qty') }}</label>
+    <label for="qty" class="block text-sm font-medium text-gray-700">Qtd.</label>
     <input id="qty" name="qty" type="number" value="{{ $qty }}" inputmode="numeric" step="1" min="0" class="{{ $fieldClass }}">
     <x-input-error class="mt-2" :messages="$errors->get('qty')" />
 </div>
 
 <div>
-    <label for="sku" class="block text-sm font-medium text-gray-700">{{ __('SKU') }}</label>
+    <label for="sku" class="block text-sm font-medium text-gray-700">{{ 'SKU' }}</label>
     <input id="sku" name="sku" type="text" value="{{ $sku }}" maxlength="100" inputmode="text" autocomplete="off" class="{{ $fieldClass }}">
     <x-input-error class="mt-2" :messages="$errors->get('sku')" />
 </div>
 
 <div>
-    <label for="description" class="block text-sm font-medium text-gray-700">{{ __('Description') }}</label>
+    <label for="description" class="block text-sm font-medium text-gray-700">{{ 'Descrição' }}</label>
     <textarea id="description" name="description" class="sr-only" rows="1" tabindex="-1">{{ $description }}</textarea>
     <div id="description-editor" class="mt-1 bg-white"></div>
     <x-input-error class="mt-2" :messages="$errors->get('description')" />

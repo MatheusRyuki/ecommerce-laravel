@@ -23,7 +23,7 @@
     @endif
     {{ $text }}
     @if ($dismissible)
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('Close') }}"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
     @endif
 </div>
 

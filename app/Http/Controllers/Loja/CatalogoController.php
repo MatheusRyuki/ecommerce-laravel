@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Store;
+namespace App\Http\Controllers\Loja;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Produto;
 use Illuminate\View\View;
 
-class CatalogController extends Controller
+class CatalogoController extends Controller
 {
     public function __invoke(): View
     {
-        $products = Product::query()
-            ->with('images')
+        $produtos = Produto::query()
+            ->with('imagens')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(12);
 
-        return view('store.home', [
-            'products' => $products,
+        return view('loja.inicio', [
+            'produtos' => $produtos,
         ]);
     }
 }

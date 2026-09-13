@@ -9,14 +9,14 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_can_be_rendered(): void
+    public function test_tela_de_cadastro_pode_ser_exibida(): void
     {
         $response = $this->get('/register');
 
         $response->assertStatus(200);
     }
 
-    public function test_new_users_can_register(): void
+    public function test_novos_usuarios_podem_se_cadastrar(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',

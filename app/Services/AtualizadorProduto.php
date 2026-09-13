@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Product;
+use App\Models\Produto;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -11,100 +11,100 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
 
-class ProductUpdater
+class AtualizadorProduto
 {
-    public function __construct(private Filesystem $disk) {}
+    public function __construct(private Filesystem $disco) {}
 
     /**
-     * @param  array<string, mixed>  $attributes
-     * @param  list<UploadedFile>  $newImages
-     * @param  list<int>  $removeImageIds
+     * @param  array<string, mixed>  $atributos
+     * @param  list<UploadedFile>  $novasImagens
+     * @param  list<int>  $idsParaRemover
      */
-    public function update(Product $product, array $attributes, array $newImages, array $removeImageIds): Product
+    public function atualizar(Produto $produto, array $atributos, array $novasImagens, array $idsParaRemover): Produto
     {
-        $product->loadMissing('images');
+        $produto->loadMissing('imagens');
 
-        $removedImages = $product->images->whereIn('id', $removeImageIds)->values();
-        $keptImages = $product->images->whereNotIn('id', $removeImageIds)->values();
-        $newPaths = [];
+        $imagensRemovidas = $produto->imagens->whereIn('id', $idsParaRemover)->values();
+        $imagensMantidas = $produto->imagens->whereNotIn('id', $idsParaRemover)->values();
+        $caminhosNovos = [];
 
         try {
-            foreach (array_values($newImages) as $image) {
-                $filename = Str::uuid()->toString().'.'.$this->extensionFor($image);
-                $path = $this->disk->putFileAs('products', $image, $filename);
+            foreach (array_values($novasImagens) as $imagem) {
+                $nome = Str::uuid()->toString().'.'.$this->extensao($imagem);
+                $caminho = $this->disco->putFileAs('products', $imagem, $nome);
 
-                if ($path === false) {
-                    throw new RuntimeException('Unable to store the product image.');
+                if ($caminho === false) {
+                    throw new RuntimeException('Não foi possível gravar a imagem do produto.');
                 }
 
-                $newPaths[] = $path;
+                $caminhosNovos[] = $caminho;
             }
 
-            DB::transaction(function () use ($product, $attributes, $removeImageIds, $keptImages, $newPaths): void {
-                $product->update([
-                    'name' => $attributes['name'],
-                    'price' => $attributes['price'],
-                    'colors' => array_values($attributes['colors']),
-                    'short_description' => $attributes['short_description'],
-                    'qty' => $attributes['qty'],
-                    'sku' => $attributes['sku'],
-                    'description' => $attributes['description'],
+            DB::transaction(function () use ($produto, $atributos, $idsParaRemover, $imagensMantidas, $caminhosNovos): void {
+                $produto->update([
+                    'name' => $atributos['name'],
+                    'price' => $atributos['price'],
+                    'colors' => array_values($atributos['colors']),
+                    'short_description' => $atributos['short_description'],
+                    'qty' => $atributos['qty'],
+                    'sku' => $atributos['sku'],
+                    'description' => $atributos['description'],
                 ]);
 
-                if ($removeImageIds !== []) {
-                    $product->images()->whereIn('id', $removeImageIds)->delete();
+                if ($idsParaRemover !== []) {
+                    $produto->imagens()->whereIn('id', $idsParaRemover)->delete();
                 }
 
-                $position = 0;
+                $posicao = 0;
 
-                foreach ($keptImages as $image) {
-                    $image->update(['position' => $position]);
-                    $position++;
+                foreach ($imagensMantidas as $imagem) {
+                    $imagem->update(['position' => $posicao]);
+                    $posicao++;
                 }
 
-                foreach ($newPaths as $path) {
-                    $product->images()->create([
-                        'path' => $path,
-                        'position' => $position,
+                foreach ($caminhosNovos as $caminho) {
+                    $produto->imagens()->create([
+                        'path' => $caminho,
+                        'position' => $posicao,
                     ]);
-                    $position++;
+                    $posicao++;
                 }
             });
-        } catch (Throwable $exception) {
-            foreach ($newPaths as $path) {
-                $this->disk->delete($path);
+        } catch (Throwable $excecao) {
+            foreach ($caminhosNovos as $caminho) {
+                $this->disco->delete($caminho);
             }
 
-            throw $exception;
+            throw $excecao;
         }
 
-        foreach ($removedImages as $image) {
+        foreach ($imagensRemovidas as $imagem) {
             try {
-                if ($this->disk->delete($image->path) === false) {
-                    Log::warning('Pending product image cleanup after update.', [
-                        'product_id' => $product->id,
-                        'path' => $image->path,
+                if ($this->disco->delete($imagem->path) === false) {
+                    Log::warning('Limpeza pendente de imagem após atualização do produto.', [
+                        'product_id' => $produto->id,
+                        'path' => $imagem->path,
                     ]);
                 }
-            } catch (Throwable $exception) {
-                Log::warning('Pending product image cleanup after update.', [
-                    'product_id' => $product->id,
-                    'path' => $image->path,
-                    'exception' => $exception->getMessage(),
+            } catch (Throwable $excecao) {
+                Log::warning('Limpeza pendente de imagem após atualização do produto.', [
+                    'product_id' => $produto->id,
+                    'path' => $imagem->path,
+                    'exception' => $excecao->getMessage(),
                 ]);
             }
         }
 
-        return $product->refresh()->load('images');
+        return $produto->refresh()->load('imagens');
     }
 
-    private function extensionFor(UploadedFile $image): string
+    private function extensao(UploadedFile $imagem): string
     {
-        return match ($image->getMimeType()) {
+        return match ($imagem->getMimeType()) {
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
             'image/webp' => 'webp',
-            default => throw new RuntimeException('Unsupported image type.'),
+            default => throw new RuntimeException('Tipo de imagem não suportado.'),
         };
     }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Support;
 
-use App\Models\Product;
+use App\Models\Produto;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-final class ProductFormRules
+final class RegrasFormularioProduto
 {
     public const MAX_QTY = 4_294_967_295;
 
@@ -20,7 +20,7 @@ final class ProductFormRules
 
         if (is_string($request->description)) {
             $request->merge([
-                'description' => app(ProductDescriptionSanitizer::class)->sanitize($request->description),
+                'description' => app(SanitizadorDescricaoProduto::class)->sanitizar($request->description),
             ]);
         }
     }
@@ -28,7 +28,7 @@ final class ProductFormRules
     /**
      * @return array<string, mixed>
      */
-    public static function attributes(?Product $ignoredForSku = null): array
+    public static function attributes(?Produto $ignoredForSku = null): array
     {
         $skuUnique = Rule::unique('products', 'sku');
 
@@ -40,7 +40,7 @@ final class ProductFormRules
             'name' => ['required', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0', 'decimal:0,2', 'max:99999999.99'],
             'colors' => ['required', 'array', 'min:1', 'distinct'],
-            'colors.*' => ['required', 'string', Rule::in(ProductColors::all())],
+            'colors.*' => ['required', 'string', Rule::in(CoresProduto::todas())],
             'short_description' => ['required', 'string', 'max:500'],
             'qty' => ['required', 'integer', 'min:0', 'max:'.self::MAX_QTY],
             'sku' => ['required', 'string', 'max:100', $skuUnique],
@@ -49,8 +49,8 @@ final class ProductFormRules
                 'string',
                 'max:10000',
                 function (string $attribute, mixed $value, \Closure $fail): void {
-                    if (! is_string($value) || ! app(ProductDescriptionSanitizer::class)->hasEffectiveText($value)) {
-                        $fail(__('The description must contain actual text.'));
+                    if (! is_string($value) || ! app(SanitizadorDescricaoProduto::class)->temTextoEfetivo($value)) {
+                        $fail('A descrição precisa ter texto visível.');
                     }
                 },
             ],
@@ -81,10 +81,10 @@ final class ProductFormRules
     public static function messages(): array
     {
         return [
-            'images.required' => __('Select between 1 and 5 images. Files must be chosen again if validation fails.'),
-            'images.min' => __('Select between 1 and 5 images. Files must be chosen again if validation fails.'),
-            'images.max' => __('Select between 1 and 5 images. Files must be chosen again if validation fails.'),
-            'sku.unique' => __('This SKU is already in use.'),
+            'images.required' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
+            'images.min' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
+            'images.max' => 'Selecione de 1 a 5 imagens. Os arquivos precisam ser escolhidos de novo se a validação falhar.',
+            'sku.unique' => 'Este SKU já está em uso.',
         ];
     }
 }

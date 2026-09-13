@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Product;
-use App\Models\ProductImage;
+use App\Models\Produto;
+use App\Models\ImagemProduto;
 use App\Models\User;
-use App\Services\ProductUpdater;
+use App\Services\AtualizadorProduto;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -14,89 +14,89 @@ use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Tests\TestCase;
 
-class AdminProductUpdateTest extends TestCase
+class AdminProdutoUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * @param  list<string>  $paths
      */
-    private function productWithImages(array $overrides = [], array $paths = ['products/cover.png']): Product
+    private function productWithImages(array $overrides = [], array $paths = ['products/cover.png']): Produto
     {
-        $product = Product::factory()->create($overrides);
+        $produto = Produto::factory()->create($overrides);
 
         foreach (array_values($paths) as $position => $path) {
             Storage::disk('public')->put($path, 'image-'.$position);
-            ProductImage::factory()->create([
-                'product_id' => $product->id,
+            ImagemProduto::factory()->create([
+                'product_id' => $produto->id,
                 'path' => $path,
                 'position' => $position,
             ]);
         }
 
-        return $product->refresh()->load('images');
+        return $produto->refresh()->load('imagens');
     }
 
     /**
      * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
      */
-    private function payload(Product $product, array $overrides = []): array
+    private function payload(Produto $produto, array $overrides = []): array
     {
         return array_merge([
-            'name' => $product->name,
-            'price' => $product->price,
-            'colors' => $product->colors,
-            'short_description' => $product->short_description,
-            'qty' => $product->qty,
-            'sku' => $product->sku,
-            'description' => $product->description,
+            'name' => $produto->name,
+            'price' => $produto->price,
+            'colors' => $produto->colors,
+            'short_description' => $produto->short_description,
+            'qty' => $produto->qty,
+            'sku' => $produto->sku,
+            'description' => $produto->description,
         ], $overrides);
     }
 
-    public function test_guest_is_redirected_from_edit_and_update(): void
+    public function test_visitante_e_redirecionado_de_editar_e_atualizar(): void
     {
-        $product = Product::factory()->create();
+        $produto = Produto::factory()->create();
 
-        $this->get(route('admin.products.edit', $product))
+        $this->get(route('admin.produtos.editar', $produto))
             ->assertRedirect(route('login'));
 
-        $this->patch(route('admin.products.update', $product), [])
+        $this->patch(route('admin.produtos.atualizar', $produto), [])
             ->assertRedirect(route('login'));
     }
 
-    public function test_regular_user_is_forbidden_from_edit_and_update(): void
+    public function test_usuario_comum_nao_pode_editar_nem_atualizar(): void
     {
         $user = User::factory()->create(['is_admin' => false]);
-        $product = Product::factory()->create();
+        $produto = Produto::factory()->create();
 
         $this->actingAs($user)
-            ->get(route('admin.products.edit', $product))
+            ->get(route('admin.produtos.editar', $produto))
             ->assertForbidden();
 
         $this->actingAs($user)
-            ->patch(route('admin.products.update', $product), [])
+            ->patch(route('admin.produtos.atualizar', $produto), [])
             ->assertForbidden();
     }
 
-    public function test_missing_product_returns_not_found_for_administrator(): void
+    public function test_produto_ausente_retorna_nao_encontrado_para_administrador(): void
     {
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->get('/admin/products/99999/edit')
+            ->get('/admin/produtos/99999/editar')
             ->assertNotFound();
 
         $this->actingAs($admin)
-            ->patch('/admin/products/99999', [])
+            ->patch('/admin/produtos/99999', [])
             ->assertNotFound();
     }
 
-    public function test_edit_form_is_filled_and_sku_can_be_kept(): void
+    public function test_formulario_de_edicao_vem_preenchido_e_sku_pode_permanecer(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages([
+        $produto = $this->productWithImages([
             'name' => 'Bolsa Demo Curso',
             'sku' => 'DEMO-0001',
             'price' => '49.90',
@@ -107,141 +107,141 @@ class AdminProductUpdateTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.products.edit', $product))
+            ->get(route('admin.produtos.editar', $produto))
             ->assertOk()
             ->assertSee('Bolsa Demo Curso')
             ->assertSee('DEMO-0001')
             ->assertSee('value="49.90"', false)
             ->assertSee('Produto ficticio')
             ->assertSee('estudo')
-            ->assertSee(__('Cover'))
-            ->assertSee(__('Save Changes'))
+            ->assertSee('Capa')
+            ->assertSee('Salvar alterações')
             ->assertSee('name="_method"', false)
             ->assertSee('value="PATCH"', false);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.edit', $product))
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
+            ->from(route('admin.produtos.editar', $produto))
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'sku' => ' demo-0001 ',
                 'qty' => 20,
             ]))
-            ->assertRedirect(route('admin.products.index'))
-            ->assertSessionHas('status', 'product-updated');
+            ->assertRedirect(route('admin.produtos.index'))
+            ->assertSessionHas('status', 'produto-atualizado');
 
         $this->assertDatabaseHas('products', [
-            'id' => $product->id,
+            'id' => $produto->id,
             'sku' => 'DEMO-0001',
             'qty' => 20,
         ]);
-        $this->assertSame(1, $product->images()->count());
+        $this->assertSame(1, $produto->imagens()->count());
         Storage::disk('public')->assertExists('products/cover.png');
     }
 
-    public function test_duplicate_sku_from_another_product_is_rejected(): void
+    public function test_sku_duplicado_de_outro_produto_e_rejeitado(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        Product::factory()->create(['sku' => 'TAKEN-1']);
-        $product = $this->productWithImages(['sku' => 'KEEP-1']);
+        Produto::factory()->create(['sku' => 'TAKEN-1']);
+        $produto = $this->productWithImages(['sku' => 'KEEP-1']);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.edit', $product))
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
+            ->from(route('admin.produtos.editar', $produto))
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'sku' => ' taken-1 ',
             ]))
-            ->assertRedirect(route('admin.products.edit', $product))
+            ->assertRedirect(route('admin.produtos.editar', $produto))
             ->assertSessionHasErrors('sku');
 
-        $this->assertDatabaseHas('products', ['id' => $product->id, 'sku' => 'KEEP-1']);
+        $this->assertDatabaseHas('products', ['id' => $produto->id, 'sku' => 'KEEP-1']);
     }
 
-    public function test_invalid_update_preserves_previous_data_and_files(): void
+    public function test_atualizacao_invalida_preserva_dados_e_arquivos(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages([
+        $produto = $this->productWithImages([
             'name' => 'Original Name',
             'sku' => 'ORIG-1',
         ]);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.edit', $product))
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
+            ->from(route('admin.produtos.editar', $produto))
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'name' => '',
                 'price' => '12.999',
             ]))
-            ->assertRedirect(route('admin.products.edit', $product))
+            ->assertRedirect(route('admin.produtos.editar', $produto))
             ->assertSessionHasErrors(['name', 'price'])
             ->assertSessionHasInput('name', '');
 
         $this->assertDatabaseHas('products', [
-            'id' => $product->id,
+            'id' => $produto->id,
             'name' => 'Original Name',
             'sku' => 'ORIG-1',
         ]);
         Storage::disk('public')->assertExists('products/cover.png');
     }
 
-    public function test_update_without_new_files_keeps_images(): void
+    public function test_atualizacao_sem_arquivos_novos_mantem_imagens(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages([], ['products/a.png', 'products/b.png']);
+        $produto = $this->productWithImages([], ['products/a.png', 'products/b.png']);
 
         $this->actingAs($admin)
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'name' => 'Renamed',
             ]))
-            ->assertRedirect(route('admin.products.index'));
+            ->assertRedirect(route('admin.produtos.index'));
 
-        $product->refresh()->load('images');
-        $this->assertSame('Renamed', $product->name);
-        $this->assertSame(['products/a.png', 'products/b.png'], $product->images->pluck('path')->all());
-        $this->assertSame([0, 1], $product->images->pluck('position')->all());
+        $produto->refresh()->load('imagens');
+        $this->assertSame('Renamed', $produto->name);
+        $this->assertSame(['products/a.png', 'products/b.png'], $produto->imagens->pluck('path')->all());
+        $this->assertSame([0, 1], $produto->imagens->pluck('position')->all());
     }
 
-    public function test_images_can_be_added_removed_and_cover_changes(): void
+    public function test_imagens_podem_ser_adicionadas_removidas_e_capa_muda(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages([], [
+        $produto = $this->productWithImages([], [
             'products/cover-old.png',
             'products/side.png',
         ]);
-        $coverId = $product->images[0]->id;
+        $coverId = $produto->imagens[0]->id;
 
         $this->actingAs($admin)
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'remove_image_ids' => [$coverId],
                 'images' => [UploadedFile::fake()->image('extra.jpg', 20, 20)],
             ]))
-            ->assertRedirect(route('admin.products.index'));
+            ->assertRedirect(route('admin.produtos.index'));
 
-        $product->refresh()->load('images');
-        $this->assertCount(2, $product->images);
-        $this->assertSame('products/side.png', $product->images[0]->path);
-        $this->assertSame(0, $product->images[0]->position);
-        $this->assertSame(1, $product->images[1]->position);
-        $this->assertStringStartsWith('products/', $product->images[1]->path);
+        $produto->refresh()->load('imagens');
+        $this->assertCount(2, $produto->imagens);
+        $this->assertSame('products/side.png', $produto->imagens[0]->path);
+        $this->assertSame(0, $produto->imagens[0]->position);
+        $this->assertSame(1, $produto->imagens[1]->position);
+        $this->assertStringStartsWith('products/', $produto->imagens[1]->path);
         Storage::disk('public')->assertMissing('products/cover-old.png');
         Storage::disk('public')->assertExists('products/side.png');
-        Storage::disk('public')->assertExists($product->images[1]->path);
+        Storage::disk('public')->assertExists($produto->imagens[1]->path);
     }
 
-    public function test_final_image_count_cannot_be_zero_or_above_five(): void
+    public function test_quantidade_final_de_imagens_nao_pode_ser_zero_nem_acima_de_cinco(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
         $single = $this->productWithImages(['sku' => 'ONE-1'], ['products/only.png']);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.edit', $single))
-            ->patch(route('admin.products.update', $single), $this->payload($single, [
-                'remove_image_ids' => [$single->images[0]->id],
+            ->from(route('admin.produtos.editar', $single))
+            ->patch(route('admin.produtos.atualizar', $single), $this->payload($single, [
+                'remove_image_ids' => [$single->imagens[0]->id],
             ]))
             ->assertSessionHasErrors('images');
 
-        $this->assertSame(1, $single->images()->count());
+        $this->assertSame(1, $single->imagens()->count());
         Storage::disk('public')->assertExists('products/only.png');
 
         $full = $this->productWithImages(['sku' => 'FIVE-1'], [
@@ -253,111 +253,111 @@ class AdminProductUpdateTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.edit', $full))
-            ->patch(route('admin.products.update', $full), $this->payload($full, [
+            ->from(route('admin.produtos.editar', $full))
+            ->patch(route('admin.produtos.atualizar', $full), $this->payload($full, [
                 'images' => [UploadedFile::fake()->image('sixth.jpg')],
             ]))
             ->assertSessionHasErrors('images');
 
-        $this->assertSame(5, $full->images()->count());
+        $this->assertSame(5, $full->imagens()->count());
         Storage::disk('public')->assertExists('products/1.png');
     }
 
-    public function test_removing_another_products_image_is_rejected(): void
+    public function test_remover_imagem_de_outro_produto_e_rejeitado(): void
     {
         Storage::fake('public');
         $admin = User::factory()->admin()->create();
-        $product = $this->productWithImages(['sku' => 'OWN-1'], ['products/own.png']);
+        $produto = $this->productWithImages(['sku' => 'OWN-1'], ['products/own.png']);
         $other = $this->productWithImages(['sku' => 'OTH-1'], ['products/other.png']);
 
         $this->actingAs($admin)
-            ->from(route('admin.products.edit', $product))
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
-                'remove_image_ids' => [$other->images[0]->id],
+            ->from(route('admin.produtos.editar', $produto))
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
+                'remove_image_ids' => [$other->imagens[0]->id],
             ]))
-            ->assertRedirect(route('admin.products.edit', $product))
+            ->assertRedirect(route('admin.produtos.editar', $produto))
             ->assertSessionHasErrors('remove_image_ids.0');
 
         $this->assertDatabaseHas('product_images', [
-            'id' => $product->images[0]->id,
+            'id' => $produto->imagens[0]->id,
             'path' => 'products/own.png',
         ]);
         $this->assertDatabaseHas('product_images', [
-            'id' => $other->images[0]->id,
+            'id' => $other->imagens[0]->id,
             'path' => 'products/other.png',
         ]);
     }
 
-    public function test_storage_failure_keeps_old_files_and_removes_new_ones(): void
+    public function test_falha_de_armazenamento_mantem_arquivos_antigos_e_remove_novos(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages(['name' => 'Untouched'], ['products/keep.png']);
+        $produto = $this->productWithImages(['name' => 'Untouched'], ['products/keep.png']);
 
         $disk = Mockery::mock(Filesystem::class);
         $disk->shouldReceive('putFileAs')->once()->andReturn('products/tmp-new.png');
         $disk->shouldReceive('putFileAs')->once()->andReturn(false);
         $disk->shouldReceive('delete')->once()->with('products/tmp-new.png')->andReturn(true);
 
-        $this->app->instance(ProductUpdater::class, new ProductUpdater($disk));
+        $this->app->instance(AtualizadorProduto::class, new AtualizadorProduto($disk));
 
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->from(route('admin.products.edit', $product))
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
+            ->from(route('admin.produtos.editar', $produto))
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'name' => 'Should Not Save',
                 'images' => [
                     UploadedFile::fake()->image('one.jpg'),
                     UploadedFile::fake()->image('two.jpg'),
                 ],
             ]))
-            ->assertRedirect(route('admin.products.edit', $product))
+            ->assertRedirect(route('admin.produtos.editar', $produto))
             ->assertSessionHasErrors('images');
 
-        $this->assertDatabaseHas('products', ['id' => $product->id, 'name' => 'Untouched']);
-        $this->assertDatabaseHas('product_images', ['product_id' => $product->id, 'path' => 'products/keep.png']);
+        $this->assertDatabaseHas('products', ['id' => $produto->id, 'name' => 'Untouched']);
+        $this->assertDatabaseHas('product_images', ['product_id' => $produto->id, 'path' => 'products/keep.png']);
         Storage::disk('public')->assertExists('products/keep.png');
     }
 
-    public function test_failed_physical_delete_after_commit_does_not_undo_update(): void
+    public function test_falha_fisica_apos_commit_nao_desfaz_atualizacao(): void
     {
         Storage::fake('public');
-        $product = $this->productWithImages(['name' => 'Before'], ['products/remove-me.png']);
-        $removeId = $product->images[0]->id;
+        $produto = $this->productWithImages(['name' => 'Before'], ['products/remove-me.png']);
+        $removeId = $produto->imagens[0]->id;
 
         Log::spy();
         $disk = Mockery::mock(Filesystem::class);
         $disk->shouldReceive('putFileAs')->once()->andReturn('products/brand-new.png');
         $disk->shouldReceive('delete')->once()->with('products/remove-me.png')->andReturn(false);
 
-        $this->app->instance(ProductUpdater::class, new ProductUpdater($disk));
+        $this->app->instance(AtualizadorProduto::class, new AtualizadorProduto($disk));
 
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->patch(route('admin.products.update', $product), $this->payload($product, [
+            ->patch(route('admin.produtos.atualizar', $produto), $this->payload($produto, [
                 'name' => 'After Commit',
                 'remove_image_ids' => [$removeId],
                 'images' => [UploadedFile::fake()->image('brand-new.png')],
             ]))
-            ->assertRedirect(route('admin.products.index'))
-            ->assertSessionHas('status', 'product-updated');
+            ->assertRedirect(route('admin.produtos.index'))
+            ->assertSessionHas('status', 'produto-atualizado');
 
-        $this->assertDatabaseHas('products', ['id' => $product->id, 'name' => 'After Commit']);
-        $this->assertDatabaseHas('product_images', ['product_id' => $product->id, 'path' => 'products/brand-new.png']);
+        $this->assertDatabaseHas('products', ['id' => $produto->id, 'name' => 'After Commit']);
+        $this->assertDatabaseHas('product_images', ['product_id' => $produto->id, 'path' => 'products/brand-new.png']);
         $this->assertDatabaseMissing('product_images', ['id' => $removeId]);
         Log::shouldHaveReceived('warning')->once();
     }
 
-    public function test_index_includes_edit_link(): void
+    public function test_listagem_inclui_link_de_edicao(): void
     {
         $admin = User::factory()->admin()->create();
-        $product = Product::factory()->create();
+        $produto = Produto::factory()->create();
 
         $this->actingAs($admin)
-            ->get(route('admin.products.index'))
+            ->get(route('admin.produtos.index'))
             ->assertOk()
-            ->assertSee(__('Edit'))
-            ->assertSee(route('admin.products.edit', $product), false);
+            ->assertSee('Editar')
+            ->assertSee(route('admin.produtos.editar', $produto), false);
     }
 }

@@ -2,186 +2,186 @@
 
 namespace App\Cart;
 
-use App\Models\Product;
-use App\Support\Money;
+use App\Models\Produto;
+use App\Support\Dinheiro;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class SessionCart
+class CarrinhoSessao
 {
-    public const SESSION_KEY = 'cart.items';
+    public const CHAVE_SESSAO = 'cart.items';
 
-    public function __construct(private Session $session) {}
+    public function __construct(private Session $sessao) {}
 
     /**
      * @return list<array{id: string, product_id: int, color: string, quantity: int}>
      */
-    public function items(): array
+    public function itens(): array
     {
-        return $this->normalizedItems();
+        return $this->itensNormalizados();
     }
 
-    public function totalQuantity(): int
+    public function quantidadeTotal(): int
     {
-        return array_sum(array_column($this->normalizedItems(), 'quantity'));
+        return array_sum(array_column($this->itensNormalizados(), 'quantity'));
     }
 
-    public function add(int $productId, string $color, int $quantity): void
+    public function adicionar(int $idProduto, string $cor, int $quantidade): void
     {
-        if ($quantity < 1) {
-            throw new CannotAddToCartException(__('The quantity must be a positive integer.'));
+        if ($quantidade < 1) {
+            throw new ExcecaoNaoPodeAdicionarCarrinho('A quantidade deve ser um inteiro positivo.');
         }
 
-        $product = Product::query()->find($productId);
+        $produto = Produto::query()->find($idProduto);
 
-        if ($product === null || ! $product->isAvailable()) {
-            throw new CannotAddToCartException(__('This product cannot be added to the cart.'));
+        if ($produto === null || ! $produto->estaDisponivel()) {
+            throw new ExcecaoNaoPodeAdicionarCarrinho('Este produto não pode ser adicionado ao carrinho.');
         }
 
-        if (! in_array($color, $product->displayColors(), true)) {
-            throw new CannotAddToCartException(__('The selected color is not available for this product.'));
+        if (! in_array($cor, $produto->coresExibidas(), true)) {
+            throw new ExcecaoNaoPodeAdicionarCarrinho('A cor selecionada não está disponível para este produto.');
         }
 
-        $items = $this->normalizedItems();
-        $quantityAlreadyInCart = 0;
+        $itens = $this->itensNormalizados();
+        $quantidadeJaNoCarrinho = 0;
 
-        foreach ($items as $item) {
-            if ($item['product_id'] === $productId) {
-                $quantityAlreadyInCart += $item['quantity'];
+        foreach ($itens as $item) {
+            if ($item['product_id'] === $idProduto) {
+                $quantidadeJaNoCarrinho += $item['quantity'];
             }
         }
 
-        if ($quantityAlreadyInCart + $quantity > $product->qty) {
-            throw new CannotAddToCartException(__('The requested quantity exceeds the available stock.'));
+        if ($quantidadeJaNoCarrinho + $quantidade > $produto->qty) {
+            throw new ExcecaoNaoPodeAdicionarCarrinho('A quantidade pedida ultrapassa o estoque disponível.');
         }
 
-        $merged = false;
+        $juntou = false;
 
-        foreach ($items as $index => $item) {
-            if ($item['product_id'] === $productId && $item['color'] === $color) {
-                $items[$index]['quantity'] = $item['quantity'] + $quantity;
-                $merged = true;
+        foreach ($itens as $indice => $item) {
+            if ($item['product_id'] === $idProduto && $item['color'] === $cor) {
+                $itens[$indice]['quantity'] = $item['quantity'] + $quantidade;
+                $juntou = true;
                 break;
             }
         }
 
-        if (! $merged) {
-            $items[] = [
+        if (! $juntou) {
+            $itens[] = [
                 'id' => (string) Str::uuid(),
-                'product_id' => $productId,
-                'color' => $color,
-                'quantity' => $quantity,
+                'product_id' => $idProduto,
+                'color' => $cor,
+                'quantity' => $quantidade,
             ];
         }
 
-        $this->session->put(self::SESSION_KEY, $items);
+        $this->sessao->put(self::CHAVE_SESSAO, $itens);
     }
 
-    public function updateQuantity(string $itemId, int $quantity): void
+    public function atualizarQuantidade(string $idItem, int $quantidade): void
     {
-        if ($quantity < 1) {
-            throw new CartException(__('The quantity must be a positive integer.'));
+        if ($quantidade < 1) {
+            throw new ExcecaoCarrinho('A quantidade deve ser um inteiro positivo.');
         }
 
-        $items = $this->normalizedItems();
-        $index = $this->indexOf($items, $itemId);
-        $line = $items[$index];
-        $product = Product::query()->find($line['product_id']);
+        $itens = $this->itensNormalizados();
+        $indice = $this->indiceDe($itens, $idItem);
+        $linha = $itens[$indice];
+        $produto = Produto::query()->find($linha['product_id']);
 
-        if ($product === null || ! $product->isAvailable() || ! in_array($line['color'], $product->displayColors(), true)) {
-            throw new CartException(__('This cart item cannot be updated.'));
+        if ($produto === null || ! $produto->estaDisponivel() || ! in_array($linha['color'], $produto->coresExibidas(), true)) {
+            throw new ExcecaoCarrinho('Este item do carrinho não pode ser atualizado.');
         }
 
-        $others = 0;
+        $outras = 0;
 
-        foreach ($items as $itemIndex => $item) {
-            if ($itemIndex !== $index && $item['product_id'] === $line['product_id']) {
-                $others += $item['quantity'];
+        foreach ($itens as $indiceItem => $item) {
+            if ($indiceItem !== $indice && $item['product_id'] === $linha['product_id']) {
+                $outras += $item['quantity'];
             }
         }
 
-        if ($quantity > $line['quantity'] && ($others + $quantity) > $product->qty) {
-            throw new CartException(__('The requested quantity exceeds the available stock.'));
+        if ($quantidade > $linha['quantity'] && ($outras + $quantidade) > $produto->qty) {
+            throw new ExcecaoCarrinho('A quantidade pedida ultrapassa o estoque disponível.');
         }
 
-        $items[$index]['quantity'] = $quantity;
-        $this->session->put(self::SESSION_KEY, $items);
+        $itens[$indice]['quantity'] = $quantidade;
+        $this->sessao->put(self::CHAVE_SESSAO, $itens);
     }
 
-    public function remove(string $itemId): void
+    public function remover(string $idItem): void
     {
-        $items = $this->normalizedItems();
-        $index = $this->indexOf($items, $itemId);
-        unset($items[$index]);
-        $this->session->put(self::SESSION_KEY, array_values($items));
+        $itens = $this->itensNormalizados();
+        $indice = $this->indiceDe($itens, $idItem);
+        unset($itens[$indice]);
+        $this->sessao->put(self::CHAVE_SESSAO, array_values($itens));
     }
 
     /**
-     * @param  Collection<int, CartLine>|null  $lines
+     * @param  Collection<int, LinhaCarrinho>|null  $linhas
      */
-    public function productTotal(?Collection $lines = null): ?string
+    public function totalProdutos(?Collection $linhas = null): ?string
     {
-        $lines ??= $this->lines();
+        $linhas ??= $this->linhas();
 
-        if ($lines->isEmpty()) {
+        if ($linhas->isEmpty()) {
             return '0.00';
         }
 
-        if ($lines->contains(fn (CartLine $line): bool => ! $line->contributesToProductTotal())) {
+        if ($linhas->contains(fn (LinhaCarrinho $linha): bool => ! $linha->entraNoTotal())) {
             return null;
         }
 
-        $subtotals = $lines
-            ->map(fn (CartLine $line): string => $line->subtotal() ?? '0.00')
+        $subtotais = $linhas
+            ->map(fn (LinhaCarrinho $linha): string => $linha->subtotal() ?? '0.00')
             ->all();
 
-        return Money::add(...$subtotals);
+        return Dinheiro::somar(...$subtotais);
     }
 
     /**
-     * @param  list<array{id: string, product_id: int, color: string, quantity: int}>  $items
+     * @param  list<array{id: string, product_id: int, color: string, quantity: int}>  $itens
      */
-    private function indexOf(array $items, string $itemId): int
+    private function indiceDe(array $itens, string $idItem): int
     {
-        foreach ($items as $index => $item) {
-            if ($item['id'] === $itemId) {
-                return $index;
+        foreach ($itens as $indice => $item) {
+            if ($item['id'] === $idItem) {
+                return $indice;
             }
         }
 
-        throw new CartItemNotFoundException(__('Cart item not found.'));
+        throw new ExcecaoItemCarrinhoAusente('Item do carrinho não encontrado.');
     }
 
     /**
-     * @return Collection<int, CartLine>
+     * @return Collection<int, LinhaCarrinho>
      */
-    public function lines(): Collection
+    public function linhas(): Collection
     {
-        $items = $this->normalizedItems();
-        $productIds = array_values(array_unique(array_column($items, 'product_id')));
-        $products = Product::query()
-            ->with('images')
-            ->whereIn('id', $productIds)
+        $itens = $this->itensNormalizados();
+        $ids = array_values(array_unique(array_column($itens, 'product_id')));
+        $produtos = Produto::query()
+            ->with('imagens')
+            ->whereIn('id', $ids)
             ->get()
             ->keyBy('id');
 
-        $requestedByProduct = [];
+        $pedidoPorProduto = [];
 
-        foreach ($items as $item) {
-            $requestedByProduct[$item['product_id']] = ($requestedByProduct[$item['product_id']] ?? 0) + $item['quantity'];
+        foreach ($itens as $item) {
+            $pedidoPorProduto[$item['product_id']] = ($pedidoPorProduto[$item['product_id']] ?? 0) + $item['quantity'];
         }
 
-        return collect($items)->map(function (array $item) use ($products, $requestedByProduct): CartLine {
-            $product = $products->get($item['product_id']);
+        return collect($itens)->map(function (array $item) use ($produtos, $pedidoPorProduto): LinhaCarrinho {
+            $produto = $produtos->get($item['product_id']);
 
-            return new CartLine(
+            return new LinhaCarrinho(
                 id: $item['id'],
-                productId: $item['product_id'],
-                color: $item['color'],
-                quantity: $item['quantity'],
-                product: $product,
-                status: $this->statusFor($product, $item['color'], $requestedByProduct[$item['product_id']]),
+                idProduto: $item['product_id'],
+                cor: $item['color'],
+                quantidade: $item['quantity'],
+                produto: $produto,
+                situacao: $this->situacaoDe($produto, $item['color'], $pedidoPorProduto[$item['product_id']]),
             );
         })->values();
     }
@@ -189,57 +189,57 @@ class SessionCart
     /**
      * @return list<array{id: string, product_id: int, color: string, quantity: int}>
      */
-    private function normalizedItems(): array
+    private function itensNormalizados(): array
     {
-        $items = $this->session->get(self::SESSION_KEY, []);
+        $itens = $this->sessao->get(self::CHAVE_SESSAO, []);
 
-        if (! is_array($items)) {
+        if (! is_array($itens)) {
             return [];
         }
 
-        $normalized = [];
+        $normalizados = [];
 
-        foreach ($items as $item) {
+        foreach ($itens as $item) {
             if (! is_array($item)) {
                 continue;
             }
 
             $id = $item['id'] ?? null;
-            $productId = $item['product_id'] ?? null;
-            $color = $item['color'] ?? null;
-            $quantity = $item['quantity'] ?? null;
+            $idProduto = $item['product_id'] ?? null;
+            $cor = $item['color'] ?? null;
+            $quantidade = $item['quantity'] ?? null;
 
-            if (! is_string($id) || $id === '' || ! is_numeric($productId) || ! is_string($color) || $color === '' || ! is_numeric($quantity)) {
+            if (! is_string($id) || $id === '' || ! is_numeric($idProduto) || ! is_string($cor) || $cor === '' || ! is_numeric($quantidade)) {
                 continue;
             }
 
-            $quantity = (int) $quantity;
+            $quantidade = (int) $quantidade;
 
-            if ($quantity < 1) {
+            if ($quantidade < 1) {
                 continue;
             }
 
-            $normalized[] = [
+            $normalizados[] = [
                 'id' => $id,
-                'product_id' => (int) $productId,
-                'color' => $color,
-                'quantity' => $quantity,
+                'product_id' => (int) $idProduto,
+                'color' => $cor,
+                'quantity' => $quantidade,
             ];
         }
 
-        return $normalized;
+        return $normalizados;
     }
 
-    private function statusFor(?Product $product, string $color, int $requestedForProduct): string
+    private function situacaoDe(?Produto $produto, string $cor, int $pedidoDoProduto): string
     {
-        if ($product === null || ! $product->isAvailable()) {
-            return CartLine::STATUS_UNAVAILABLE;
+        if ($produto === null || ! $produto->estaDisponivel()) {
+            return LinhaCarrinho::SITUACAO_INDISPONIVEL;
         }
 
-        if (! in_array($color, $product->displayColors(), true) || $requestedForProduct > $product->qty) {
-            return CartLine::STATUS_NEEDS_ADJUSTMENT;
+        if (! in_array($cor, $produto->coresExibidas(), true) || $pedidoDoProduto > $produto->qty) {
+            return LinhaCarrinho::SITUACAO_AJUSTAR;
         }
 
-        return CartLine::STATUS_AVAILABLE;
+        return LinhaCarrinho::SITUACAO_DISPONIVEL;
     }
 }

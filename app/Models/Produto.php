@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
-use App\Support\ProductColors;
-use Database\Factories\ProductFactory;
+use App\Support\CoresProduto;
+use Database\Factories\ProdutoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
-class Product extends Model
+class Produto extends Model
 {
-    /** @use HasFactory<ProductFactory> */
+    /** @use HasFactory<ProdutoFactory> */
     use HasFactory;
+
+    protected $table = 'products';
 
     /**
      * @var list<string>
@@ -40,35 +42,35 @@ class Product extends Model
     }
 
     /**
-     * @return HasMany<ProductImage, $this>
+     * @return HasMany<ImagemProduto, $this>
      */
-    public function images(): HasMany
+    public function imagens(): HasMany
     {
-        return $this->hasMany(ProductImage::class)->orderBy('position');
+        return $this->hasMany(ImagemProduto::class, 'product_id')->orderBy('position');
     }
 
-    public function coverImage(): ?ProductImage
+    public function imagemCapa(): ?ImagemProduto
     {
-        return $this->images->first();
+        return $this->imagens->first();
     }
 
-    public function coverUrl(): ?string
+    public function urlCapa(): ?string
     {
-        $cover = $this->coverImage();
+        $capa = $this->imagemCapa();
 
-        if ($cover === null || ! Storage::disk('public')->exists($cover->path)) {
+        if ($capa === null || ! Storage::disk('public')->exists($capa->path)) {
             return null;
         }
 
-        return $cover->url();
+        return $capa->url();
     }
 
-    public function isAvailable(): bool
+    public function estaDisponivel(): bool
     {
         return $this->qty > 0;
     }
 
-    public function formattedPrice(): string
+    public function precoFormatado(): string
     {
         return 'R$ '.number_format((float) $this->price, 2, ',', '.');
     }
@@ -76,13 +78,13 @@ class Product extends Model
     /**
      * @return list<string>
      */
-    public function displayColors(): array
+    public function coresExibidas(): array
     {
-        $allowed = ProductColors::all();
+        $permitidas = CoresProduto::todas();
 
         return array_values(array_filter(
             $this->colors ?? [],
-            fn (mixed $color): bool => is_string($color) && in_array($color, $allowed, true),
+            fn (mixed $cor): bool => is_string($cor) && in_array($cor, $permitidas, true),
         ));
     }
 }

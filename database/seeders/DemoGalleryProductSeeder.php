@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Product;
-use App\Services\ProductCreator;
-use App\Support\ProductColors;
+use App\Models\Produto;
+use App\Services\CriadorProduto;
+use App\Support\CoresProduto;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\UploadedFile;
 
@@ -21,28 +21,28 @@ class DemoGalleryProductSeeder extends Seeder
         'product_slide_show_3.jpg',
     ];
 
-    public function run(ProductCreator $creator): void
+    public function run(CriadorProduto $criador): void
     {
-        if (Product::query()->where('sku', self::SKU)->exists()) {
+        if (Produto::query()->where('sku', self::SKU)->exists()) {
             return;
         }
 
-        $images = [];
+        $imagens = [];
 
-        foreach (self::IMAGE_FILES as $filename) {
-            $path = public_path('frontend/images/'.$filename);
+        foreach (self::IMAGE_FILES as $arquivo) {
+            $caminho = public_path('frontend/images/'.$arquivo);
 
-            $images[] = new UploadedFile($path, $filename, 'image/jpeg', null, true);
+            $imagens[] = new UploadedFile($caminho, $arquivo, 'image/jpeg', null, true);
         }
 
-        $creator->create([
+        $criador->criar([
             'name' => 'Bolsa Galeria Demo',
             'price' => '89.90',
-            'colors' => [ProductColors::all()[2], ProductColors::all()[3]],
+            'colors' => [CoresProduto::todas()[2], CoresProduto::todas()[3]],
             'short_description' => 'Produto de demonstração com três fotos do template para a galeria.',
             'qty' => 20,
             'sku' => self::SKU,
             'description' => '<p>Registro de estudo para capa, galeria e miniatura do carrinho.</p>',
-        ], $images);
+        ], $imagens);
     }
 }

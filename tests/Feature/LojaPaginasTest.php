@@ -5,30 +5,30 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class StorePagesTest extends TestCase
+class LojaPaginasTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_home_page_is_displayed(): void
+    public function test_pagina_inicial_e_exibida(): void
     {
-        $response = $this->get(route('home'));
+        $response = $this->get(route('inicio'));
 
         $response->assertOk();
-        $response->assertSee(__('No products are available in the store yet.'));
+        $response->assertSee('Ainda não há produtos na loja.');
     }
 
-    public function test_legacy_product_details_url_redirects_home(): void
+    public function test_url_antiga_de_detalhes_redireciona_para_inicio(): void
     {
-        $this->get('/product-details')->assertRedirect(route('home'));
+        $this->get('/product-details')->assertRedirect(route('inicio'));
     }
 
-    public function test_cart_page_is_displayed(): void
+    public function test_pagina_do_carrinho_e_exibida(): void
     {
-        $response = $this->get(route('cart'));
+        $response = $this->get(route('carrinho'));
 
         $response->assertOk();
-        $response->assertSee(__('Your cart is empty.'));
-        $response->assertSee(__('Product total'));
+        $response->assertSee('Seu carrinho está vazio.');
+        $response->assertSee('Total dos produtos');
         $response->assertSee('R$ 0,00');
         $response->assertDontSee('Sub total');
         $response->assertDontSee('$ 360.00');

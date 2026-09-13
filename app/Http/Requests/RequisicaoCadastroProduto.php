@@ -2,20 +2,20 @@
 
 namespace App\Http\Requests;
 
-use App\Support\ProductFormRules;
+use App\Support\RegrasFormularioProduto;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProductRequest extends FormRequest
+class RequisicaoCadastroProduto extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('access-admin') === true;
+        return $this->user()?->can('acessar-admin') === true;
     }
 
     protected function prepareForValidation(): void
     {
-        ProductFormRules::prepare($this);
+        RegrasFormularioProduto::prepare($this);
     }
 
     /**
@@ -24,8 +24,8 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return array_merge(
-            ProductFormRules::newImages(required: true),
-            ProductFormRules::attributes(),
+            RegrasFormularioProduto::newImages(required: true),
+            RegrasFormularioProduto::attributes(),
         );
     }
 
@@ -34,6 +34,6 @@ class StoreProductRequest extends FormRequest
      */
     public function messages(): array
     {
-        return ProductFormRules::messages();
+        return RegrasFormularioProduto::messages();
     }
 }

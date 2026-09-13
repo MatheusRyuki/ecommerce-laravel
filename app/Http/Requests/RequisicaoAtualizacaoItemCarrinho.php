@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 
-class UpdateCartItemRequest extends FormRequest
+class RequisicaoAtualizacaoItemCarrinho extends FormRequest
 {
     public function authorize(): bool
     {

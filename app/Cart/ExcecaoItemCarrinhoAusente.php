@@ -2,4 +2,4 @@
 
 namespace App\Cart;
 
-class CartItemNotFoundException extends CartException {}
+class ExcecaoItemCarrinhoAusente extends ExcecaoCarrinho {}

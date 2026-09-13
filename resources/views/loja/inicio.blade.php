@@ -1,6 +1,6 @@
-@extends('store.layouts.app')
+@extends('loja.layouts.app')
 
-@section('title', 'Shop')
+@section('title', 'Loja')
 
 @section('content')
     <!--============================
@@ -8,21 +8,21 @@
     =============================-->
     <section class="wsus__product mt_145 pb_100">
         <div class="container">
-            @if ($products->isEmpty())
+            @if ($produtos->isEmpty())
                 <div class="row">
                     <div class="col-12 text-center py-5">
-                        <p>{{ __('No products are available in the store yet.') }}</p>
+                        <p>Ainda não há produtos na loja.</p>
                     </div>
                 </div>
             @else
                 <div class="row">
-                    @foreach ($products as $product)
-                        @include('store.partials.product-item', ['product' => $product])
+                    @foreach ($produtos as $produto)
+                        @include('loja.partials.item-produto', ['produto' => $produto])
                     @endforeach
                 </div>
-                @if ($products->hasPages())
+                @if ($produtos->hasPages())
                     <div class="wsus__pagination mt_60">
-                        {{ $products->links('pagination.store-bootstrap') }}
+                        {{ $produtos->links('pagination.store-bootstrap') }}
                     </div>
                 @endif
             @endif

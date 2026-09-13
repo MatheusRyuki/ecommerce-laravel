@@ -2,22 +2,22 @@
 
 namespace Tests\Feature;
 
-use App\Cart\SessionCart;
-use App\Models\Product;
-use App\Models\ProductImage;
+use App\Cart\CarrinhoSessao;
+use App\Models\Produto;
+use App\Models\ImagemProduto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-class StorePresentationTest extends TestCase
+class LojaApresentacaoTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function product(array $overrides = [], array $paths = ['products/cover.png']): Product
+    private function product(array $overrides = [], array $paths = ['products/cover.png']): Produto
     {
         Storage::fake('public');
 
-        $product = Product::factory()->create(array_merge([
+        $produto = Produto::factory()->create(array_merge([
             'name' => 'Alert Bag',
             'sku' => 'ALERT-1',
             'price' => '49.90',
@@ -27,98 +27,98 @@ class StorePresentationTest extends TestCase
 
         foreach (array_values($paths) as $position => $path) {
             Storage::disk('public')->put($path, 'img-'.$position);
-            ProductImage::factory()->create([
-                'product_id' => $product->id,
+            ImagemProduto::factory()->create([
+                'product_id' => $produto->id,
                 'path' => $path,
                 'position' => $position,
             ]);
         }
 
-        return $product->refresh()->load('images');
+        return $produto->refresh()->load('imagens');
     }
 
-    public function test_success_flash_appears_once_after_adding(): void
+    public function test_aviso_de_sucesso_aparece_uma_vez_apos_adicionar(): void
     {
-        $product = $this->product();
+        $produto = $this->product();
 
-        $this->post(route('store.cart.items.store'), [
-            'product_id' => $product->id,
+        $this->post(route('loja.carrinho.itens.adicionar'), [
+            'product_id' => $produto->id,
             'color' => 'Red',
             'quantity' => 1,
-        ])->assertRedirect(route('cart'));
+        ])->assertRedirect(route('carrinho'));
 
-        $this->get(route('cart'))
-            ->assertSee(__('The product was added to the cart.'))
+        $this->get(route('carrinho'))
+            ->assertSee('O produto foi adicionado ao carrinho.')
             ->assertSee('alert-success', false)
-            ->assertSee(__('Close'), false);
+            ->assertSee('Fechar', false);
 
-        $this->get(route('cart'))
+        $this->get(route('carrinho'))
             ->assertDontSee(__('The product was added to the cart.'));
     }
 
-    public function test_quantity_error_is_scoped_to_the_affected_line(): void
+    public function test_erro_de_quantidade_fica_na_linha_afetada(): void
     {
-        $product = $this->product(['qty' => 5]);
+        $produto = $this->product(['qty' => 5]);
 
-        $this->post(route('store.cart.items.store'), [
-            'product_id' => $product->id,
+        $this->post(route('loja.carrinho.itens.adicionar'), [
+            'product_id' => $produto->id,
             'color' => 'Red',
             'quantity' => 3,
         ]);
-        $this->post(route('store.cart.items.store'), [
-            'product_id' => $product->id,
+        $this->post(route('loja.carrinho.itens.adicionar'), [
+            'product_id' => $produto->id,
             'color' => 'Yellow',
             'quantity' => 1,
         ]);
 
-        $redId = session(SessionCart::SESSION_KEY)[0]['id'];
-        $yellowId = session(SessionCart::SESSION_KEY)[1]['id'];
+        $redId = session(CarrinhoSessao::CHAVE_SESSAO)[0]['id'];
+        $yellowId = session(CarrinhoSessao::CHAVE_SESSAO)[1]['id'];
 
-        $response = $this->from(route('cart'))
-            ->patch(route('store.cart.items.update', $redId), ['quantity' => 5]);
+        $response = $this->from(route('carrinho'))
+            ->patch(route('loja.carrinho.itens.atualizar', $redId), ['quantity' => 5]);
 
         $response->assertSessionHasErrors('cart_items.'.$redId)
             ->assertSessionDoesntHaveErrors('cart_items.'.$yellowId)
             ->assertSessionDoesntHaveErrors('quantity');
 
         $this->followingRedirects()
-            ->from(route('cart'))
-            ->patch(route('store.cart.items.update', $redId), ['quantity' => 5])
-            ->assertSee(__('The requested quantity exceeds the available stock.'))
+            ->from(route('carrinho'))
+            ->patch(route('loja.carrinho.itens.atualizar', $redId), ['quantity' => 5])
+            ->assertSee('A quantidade pedida ultrapassa o estoque disponível.')
             ->assertSee('id="cart-qty-form-'.$redId.'"', false)
             ->assertSee('id="cart-qty-form-'.$yellowId.'"', false);
     }
 
-    public function test_missing_image_uses_fallback_without_recursive_onerror(): void
+    public function test_imagem_ausente_usa_reserva_sem_onerror_recursivo(): void
     {
         Storage::fake('public');
-        $product = Product::factory()->create(['name' => 'Broken Cover', 'sku' => 'BRK-1']);
-        ProductImage::factory()->create([
-            'product_id' => $product->id,
+        $produto = Produto::factory()->create(['name' => 'Broken Cover', 'sku' => 'BRK-1']);
+        ImagemProduto::factory()->create([
+            'product_id' => $produto->id,
             'path' => 'products/missing.png',
             'position' => 0,
         ]);
 
-        $this->get(route('home'))
+        $this->get(route('inicio'))
             ->assertOk()
-            ->assertSee(__('No cover'))
+            ->assertSee('Sem capa')
             ->assertDontSee('products/missing.png', false);
 
-        $this->get(route('store.products.show', $product))
+        $this->get(route('loja.produtos.exibir', $produto))
             ->assertOk()
-            ->assertSee(__('No cover'))
+            ->assertSee('Sem capa')
             ->assertDontSee('this.onerror=null', false);
     }
 
-    public function test_gallery_renders_contain_photos_for_multiple_images(): void
+    public function test_galeria_renderiza_fotos_com_contain_para_varias_imagens(): void
     {
-        $product = $this->product([], ['products/a.jpg', 'products/b.jpg']);
+        $produto = $this->product([], ['products/a.jpg', 'products/b.jpg']);
 
-        $this->get(route('store.products.show', $product))
+        $this->get(route('loja.produtos.exibir', $produto))
             ->assertOk()
             ->assertSee('store-photo__img', false)
             ->assertSee('this.onerror=null', false)
-            ->assertSee(__('Thumbnail').' 2')
+            ->assertSee('Miniatura 2')
             ->assertSee('slider-navFive', false);
     }
 }
