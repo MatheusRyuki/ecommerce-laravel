@@ -127,7 +127,7 @@ class ConfirmadorPedido
             $estado->save();
 
             return $pedido->load('itens');
-        });
+        }, 5);
     }
 
     private function codigo(): string

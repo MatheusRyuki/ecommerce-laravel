@@ -43,7 +43,7 @@ class UsuarioController extends Controller
         abort_if($usuario->id === $request->user()->id, 403, 'Você não pode remover o próprio privilégio de administrador.');
 
         DB::transaction(function () use ($usuario): void {
-            $admins = Usuario::query()->where('administrador', true)->lockForUpdate()->get();
+            $admins = Usuario::query()->where('administrador', true)->orderBy('id')->lockForUpdate()->get();
 
             if ($admins->count() <= 1 && $usuario->administrador) {
                 abort(422, 'É necessário manter pelo menos um administrador.');

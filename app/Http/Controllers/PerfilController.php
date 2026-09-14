@@ -43,20 +43,27 @@ class PerfilController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $usuario = $request->user();
+        $id = $request->user()->id;
+        $bloqueado = false;
 
-        $bloqueado = DB::transaction(function () use ($usuario): bool {
-            if (! $usuario->administrador) {
-                return false;
+        DB::transaction(function () use ($id, &$bloqueado): void {
+            $usuario = Usuario::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+
+            if ($usuario->administrador) {
+                $admins = Usuario::query()
+                    ->where('administrador', true)
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get();
+
+                if ($admins->where('id', '!=', $usuario->id)->count() === 0) {
+                    $bloqueado = true;
+
+                    return;
+                }
             }
 
-            $outrosAdmins = Usuario::query()
-                ->where('administrador', true)
-                ->where('id', '!=', $usuario->id)
-                ->lockForUpdate()
-                ->count();
-
-            return $outrosAdmins === 0;
+            $usuario->delete();
         });
 
         if ($bloqueado) {
@@ -67,8 +74,6 @@ class PerfilController extends Controller
         }
 
         Auth::logout();
-
-        $usuario->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

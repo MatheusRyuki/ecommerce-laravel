@@ -180,17 +180,17 @@ A preparação e o comando de testes compartilham o bloqueio `storage/e2e/execuc
 
 O relatório HTML fica em `storage/e2e/relatorio-playwright/index.html`. A configuração dos navegadores, o isolamento e os cenários estão descritos em [docs/e2e.md](docs/e2e.md).
 
-### Verificações no MySQL
+### Verificações de concorrência no MySQL
 
-Depois de preparar o ambiente E2E, execute as verificações de estoque e cupom com:
+A suíte `phpunit.concorrencia.xml` usa o MySQL InnoDB `ecommerce_e2e` (usuário `ecommerce_e2e`). Cada caso dispara dois processos PHP independentes, cada um com a própria conexão. A primeira transação permanece aberta após o `FOR UPDATE` da aplicação; a segunda só conclui depois dessa liberação. Assim fica comprovada a disputa, não apenas a execução sequencial.
+
+Os cenários cobertos são a última unidade de estoque, o cupom de uso único global, duas confirmações com a mesma chave de idempotência, o rebaixamento paralelo de dois administradores e a exclusão simultânea das próprias contas. Nesses casos permanece um único pedido ou consumo quando a regra exige, o carrinho da tentativa recusada não é limpo, e resta pelo menos um administrador.
 
 ```bash
-./vendor/bin/sail artisan test --env=e2e --configuration=phpunit.concorrencia.xml
+./scripts/e2e/com-exclusividade.sh ./vendor/bin/sail exec laravel.test vendor/bin/phpunit -c phpunit.concorrencia.xml
 ```
 
-Esse comando recria o banco `ecommerce_e2e`. Execute-o com a suíte Playwright encerrada, pois ambos usam o mesmo banco. O banco de desenvolvimento `ecommerce` não é o alvo dessa configuração.
-
-**Limite da cobertura atual:** as verificações MySQL são sequenciais. Elas não comprovam o comportamento de duas transações concorrentes executadas por processos distintos.
+O comando recria o schema de `ecommerce_e2e` entre os casos. O bloqueio `storage/e2e/execucao.lock` impede que a preparação E2E ou o Playwright reiniciem o banco durante a execução. O banco `ecommerce` não é o alvo. Detalhes da sincronização estão em [docs/e2e.md](docs/e2e.md).
 
 ## Limitações
 

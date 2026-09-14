@@ -2,7 +2,8 @@
 
 A suíte em `testes/e2e` exercita o e-commerce **pelo navegador** contra Laravel e MySQL reais do ambiente **E2E**, isolado do app em `http://localhost:8002` e do banco `ecommerce`.
 
-Os testes PHPUnit em `tests/Feature` e `tests/Unit` usam SQLite em memória. Não usam `ecommerce`. A suíte `phpunit.concorrencia.xml` usa o MySQL `ecommerce_e2e` (wipe só desse banco).
+Os testes PHPUnit em `tests/Feature` e `tests/Unit` usam SQLite em memória. Não usam `ecommerce`. A suíte `phpunit.concorrencia.xml` usa o MySQL `ecommerce_e2e` (wipe só desse banco) com dois processos PHP por caso.
+
 
 ## Escopo do produto (E2E)
 
@@ -25,7 +26,23 @@ A loja pública tem Início, categorias, Favoritos, Pedidos, carrinho, Entrar/Cr
 
 A prova HTTP não é só status 200: `GET /_e2e/diagnostico` (cabeçalho `X-Token-E2e`) devolve banco, disco, marcador em `storage/e2e/marcador.txt` e caminho do correio.
 
-Projetos Playwright (`playwright.config.ts`): `chromium`, `firefox` e `webkit` (desktop 1280×800, `grepInvert: /@somente-mobile/`) e `mobile` (emulação **Pixel 5**, `hasTouch` e `isMobile`, `grep: /@principal|@somente-mobile/`). O projeto `mobile` **não** é aparelho físico. `retries: 0`, `workers: 1` global, `fullyParallel: false`. `npm run teste:e2e` e `./scripts/e2e/preparar-ambiente.sh` usam `flock` em `storage/e2e/execucao.lock`: uma segunda execução é recusada **antes** de `e2e:reiniciar` ou de sobrescrever o relatório HTML. `workers: 1` não cobre dois `npm run teste:e2e` independentes. O `artisan serve` na 8003 **não** ocupa esse cadeado.
+Projetos Playwright (`playwright.config.ts`): `chromium`, `firefox` e `webkit` (desktop 1280×800, `grepInvert: /@somente-mobile/`) e `mobile` (emulação **Pixel 5**, `hasTouch` e `isMobile`, `grep: /@principal|@somente-mobile/`). O projeto `mobile` **não** é aparelho físico. `retries: 0`, `workers: 1` global, `fullyParallel: false`. `npm run teste:e2e` e `./scripts/e2e/preparar-ambiente.sh` usam `flock` em `storage/e2e/execucao.lock`: uma segunda execução é recusada **antes** de `e2e:reiniciar` ou de sobrescrever o relatório HTML. A suíte de concorrência MySQL usa o mesmo cadeado. `workers: 1` não cobre dois `npm run teste:e2e` independentes. O `artisan serve` na 8003 **não** ocupa esse cadeado.
+
+## Concorrência MySQL (`phpunit.concorrencia.xml`)
+
+Comando (no host; o PHPUnit corre **dentro** do container Sail; cada caso dispara dois processos PHP):
+
+```bash
+./scripts/e2e/com-exclusividade.sh ./vendor/bin/sail exec laravel.test vendor/bin/phpunit -c phpunit.concorrencia.xml
+```
+
+Não use `artisan test --configuration=phpunit.concorrencia.xml` em paralelo com essa invocação: o `artisan test` já injeta uma configuração e o PHPUnit recusa `--configuration` duplicado.
+
+Isolamento: `IsolamentoE2e::garantir()` no processo principal e em cada filho, com `DATABASE()`, `CURRENT_USER()` e `CONNECTION_ID()` distintos. Usuário `ecommerce_e2e` no banco `ecommerce_e2e`. `migrate:fresh` só nesse banco, **sem** transação do PHPUnit à volta dos dados (os filhos precisam enxergar o que o pai gravou). Os filhos não executam migration nem reset.
+
+Sobreposição: o filho A registra um listener de consulta **só no teste**. Depois do primeiro `FOR UPDATE` da aplicação no recurso disputado (`produtos`, `cupons`, `pedidos` ou `administrador`), A grava `a-segurou.json` e espera `liberar.json`. O pai então libera B. B inicia `ConfirmadorPedido` ou o método do controlador e não pode gravar resultado enquanto A não for liberado. Se B terminar antes da liberação, o teste falha. Conexões iguais, filho que não sobe ou timeout também falham.
+
+A concorrência é entre esses processos, não via `artisan serve` (um processo só). HTTP não é usado nesses casos.
 
 ## Comandos reais
 

@@ -11,6 +11,14 @@
     </testsuites>
     <php>
         <env name="APP_ENV" value="e2e"/>
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="mysql"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="ecommerce_e2e"/>
+        <env name="DB_USERNAME" value="ecommerce_e2e"/>
+        <env name="DB_PASSWORD" value="e2e-local-apenas"/>
+        <env name="FILESYSTEM_DISK" value="publico_e2e"/>
+        <env name="FILESYSTEM_DISCO_PRODUTOS" value="publico_e2e"/>
         <env name="APP_LOCALE" value="pt_BR"/>
         <env name="APP_FALLBACK_LOCALE" value="pt_BR"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
