@@ -50,14 +50,15 @@ final class CoordenadorConcorrencia
         $segurou = $this->esperarJson('a-segurou.json', 20);
         $this->sinalizar('start-b.json');
         $iniciouB = $this->esperarJson('b-iniciou.json', 20);
-        $atingiuB = $this->esperarJson('b-atingiu-for-update.json', 20);
+        $sonda = $this->esperarJson('b-sonda-nowait.json', 20);
+        SondaLockNowait::exigirErro3572($sonda);
 
         if (is_file($this->dir.'/liberar.json')) {
-            throw new RuntimeException('liberar.json existia antes de B atingir o FOR UPDATE.');
+            throw new RuntimeException('liberar.json existia antes da sondagem NOWAIT comprovar o conflito.');
         }
 
         if (is_file($this->dir.'/b-passou-for-update.json')) {
-            throw new RuntimeException('B concluiu o FOR UPDATE do recurso disputado enquanto A ainda deveria retê-lo; não houve espera pelo lock.');
+            throw new RuntimeException('B concluiu o FOR UPDATE da aplicação antes da comprovação MySQL 3572.');
         }
 
         if (is_file($this->dir.'/b-resultado.json')) {
@@ -70,8 +71,14 @@ final class CoordenadorConcorrencia
         $resultadoA = $this->esperarJson('a-resultado.json', 20);
         $resultadoB = $this->esperarJson('b-resultado.json', 20);
 
-        if (($atingiuB['em'] ?? 0) >= $liberouEm) {
-            throw new RuntimeException('B só despachou o FOR UPDATE depois de liberar.json.');
+        if (($sonda['em'] ?? 0) >= $liberouEm) {
+            throw new RuntimeException('A sondagem NOWAIT só foi registrada depois de liberar.json.');
+        }
+
+        if ((int) ($sonda['conexao'] ?? 0) === (int) $conexaoA['id']
+            || (int) ($sonda['conexao'] ?? 0) === (int) $conexaoB['id']
+            || (int) ($sonda['conexao'] ?? 0) === (int) $pai['id']) {
+            throw new RuntimeException('A sondagem NOWAIT não usou uma conexão descartável distinta.');
         }
 
         $passouB = is_file($this->dir.'/b-passou-for-update.json')
@@ -79,7 +86,7 @@ final class CoordenadorConcorrencia
             : null;
 
         if (is_array($passouB) && ($passouB['em'] ?? 0) < $liberouEm) {
-            throw new RuntimeException('B obteve o FOR UPDATE antes da liberação da transação de A.');
+            throw new RuntimeException('B obteve o FOR UPDATE da aplicação antes da liberação da transação de A.');
         }
 
         if (($resultadoB['em'] ?? 0) < $liberouEm) {
@@ -96,13 +103,13 @@ final class CoordenadorConcorrencia
                 'sql_lock_a' => $segurou['sql'] ?? null,
                 'a_segurou_em' => $segurou['em'] ?? null,
                 'b_iniciou_em' => $iniciouB['em'] ?? null,
-                'sql_for_update_b' => $atingiuB['sql'] ?? null,
-                'b_atingiu_for_update_em' => $atingiuB['em'] ?? null,
-                'b_passou_for_update_em' => is_array($passouB) ? ($passouB['em'] ?? null) : null,
+                'sonda_sql' => $sonda['sql'] ?? null,
+                'sonda_mysql' => $sonda['mysql'] ?? null,
+                'sonda_conexao' => $sonda['conexao'] ?? null,
+                'sonda_em' => $sonda['em'] ?? null,
                 'liberou_em' => $liberouEm,
                 'b_terminou_em' => $resultadoB['em'] ?? null,
-                'b_bloqueado_no_for_update' => ($atingiuB['em'] ?? 0) < $liberouEm && $passouB === null
-                    || (is_array($passouB) && ($passouB['em'] ?? 0) >= $liberouEm && ($atingiuB['em'] ?? 0) < $liberouEm),
+                'conflito_mysql_3572' => (int) ($sonda['mysql'] ?? 0) === SondaLockNowait::MYSQL_NOWAIT,
             ],
             'resultado_a' => $resultadoA,
             'resultado_b' => $resultadoB,

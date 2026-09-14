@@ -15,6 +15,7 @@ use App\Support\IsolamentoE2e;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Tests\TestCase;
 
 class ConcorrenciaMysqlTest extends TestCase
@@ -47,6 +48,22 @@ class ConcorrenciaMysqlTest extends TestCase
         IsolamentoE2e::garantir();
         $this->artisan('migrate:fresh', $this->migrateFreshUsing());
         $this->app[Kernel::class]->setArtisan(null);
+    }
+
+    public function test_sonda_nowait_recusa_comprovacao_quando_nao_ha_bloqueio(): void
+    {
+        $produto = Produto::factory()->create(['quantidade' => 3]);
+        $sonda = SondaLockNowait::executar(
+            'select * from `produtos` where `id` = ? for update',
+            [$produto->id],
+        );
+
+        $this->assertFalse($sonda['comprovado']);
+        $this->assertNotSame(SondaLockNowait::MYSQL_NOWAIT, $sonda['mysql']);
+        $this->assertSame(IsolamentoE2e::BANCO, $sonda['db']);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('MySQL 3572');
+        SondaLockNowait::exigirErro3572($sonda);
     }
 
     public function test_ultimo_estoque_nao_gera_dois_pedidos(): void
@@ -240,13 +257,14 @@ class ConcorrenciaMysqlTest extends TestCase
         $this->assertNotSame($corrida['pai']['id'], $corrida['a']['id']);
         $this->assertNotSame($corrida['pai']['id'], $corrida['b']['id']);
         $this->assertNotSame($corrida['a']['id'], $corrida['b']['id']);
-        $this->assertTrue($corrida['evidencia']['b_bloqueado_no_for_update']);
         $this->assertNotEmpty($corrida['evidencia']['sql_lock_a']);
-        $this->assertNotEmpty($corrida['evidencia']['sql_for_update_b']);
-        $this->assertLessThan($corrida['evidencia']['liberou_em'], $corrida['evidencia']['b_atingiu_for_update_em']);
-        if ($corrida['evidencia']['b_passou_for_update_em'] !== null) {
-            $this->assertGreaterThanOrEqual($corrida['evidencia']['liberou_em'], $corrida['evidencia']['b_passou_for_update_em']);
-        }
+        $this->assertTrue($corrida['evidencia']['conflito_mysql_3572']);
+        $this->assertSame(SondaLockNowait::MYSQL_NOWAIT, $corrida['evidencia']['sonda_mysql']);
+        $this->assertNotEmpty($corrida['evidencia']['sonda_sql']);
+        $this->assertStringContainsStringIgnoringCase('nowait', (string) $corrida['evidencia']['sonda_sql']);
+        $this->assertNotSame($corrida['evidencia']['sonda_conexao'], $corrida['a']['id']);
+        $this->assertNotSame($corrida['evidencia']['sonda_conexao'], $corrida['b']['id']);
+        $this->assertLessThan($corrida['evidencia']['liberou_em'], $corrida['evidencia']['sonda_em']);
         $this->assertGreaterThan($corrida['evidencia']['liberou_em'], $corrida['evidencia']['b_terminou_em']);
     }
 

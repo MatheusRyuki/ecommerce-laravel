@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Tests\Concorrencia\SondaLockNowait;
 
 require __DIR__.'/../../vendor/autoload.php';
 
@@ -83,7 +84,7 @@ try {
     }
 
     if ($papel === 'b' && $segurarApos !== '') {
-        DB::beforeExecuting(function (string $sql) use ($segurarApos, $sqlDisputado, $escrever): void {
+        DB::beforeExecuting(function (string $sql, array $bindings) use ($segurarApos, $sqlDisputado, $escrever): void {
             static $atingiu = false;
             if ($atingiu || ! $sqlDisputado($sql, $segurarApos)) {
                 return;
@@ -93,6 +94,9 @@ try {
                 'sql' => $sql,
                 'em' => microtime(true),
             ]);
+            $sonda = SondaLockNowait::executar($sql, $bindings);
+            $escrever('b-sonda-nowait.json', $sonda + ['em' => microtime(true)]);
+            SondaLockNowait::exigirErro3572($sonda);
         });
         DB::listen(function ($consulta) use ($segurarApos, $sqlDisputado, $escrever): void {
             static $passou = false;
