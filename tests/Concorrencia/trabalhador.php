@@ -61,14 +61,16 @@ try {
     $payload = json_decode((string) file_get_contents($dir.'/payload-'.$papel.'.json'), true, 512, JSON_THROW_ON_ERROR);
     $segurarApos = (string) ($payload['segurar_apos'] ?? '');
 
+    $sqlDisputado = static function (string $sql, string $marcador): bool {
+        $sql = strtolower($sql);
+
+        return $marcador !== '' && str_contains($sql, 'for update') && str_contains($sql, $marcador);
+    };
+
     if ($papel === 'a' && $segurarApos !== '') {
-        DB::listen(function ($consulta) use ($segurarApos, $escrever, $esperar): void {
+        DB::listen(function ($consulta) use ($segurarApos, $sqlDisputado, $escrever, $esperar): void {
             static $segurou = false;
-            if ($segurou) {
-                return;
-            }
-            $sql = strtolower($consulta->sql);
-            if (! str_contains($sql, 'for update') || ! str_contains($sql, $segurarApos)) {
+            if ($segurou || ! $sqlDisputado($consulta->sql, $segurarApos)) {
                 return;
             }
             $segurou = true;
@@ -77,6 +79,31 @@ try {
                 'em' => microtime(true),
             ]);
             $esperar('liberar.json', 25);
+        });
+    }
+
+    if ($papel === 'b' && $segurarApos !== '') {
+        DB::beforeExecuting(function (string $sql) use ($segurarApos, $sqlDisputado, $escrever): void {
+            static $atingiu = false;
+            if ($atingiu || ! $sqlDisputado($sql, $segurarApos)) {
+                return;
+            }
+            $atingiu = true;
+            $escrever('b-atingiu-for-update.json', [
+                'sql' => $sql,
+                'em' => microtime(true),
+            ]);
+        });
+        DB::listen(function ($consulta) use ($segurarApos, $sqlDisputado, $escrever): void {
+            static $passou = false;
+            if ($passou || ! $sqlDisputado($consulta->sql, $segurarApos)) {
+                return;
+            }
+            $passou = true;
+            $escrever('b-passou-for-update.json', [
+                'sql' => $consulta->sql,
+                'em' => microtime(true),
+            ]);
         });
     }
 

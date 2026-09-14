@@ -145,7 +145,7 @@ class ConcorrenciaMysqlTest extends TestCase
         $corrida = $this->coordenar(
             [
                 'acao' => 'confirmar',
-                'segurar_apos' => 'pedidos',
+                'segurar_apos' => 'produtos',
                 'usuario_id' => $usuario->id,
                 'chave' => $prep['chave'],
                 'assinatura' => $prep['assinatura'],
@@ -208,6 +208,7 @@ class ConcorrenciaMysqlTest extends TestCase
             ],
             [
                 'acao' => 'excluir',
+                'segurar_apos' => 'users',
                 'usuario_id' => $beta->id,
                 'senha' => 'password',
             ],
@@ -239,8 +240,13 @@ class ConcorrenciaMysqlTest extends TestCase
         $this->assertNotSame($corrida['pai']['id'], $corrida['a']['id']);
         $this->assertNotSame($corrida['pai']['id'], $corrida['b']['id']);
         $this->assertNotSame($corrida['a']['id'], $corrida['b']['id']);
-        $this->assertTrue($corrida['evidencia']['b_bloqueado_ate_liberar']);
+        $this->assertTrue($corrida['evidencia']['b_bloqueado_no_for_update']);
         $this->assertNotEmpty($corrida['evidencia']['sql_lock_a']);
+        $this->assertNotEmpty($corrida['evidencia']['sql_for_update_b']);
+        $this->assertLessThan($corrida['evidencia']['liberou_em'], $corrida['evidencia']['b_atingiu_for_update_em']);
+        if ($corrida['evidencia']['b_passou_for_update_em'] !== null) {
+            $this->assertGreaterThanOrEqual($corrida['evidencia']['liberou_em'], $corrida['evidencia']['b_passou_for_update_em']);
+        }
         $this->assertGreaterThan($corrida['evidencia']['liberou_em'], $corrida['evidencia']['b_terminou_em']);
     }
 

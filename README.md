@@ -182,7 +182,7 @@ O relatório HTML fica em `storage/e2e/relatorio-playwright/index.html`. A confi
 
 ### Verificações de concorrência no MySQL
 
-A suíte `phpunit.concorrencia.xml` usa o MySQL InnoDB `ecommerce_e2e` (usuário `ecommerce_e2e`). Cada caso dispara dois processos PHP independentes, cada um com a própria conexão. A primeira transação permanece aberta após o `FOR UPDATE` da aplicação; a segunda só conclui depois dessa liberação. Assim fica comprovada a disputa, não apenas a execução sequencial.
+A suíte `phpunit.concorrencia.xml` usa o MySQL InnoDB `ecommerce_e2e` (usuário `ecommerce_e2e`). Cada caso dispara dois processos PHP independentes, cada um com a própria conexão. A primeira transação permanece aberta após o `FOR UPDATE` da aplicação. O segundo processo registra, ainda no teste, o instante em que dispara o mesmo `FOR UPDATE` (`b-atingiu-for-update.json`) e só conclui essa consulta depois de `liberar.json`. Se o segundo processo obter o lock antes da liberação, ou nunca chegar a dispará-lo, o caso falha.
 
 Os cenários cobertos são a última unidade de estoque, o cupom de uso único global, duas confirmações com a mesma chave de idempotência, o rebaixamento paralelo de dois administradores e a exclusão simultânea das próprias contas. Nesses casos permanece um único pedido ou consumo quando a regra exige, o carrinho da tentativa recusada não é limpo, e resta pelo menos um administrador.
 
