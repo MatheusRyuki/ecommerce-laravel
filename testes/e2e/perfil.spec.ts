@@ -41,7 +41,11 @@ test.describe('Perfil, verificação e confirmação de senha', () => {
     await page.getByLabel('Confirmar senha').fill('NovaSenha!234');
     await page.getByRole('button', { name: 'Salvar' }).nth(1).click();
 
-    await page.getByRole('button', { name: 'Conta Senha' }).click();
+    if (await page.getByRole('button', { name: 'Conta Senha' }).isVisible()) {
+      await page.getByRole('button', { name: 'Conta Senha' }).click();
+    } else {
+      await page.getByRole('button', { name: 'Menu' }).click();
+    }
     await page.getByRole('link', { name: 'Sair' }).click();
     await entrar(page, 'conta.senha@e2e.test', 'NovaSenha!234');
     await expect(page).toHaveURL(/dashboard/);

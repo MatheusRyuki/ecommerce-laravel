@@ -23,7 +23,7 @@ test.describe('Usuários administrativos', () => {
 
     await page.goto('/admin/usuarios');
     await expect(page.getByRole('cell', { name: 'admin@e2e.test', exact: true })).toBeVisible();
-    await page.getByPlaceholder('Nome ou e-mail').fill('temp.admin@e2e.test');
+    await page.getByLabel('Buscar por nome ou e-mail').fill('temp.admin@e2e.test');
     await page.getByRole('button', { name: 'Buscar' }).click();
     await expect(page.getByRole('cell', { name: 'Temporario E2E' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'admin@e2e.test', exact: true })).toHaveCount(0);
@@ -31,10 +31,18 @@ test.describe('Usuários administrativos', () => {
     const linhaTemp = page.locator('tr', { hasText: 'temp.admin@e2e.test' });
     await expect(linhaTemp.getByText('Cliente')).toBeVisible();
     await linhaTemp.getByRole('button', { name: 'Promover' }).click();
+    await expect(page.getByRole('heading', { name: 'Promover a administrador' })).toBeVisible();
+    await page.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(page.getByRole('heading', { name: 'Promover a administrador' })).toBeHidden();
+    await expect(linhaTemp.getByRole('button', { name: 'Promover' })).toBeFocused();
+    await linhaTemp.getByRole('button', { name: 'Promover' }).click();
+    await page.locator('form').filter({ hasText: 'temp.admin@e2e.test' }).getByRole('button', { name: 'Promover' }).click();
     await expect(page.getByText('Usuário promovido a administrador.')).toBeVisible();
     await expect(linhaTemp.getByText('Administrador')).toBeVisible();
 
     await linhaTemp.getByRole('button', { name: 'Remover admin' }).click();
+    await expect(page.getByRole('heading', { name: 'Remover privilégio de administrador' })).toBeVisible();
+    await page.locator('form').filter({ hasText: 'temp.admin@e2e.test' }).getByRole('button', { name: 'Remover admin' }).click();
     await expect(page.getByText('Privilégio de administrador removido.')).toBeVisible();
     await expect(linhaTemp.getByText('Cliente')).toBeVisible();
 

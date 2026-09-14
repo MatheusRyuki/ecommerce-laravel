@@ -35,7 +35,7 @@ test.describe('Carrinho', () => {
   test('vazio, adicionar, acumular cor, cores distintas, totais exatos e checkout indisponível @principal', async ({ page }) => {
     await page.goto('/carrinho');
     await expect(page.getByText('Seu carrinho está vazio.')).toBeVisible();
-    await expect(page.getByText('R$ 0,00')).toBeVisible();
+    await expect(page.getByText('Resumo do pedido')).toHaveCount(0);
     const contador = page.getByRole('link', { name: 'Carrinho, 0 itens' });
     await expect(contador).toBeVisible();
 
@@ -115,7 +115,7 @@ test.describe('Carrinho', () => {
 
     await page.getByRole('button', { name: 'Remover' }).click();
     await expect(page.getByText('Seu carrinho está vazio.')).toBeVisible();
-    await expect(page.getByText('R$ 0,00')).toBeVisible();
+    await expect(page.getByText('Resumo do pedido')).toHaveCount(0);
 
     artisan(['e2e:atualizar-produto', '--sku=CART-E2E', '--quantidade=5']);
     await page.goto('/');
@@ -178,7 +178,11 @@ test.describe('Carrinho', () => {
     await escolherCor(page, 'Vermelho');
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click();
     await page.goto('/dashboard');
-    await page.getByRole('button', { name: 'Sessao' }).click();
+    if (await page.getByRole('button', { name: 'Sessao' }).isVisible()) {
+      await page.getByRole('button', { name: 'Sessao' }).click();
+    } else {
+      await page.getByRole('button', { name: 'Menu' }).click();
+    }
     await page.getByRole('link', { name: 'Sair' }).click();
     await page.goto('/carrinho');
     await expect(page.getByText('Seu carrinho está vazio.')).toBeVisible();
@@ -253,15 +257,6 @@ test.describe('Carrinho', () => {
   });
 
   test('resumo, badge e colunas permanecem alinhados com quantidade pendente @principal', async ({ page }) => {
-    await page.goto('/carrinho');
-    const linhaVazia = page.locator('.resumo-pedido-carrinho__linha');
-    const rotuloVazio = await linhaVazia.locator('span').first().boundingBox();
-    const valorVazio = await linhaVazia.locator('.resumo-pedido-carrinho__valor').boundingBox();
-    expect(rotuloVazio).toBeTruthy();
-    expect(valorVazio).toBeTruthy();
-    expect(rotuloVazio!.x).toBeLessThan(valorVazio!.x);
-    expect(Math.abs((rotuloVazio!.y + rotuloVazio!.height / 2) - (valorVazio!.y + valorVazio!.height / 2))).toBeLessThan(4);
-
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
       nome: 'Bolsa carrinho',

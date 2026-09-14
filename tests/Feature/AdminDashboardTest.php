@@ -95,19 +95,19 @@ class AdminDashboardTest extends TestCase
             ->assertDontSee(route('admin.painel'), false);
     }
 
-    public function test_administrador_ve_produtos_e_nao_administracao_no_menu(): void
+    public function test_administrador_ve_administracao_e_produtos(): void
     {
         $admin = Usuario::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertDontSee(__('Administração'))
+            ->assertSee('Administração')
             ->assertSee('Produtos')
             ->assertSee(route('admin.produtos.listar'), false);
     }
 
-    public function test_link_conta_do_menu_aponta_para_o_perfil(): void
+    public function test_link_conta_do_menu_aponta_para_o_painel(): void
     {
         $admin = Usuario::factory()->admin()->create();
 
@@ -117,8 +117,10 @@ class AdminDashboardTest extends TestCase
             ->getContent();
 
         $this->assertStringContainsString('id="nav-conta"', $html);
-        $this->assertStringContainsString('href="'.route('perfil.editar').'"', $this->atributosDoLink($html, 'nav-conta'));
-        $this->assertStringContainsString('href="'.route('perfil.editar').'"', $this->atributosDoLink($html, 'nav-conta-movel'));
+        $this->assertStringContainsString('href="'.route('dashboard').'"', $this->atributosDoLink($html, 'nav-conta'));
+        $this->assertStringContainsString('href="'.route('dashboard').'"', $this->atributosDoLink($html, 'nav-conta-movel'));
+        $this->assertLinkAtivo($html, 'nav-conta');
+        $this->assertLinkAtivo($html, 'nav-conta-movel');
     }
 
     public function test_produtos_fica_ativo_na_listagem_e_conta_nao(): void
@@ -130,15 +132,16 @@ class AdminDashboardTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertLinkAtivo($html, 'nav-produtos');
         $this->assertLinkAtivo($html, 'nav-produtos-movel');
+        $this->assertStringContainsString('id="nav-produtos"', $html);
+        $this->assertStringContainsString('aria-current="page"', $this->atributosDoLink($html, 'nav-produtos'));
         $this->assertLinkInativo($html, 'nav-conta');
         $this->assertLinkInativo($html, 'nav-conta-movel');
         $this->assertSame(1, preg_match_all('/id="titulo-produtos"/', $html));
         $this->assertDoesNotMatchRegularExpression('/<h3[^>]*>\s*Produtos\s*<\/h3>/', $html);
     }
 
-    public function test_conta_fica_ativa_no_perfil_e_produtos_nao(): void
+    public function test_conta_nao_fica_ativa_no_perfil(): void
     {
         $admin = Usuario::factory()->admin()->create();
 
@@ -147,9 +150,8 @@ class AdminDashboardTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertLinkAtivo($html, 'nav-conta');
-        $this->assertLinkAtivo($html, 'nav-conta-movel');
-        $this->assertLinkInativo($html, 'nav-produtos');
+        $this->assertLinkInativo($html, 'nav-conta');
+        $this->assertLinkInativo($html, 'nav-conta-movel');
         $this->assertLinkInativo($html, 'nav-produtos-movel');
     }
 
@@ -163,7 +165,7 @@ class AdminDashboardTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertLinkAtivo($cadastro, 'nav-produtos');
+        $this->assertLinkAtivo($cadastro, 'nav-produtos-movel');
         $this->assertLinkInativo($cadastro, 'nav-conta');
 
         $edicao = $this->actingAs($admin)
@@ -171,7 +173,7 @@ class AdminDashboardTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertLinkAtivo($edicao, 'nav-produtos');
+        $this->assertLinkAtivo($edicao, 'nav-produtos-movel');
         $this->assertLinkInativo($edicao, 'nav-conta');
     }
 

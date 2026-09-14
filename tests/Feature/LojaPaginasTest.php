@@ -14,6 +14,7 @@ class LojaPaginasTest extends TestCase
         $response = $this->get(route('inicio'));
 
         $response->assertOk();
+        $response->assertSee('<h1 class="h3 mb-4">Produtos</h1>', false);
         $response->assertSee('Ainda não há produtos na loja.');
     }
 
@@ -28,8 +29,12 @@ class LojaPaginasTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Seu carrinho está vazio.');
-        $response->assertSee('Total dos produtos');
-        $response->assertSee('R$ 0,00');
+        $response->assertSee('Carrinho');
+        $response->assertSee('Continuar comprando');
+        $response->assertDontSee('Total dos produtos');
+        $response->assertDontSee('Aplicar cupom');
+        $response->assertDontSee('Resumo do pedido');
+        $response->assertDontSee('R$ 0,00');
         $response->assertDontSee('Sub total');
         $response->assertDontSee('$ 360.00');
     }

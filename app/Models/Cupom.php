@@ -86,6 +86,20 @@ class Cupom extends Model
         return Dinheiro::minimo($bruto, $subtotalProdutos);
     }
 
+    public function rotuloTipo(): string
+    {
+        return match ($this->tipo) {
+            self::TIPO_FIXO => 'Valor fixo (BRL)',
+            self::TIPO_PERCENTUAL => 'Percentual',
+            default => $this->tipo,
+        };
+    }
+
+    public function rotuloAtivo(): string
+    {
+        return $this->ativo ? 'Ativo' : 'Inativo';
+    }
+
     /**
      * @return BelongsTo<Pedido, $this>
      */

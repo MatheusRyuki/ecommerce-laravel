@@ -6,12 +6,20 @@
     <section class="wsus__cart loja-conteudo pagina-carrinho">
         <div class="container">
             <div class="pagina-carrinho__corpo">
+                <h1 class="h3 mb-4">Carrinho</h1>
+
                 @if (session('status'))
                     @include('loja.partials.alert', ['type' => 'sucesso', 'dismissible' => true, 'message' => session('status')])
                 @endif
 
                 @if ($linhas->isEmpty())
                     <p class="pagina-carrinho__vazio">{{ 'Seu carrinho está vazio.' }}</p>
+                    @if ($errors->has('checkout') || $errors->has('cupom'))
+                        @include('loja.partials.alert', ['type' => 'erro', 'message' => $errors->first('checkout') ?: $errors->first('cupom')])
+                    @endif
+                    <div class="pagina-carrinho__acoes">
+                        <a href="{{ route('inicio') }}" class="common_btn">{{ 'Continuar comprando' }}</a>
+                    </div>
                 @else
                     <div class="wsus__cart_list">
                         <table>
@@ -112,7 +120,6 @@
                             </tbody>
                         </table>
                     </div>
-                @endif
 
                 @include('loja.partials.resumo-pedido', [
                     'totalProdutosFormatado' => $totalProdutosFormatado,
@@ -159,6 +166,7 @@
                         <p class="checkout-indisponivel" aria-disabled="true">{{ ($checkout['motivo'] ?? null) ?: 'Conclua login, verificação, endereço e itens válidos para revisar o pedido. Nenhum pagamento é processado nesta loja.' }}</p>
                     @endif
                 </div>
+                @endif
             </div>
         </div>
     </section>

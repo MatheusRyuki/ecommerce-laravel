@@ -19,11 +19,16 @@
             @if ($calculo['cupom'])
                 <p>Cupom: {{ $calculo['cupom']->codigo }}</p>
             @endif
-            <p>Produtos: {{ $subtotalFormatado }}</p>
-            <p>Desconto: {{ $descontoFormatado }}</p>
-            <p>Frete: {{ $freteFormatado }}</p>
-            <p><strong>Total: {{ $totalFormatado }}</strong></p>
-            <form method="POST" action="{{ route('checkout.confirmar') }}">
+            @include('loja.partials.resumo-pedido', [
+                'totalProdutosFormatado' => $subtotalFormatado,
+                'checkout' => [
+                    'valido' => true,
+                    'desconto' => $calculo['desconto'],
+                    'frete' => $calculo['frete'],
+                    'total' => $calculo['total'],
+                ],
+            ])
+            <form method="POST" action="{{ route('checkout.confirmar') }}" class="mt-4">
                 @csrf
                 <input type="hidden" name="chave" value="{{ $chave }}">
                 <button type="submit" class="common_btn">Confirmar pedido</button>

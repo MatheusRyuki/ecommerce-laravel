@@ -71,7 +71,7 @@ export async function entrar(page: Page, email: string, senha = senhaPadrao, lem
   await page.goto('/login');
 
   if (await page.getByLabel('E-mail').count() === 0) {
-    await page.locator('button.inline-flex.items-center').first().click();
+    await abrirMenuDaConta(page);
     await page.getByRole('link', { name: 'Sair' }).click();
     await page.goto('/login');
   }
@@ -89,16 +89,30 @@ export async function entrarComoAdmin(page: Page): Promise<void> {
   await entrar(page, adminEmail);
 }
 
+export async function abrirMenuDaConta(page: Page): Promise<void> {
+  const menu = page.getByRole('button', { name: 'Menu' });
+  if (await menu.isVisible()) {
+    await menu.click();
+    return;
+  }
+
+  await page.locator('nav button').filter({ has: page.locator('svg.fill-current') }).click();
+}
+
 export async function sairDaConta(page: Page, nome: string): Promise<void> {
   const acionador = page.getByRole('button', { name: nome });
   if (await acionador.isVisible()) {
     await expect(acionador).toBeVisible();
     await acionador.click();
   } else {
-    await page.locator('nav .sm\\:hidden button').click();
+    await page.getByRole('button', { name: 'Menu' }).click();
     await expect(page.locator('nav').getByText(nome, { exact: true }).last()).toBeVisible();
   }
   await page.getByRole('link', { name: 'Sair' }).click();
+}
+
+export async function abrirMaisDaLinha(linha: import('@playwright/test').Locator): Promise<void> {
+  await linha.getByRole('button', { name: 'Mais' }).click();
 }
 
 export async function preencherDescricaoQuill(page: Page, texto: string): Promise<void> {

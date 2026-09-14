@@ -83,26 +83,39 @@
                                             <td class="px-3 py-3 text-gray-700 whitespace-nowrap">{{ $produto->quantidade }}</td>
                                             <td class="px-3 py-3 text-gray-700 whitespace-nowrap">{{ $produto->estaPublicado() ? 'Publicado' : 'Oculto' }}</td>
                                             <td class="px-3 py-3 text-gray-700">{{ implode(', ', array_map(fn (string $cor): string => \App\Support\CoresProduto::rotulo($cor), $produto->coresExibidas())) }}</td>
-                                            <td class="px-3 py-3 whitespace-nowrap">
-                                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                            <td class="px-3 py-3">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1" x-data="{ mais: false }" @keydown.escape.window="if (mais) { mais = false; $refs.mais?.focus() }" @click.outside="mais = false">
                                                     <a id="editar-produto-{{ $produto->id }}" href="{{ route('admin.produtos.editar', $produto) }}" class="relative z-10 font-semibold text-blue-600 hover:text-blue-500">
                                                         Editar
-                                                    </a>
-                                                    <a href="{{ route('admin.produtos.criar', ['origem' => $produto->id]) }}" class="relative z-10 font-semibold text-blue-600 hover:text-blue-500">
-                                                        Duplicar
-                                                    </a>
-                                                    <a href="{{ route('admin.estoque.exibir', $produto) }}" class="relative z-10 font-semibold text-blue-600 hover:text-blue-500">
-                                                        Estoque
                                                     </a>
                                                     <button
                                                         type="button"
                                                         id="excluir-produto-{{ $produto->id }}"
                                                         class="relative z-10 font-semibold text-red-600 hover:text-red-500"
-                                                        x-data=""
                                                         x-on:click.prevent="$dispatch('abrir-modal', { nome: 'confirmar-exclusao-produto-{{ $produto->id }}', gatilho: $el.id })"
                                                     >
                                                         Excluir
                                                     </button>
+                                                    <div class="relative">
+                                                        <button
+                                                            type="button"
+                                                            x-ref="mais"
+                                                            id="mais-produto-{{ $produto->id }}"
+                                                            class="relative z-10 font-semibold text-blue-600 hover:text-blue-500"
+                                                            @click="mais = ! mais"
+                                                            :aria-expanded="mais.toString()"
+                                                        >
+                                                            Mais
+                                                        </button>
+                                                        <div x-show="mais" x-cloak class="mt-1 flex flex-col gap-1 items-start" style="display: none;">
+                                                            <a href="{{ route('admin.produtos.criar', ['origem' => $produto->id]) }}" class="font-semibold text-blue-600 hover:text-blue-500">
+                                                                Duplicar
+                                                            </a>
+                                                            <a href="{{ route('admin.estoque.exibir', $produto) }}" class="font-semibold text-blue-600 hover:text-blue-500">
+                                                                Estoque
+                                                            </a>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>

@@ -13,9 +13,9 @@
                     @foreach ($cupons as $cupom)
                         <tr>
                             <td class="py-2">{{ $cupom->codigo }}</td>
-                            <td>{{ $cupom->tipo }}</td>
+                            <td>{{ $cupom->rotuloTipo() }}</td>
                             <td>{{ $cupom->valor }}</td>
-                            <td>{{ $cupom->ativo ? 'sim' : 'não' }}{{ $cupom->consumido_em ? ' (usado)' : '' }}</td>
+                            <td>{{ $cupom->rotuloAtivo() }}{{ $cupom->consumido_em ? ' (usado)' : '' }}</td>
                             <td><a class="text-blue-600" href="{{ route('admin.cupons.editar', $cupom) }}">Editar</a></td>
                         </tr>
                     @endforeach

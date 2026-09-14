@@ -3,6 +3,7 @@ import {
   artisan,
   entrar,
   reiniciar,
+  sairDaConta,
   senhaPadrao,
   ultimoLinkRedefinicao,
 } from './suporte/aplicacao';
@@ -29,8 +30,7 @@ test.describe('Recuperação de senha', () => {
     await entrar(page, 'reset@e2e.test', 'Resetada!234');
     await expect(page).toHaveURL(/dashboard/);
 
-    await page.getByRole('button', { name: 'Reset' }).click();
-    await page.getByRole('link', { name: 'Sair' }).click();
+    await sairDaConta(page, 'Reset');
 
     await page.goto(link);
     await page.getByLabel('Senha', { exact: true }).fill('OutraSenha!234');

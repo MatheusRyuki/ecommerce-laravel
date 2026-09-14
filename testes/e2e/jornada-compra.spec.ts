@@ -84,6 +84,11 @@ test.describe('Jornada integrada de compra', () => {
     await loja.getByRole('button', { name: 'Aplicar cupom' }).click();
     await loja.getByRole('button', { name: 'Usar este endereço' }).click();
     await loja.getByRole('link', { name: 'Revisar pedido' }).click();
+    await expect(loja.getByRole('heading', { name: 'Revisar pedido' })).toBeVisible();
+    await expect(loja.getByText('Total dos produtos')).toBeVisible();
+    await expect(loja.getByText('Desconto')).toBeVisible();
+    await expect(loja.getByText('Frete')).toBeVisible();
+    await expect(loja.locator('.resumo-pedido-carrinho__linha').last()).toContainText('Total');
     await loja.getByRole('button', { name: 'Confirmar pedido' }).click();
     await expect(loja.getByRole('heading', { name: /Pedido PED-/ })).toBeVisible();
     await expect(loja.getByText('Nenhum pagamento foi processado. O pedido permanece aguardando pagamento.')).toBeVisible();

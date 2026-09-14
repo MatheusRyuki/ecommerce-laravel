@@ -127,7 +127,7 @@ class LojaCarrinhoMutacaoTest extends TestCase
         $this->delete(route('loja.carrinho.itens.remover', $id))->assertRedirect(route('carrinho'));
         $this->get(route('carrinho'))
             ->assertSee('Seu carrinho está vazio.')
-            ->assertSee('R$ 0,00')
+            ->assertDontSee('Total dos produtos')
             ->assertSee('>0</b>', false);
     }
 
@@ -262,7 +262,7 @@ class LojaCarrinhoMutacaoTest extends TestCase
 
         $this->get(route('carrinho'))
             ->assertSee('Seu carrinho está vazio.')
-            ->assertSee('R$ 0,00')
+            ->assertDontSee('Total dos produtos')
             ->assertSee('>0</b>', false);
         $this->assertSame(15, $produto->fresh()->quantidade);
     }

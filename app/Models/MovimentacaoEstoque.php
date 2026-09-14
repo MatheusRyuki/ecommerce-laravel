@@ -62,4 +62,17 @@ class MovimentacaoEstoque extends Model
     {
         return $this->belongsTo(Usuario::class);
     }
+
+    public function rotuloTipo(): string
+    {
+        return match ($this->tipo) {
+            self::TIPO_ENTRADA => 'Entrada',
+            self::TIPO_SAIDA => 'Saída',
+            self::TIPO_AJUSTE => 'Ajuste',
+            self::TIPO_PEDIDO => 'Pedido',
+            self::TIPO_DUPLICACAO => 'Duplicação',
+            self::TIPO_POSICAO_INICIAL => 'Posição inicial',
+            default => $this->tipo,
+        };
+    }
 }

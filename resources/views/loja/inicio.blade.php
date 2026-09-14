@@ -5,9 +5,7 @@
 @section('content')
     <section class="wsus__product loja-conteudo pb_100">
         <div class="container">
-            @if ($categoriaAtual)
-                <h1 class="h3 mb-4">{{ $categoriaAtual->nome }}</h1>
-            @endif
+            <h1 class="h3 mb-4">{{ $categoriaAtual ? $categoriaAtual->nome : 'Produtos' }}</h1>
 
             <form method="GET" action="{{ $categoriaAtual ? route('loja.categorias.exibir', $categoriaAtual) : route('inicio') }}" class="filtros-vitrine mb-4" aria-label="Filtros da vitrine">
                 <div class="row g-3 align-items-end">

@@ -50,6 +50,7 @@ class CheckoutPedidoTest extends TestCase
         $estado->save();
 
         $revisao = $this->get(route('checkout.revisar'))->assertOk();
+        $revisao->assertSee('Total dos produtos')->assertDontSee('Produtos:');
         $chave = $carrinho->estado()->fresh()->chave_checkout;
 
         $this->post(route('checkout.confirmar'), ['chave' => $chave])->assertRedirect();

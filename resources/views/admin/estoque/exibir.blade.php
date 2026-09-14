@@ -32,7 +32,7 @@
                 @forelse ($movimentacoes as $mov)
                     <tr>
                         <td class="py-2">{{ $mov->created_at->format('d/m/Y H:i') }}</td>
-                        <td>{{ $mov->tipo }}</td>
+                        <td>{{ $mov->rotuloTipo() }}</td>
                         <td>{{ $mov->quantidade_anterior }}</td>
                         <td>{{ $mov->quantidade_final }}</td>
                         <td>{{ $mov->delta }}</td>

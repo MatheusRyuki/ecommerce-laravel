@@ -27,6 +27,7 @@ test.describe('Duplicação de produto', () => {
     await expect(linhaOriginal.locator('img')).toBeVisible();
     const capaOriginal = await linhaOriginal.locator('img').getAttribute('src');
 
+    await linhaOriginal.getByRole('button', { name: 'Mais' }).click();
     await linhaOriginal.getByRole('link', { name: 'Duplicar' }).click();
     await expect(page.getByRole('heading', { name: 'Duplicar produto' }).first()).toBeVisible();
     await expect(page.getByRole('checkbox', { name: 'Publicado na loja' })).toBeDisabled();

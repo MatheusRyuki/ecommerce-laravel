@@ -10,7 +10,7 @@ import {
 async function expectBarraPrincipalEmUmaLinha(page: Page): Promise<void> {
   const logo = page.locator('.navbar-brand');
   const carrinho = page.locator('.cabecalho-loja__carrinho');
-  const menu = page.getByRole('button', { name: 'Abrir menu' });
+  const menu = page.getByRole('button', { name: 'Menu' });
   const caixaLogo = await logo.boundingBox();
   const caixaCarrinho = await carrinho.boundingBox();
   const caixaMenu = await menu.boundingBox();
@@ -102,23 +102,23 @@ test.describe('Navegação e apresentação', () => {
     await expect(page.getByRole('link', { name: 'Carrinho, 0 itens' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeHidden();
 
     await page.setViewportSize({ width: 991, height: 800 });
-    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Entrar' })).toBeHidden();
     await expectBarraPrincipalEmUmaLinha(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeHidden();
     await expectDistribuicaoDesktop(page);
 
     await page.setViewportSize({ width: 1920, height: 800 });
     await expectDistribuicaoDesktop(page);
-    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeHidden();
 
     await page.setViewportSize({ width: 992, height: 800 });
-    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeHidden();
     await expectDistribuicaoDesktop(page);
 
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -152,9 +152,9 @@ test.describe('Navegação e apresentação', () => {
 
     await page.getByRole('link', { name: /Carrinho/ }).focus();
     await page.keyboard.press('Tab');
-    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeFocused();
 
-    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await page.getByRole('button', { name: 'Menu' }).click();
     await expect(page.getByRole('link', { name: 'Início' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Criar conta' })).toBeVisible();
@@ -163,7 +163,7 @@ test.describe('Navegação e apresentação', () => {
     await expectBarraPrincipalEmUmaLinha(page);
     await page.setViewportSize({ width: 414, height: 844 });
     await expectBarraPrincipalEmUmaLinha(page);
-    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await page.getByRole('button', { name: 'Menu' }).click();
 
     await entrarComoAdmin(page);
     await cadastrarProdutoUi(page, {
@@ -175,7 +175,7 @@ test.describe('Navegação e apresentação', () => {
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'Conta' })).toBeHidden();
     await expectBarraPrincipalEmUmaLinha(page);
-    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await page.getByRole('button', { name: 'Menu' }).click();
     await expect(page.getByRole('link', { name: 'Conta' })).toBeVisible();
     await page.getByRole('link', { name: 'Início' }).click();
     await page.getByRole('link', { name: 'Mobile' }).click();
@@ -188,7 +188,7 @@ test.describe('Navegação e apresentação', () => {
     await expectTotal(page, 'R$ 499,00');
 
     await page.goto('/admin/produtos');
-    await page.locator('div.sm\\:hidden button').click();
+    await page.getByRole('button', { name: 'Menu' }).click();
     await expect(page.getByRole('link', { name: 'Produtos' }).first()).toBeVisible();
   });
 

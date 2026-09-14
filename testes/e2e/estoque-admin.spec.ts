@@ -20,6 +20,7 @@ test.describe('Estoque administrativo', () => {
       arquivos: [arquivoFixture('capa.jpg')],
     });
 
+    await page.locator('tr', { hasText: 'EST-E2E' }).getByRole('button', { name: 'Mais' }).click();
     await page.locator('tr', { hasText: 'EST-E2E' }).getByRole('link', { name: 'Estoque' }).click();
     await expect(page.locator('p', { hasText: 'Quantidade atual:' })).toContainText('10');
 
@@ -30,6 +31,7 @@ test.describe('Estoque administrativo', () => {
     await expect(page.getByText('Estoque atualizado.')).toBeVisible();
     await expect(page.getByText('Quantidade atual:')).toBeVisible();
     await expect(page.locator('p', { hasText: 'Quantidade atual:' })).toContainText('15');
+    await expect(page.getByRole('cell', { name: 'Entrada' }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Reposição' })).toBeVisible();
 
     await page.getByLabel('Tipo').selectOption('saida');

@@ -1,7 +1,7 @@
     <nav class="navbar navbar-expand-lg main_menu">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('inicio') }}">
-                <img src="{{ asset('frontend/images/logo.png') }}" alt="Freeit" class="img-fluid">
+            <a class="navbar-brand" href="{{ route('inicio') }}" aria-label="Freeit">
+                <img src="{{ asset('frontend/images/logo.png') }}" alt="" class="img-fluid">
             </a>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -58,7 +58,7 @@
                 @endauth
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                    aria-label="Abrir menu">
+                    aria-label="Menu">
                     <i class="fas fa-bars" aria-hidden="true"></i>
                 </button>
             </div>
