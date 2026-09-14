@@ -1,45 +1,76 @@
 # e-Commerce
 
-Projeto de estudo em Laravel: loja com vitrine, detalhes de produto, carrinho (sessão para visitante e persistente após o login), checkout sem pagamento e painel administrativo. O visual da loja usa Bootstrap (template em Blade); o admin usa Tailwind/Breeze.
+Projeto de estudo em Laravel com catálogo de produtos, carrinho, checkout interno e painel administrativo. A loja usa o template Freeit convertido para Blade, com Bootstrap. A autenticação e o painel usam Breeze e Tailwind.
 
-Não processa pagamento. Pedidos ficam em *aguardando pagamento*.
+O checkout registra pedidos, mas não processa pagamentos. Os pedidos ficam com o status **aguardando pagamento**.
 
 ## Funcionalidades
 
-- Vitrine pública (`GET /`): produtos **publicados**, 12 por página, mais recentes primeiro. Filtros por busca (`q`), cor, disponibilidade e categoria (`/categorias/{slug}`). Estoque zero permanece visível como indisponível; produto oculto não aparece e o detalhe responde 404.
-- Detalhes (`GET /produtos/{produto}`). A URL antiga `/product-details` redireciona para a vitrine; `/products/{id}` redireciona para `/produtos/{id}` quando o registro existe.
-- Carrinho: visitante na sessão Laravel; após login/cadastro as linhas da sessão **mesclam** com o carrinho da conta (conta primeiro, depois visitante até o estoque). Cupom, endereço e revisão exigem e-mail verificado.
-- Checkout (`/checkout`): confirma pedido com snapshot de valores, baixa estoque com bloqueio de linha, cupom e frete por faixa de CEP. Idempotente por `usuario` + chave. **Nenhum pagamento é cobrado.**
-- Conta: verificação de e-mail (`MustVerifyEmail`), favoritos, endereços (um padrão), pedidos.
-- Painel (`/admin/...`, `verified` + `acessar-admin`): produtos (busca, publicação, duplicar cópia oculta), estoque com histórico, categorias, cupons, faixas de frete, pedidos, usuários (promover/rebaixar; último admin não pode ser excluído).
-- Autenticação Breeze. Perfil (`/perfil`) permanece acessível sem e-mail verificado para corrigir o endereço.
+- **Catálogo:** busca por nome ou SKU, filtros por cor, disponibilidade e categoria, paginação e detalhes com galeria de imagens.
+- **Carrinho:** sessão para visitantes e persistência por conta após o login, com atualização de quantidades e cálculo de totais.
+- **Conta:** verificação de e-mail, favoritos, endereços de entrega com um endereço padrão e consulta de pedidos.
+- **Checkout:** aplicação de cupom, frete por faixa de CEP e registro do pedido com os valores e o endereço utilizados na compra.
+- **Produtos no painel:** cadastro, edição, exclusão, busca, publicação e duplicação com novo SKU. As cópias são criadas como ocultas.
+- **Estoque:** entradas, saídas e ajustes com histórico. A edição comum do produto não altera sua quantidade.
+- **Gestão administrativa:** categorias, cupons, faixas de frete, pedidos e usuários, com promoção e remoção de privilégios de administrador e proteção do último administrador.
 
-## Tecnologias e requisitos
+A vitrine mostra 12 produtos por página, dos mais recentes para os mais antigos. Produtos sem estoque continuam visíveis como indisponíveis. Produtos ocultos não aparecem no catálogo e seus detalhes públicos retornam 404.
 
-Versões deste repositório (podem diferir do material do curso):
+Ao entrar ou criar uma conta, os itens do carrinho visitante são incorporados ao carrinho salvo. As quantidades da conta têm prioridade; os itens do visitante são acrescentados até o limite de estoque.
 
-- Laravel 13.31, Breeze 2.4.2 (Blade + PHPUnit), PHP 8.5 (imagem Sail), MySQL 8.4
-- `ext-bcmath` obrigatória (`composer.json`); totais do carrinho usam BCMath
-- Node.js para Vite (`npm install` / `npm run build`)
-- Docker Desktop e WSL. Não é necessário PHP nem Composer no host.
+Favoritos, endereços, aplicação de cupons e checkout exigem e-mail verificado, assim como o painel. O perfil continua acessível sem verificação para permitir a correção do endereço de e-mail.
 
-Portas locais (evitam conflito com outro app em 8001): HTTP **8002**, Vite **5174**, MySQL no host **3307**. Projeto Compose: `ecommerce`. Serviços: `laravel.test` e `mysql` apenas.
+Os pedidos preservam os valores e o endereço registrados na confirmação. Uma chave vinculada ao usuário identifica cada confirmação para evitar a criação de pedidos duplicados em reenvios.
 
-## Instalação a partir de um clone
+## Capturas de tela
 
-O Sail (`./vendor/bin/sail` e `compose.yaml`) depende de `vendor/laravel/sail`. Instale as dependências PHP **antes** de subir os containers.
+![Vitrine em desktop](docs/screenshots/vitrine-desktop.png)
+
+![Detalhes da Bolsa Galeria Demo](docs/screenshots/detalhes-galeria.png)
+
+![Administração de produtos](docs/screenshots/admin-produtos.png)
+
+![Carrinho no celular](docs/screenshots/carrinho-celular.png)
+
+## Tecnologias
+
+| Componente | Versão ou uso |
+| --- | --- |
+| Laravel | 13.31 |
+| Laravel Breeze | 2.4.2, com Blade e PHPUnit |
+| PHP | 8.5 no container Sail |
+| MySQL | 8.4 |
+| BCMath | Cálculos monetários; extensão obrigatória no PHP da aplicação |
+| Bootstrap | Interface da loja |
+| Tailwind CSS | Autenticação e painel administrativo |
+| Vite | Build dos assets |
+| Playwright | Testes de ponta a ponta |
+
+## Ambiente local
+
+Os comandos abaixo consideram o terminal WSL no Windows, com a integração do Docker Desktop habilitada. PHP e Composer rodam em containers. Para executar o Playwright pelo terminal, é necessário ter Node.js e npm no WSL.
+
+| Serviço | Porta no host |
+| --- | --- |
+| Aplicação | 8002 |
+| Vite | 5174 |
+| MySQL | 3307 |
+
+O projeto Compose se chama `ecommerce` e usa os serviços `laravel.test` e `mysql`.
+
+## Instalação
+
+Substitua `URL_DO_REPOSITORIO` pelo endereço deste repositório:
 
 ```bash
-git clone <url-do-repositorio>
+git clone URL_DO_REPOSITORIO e-Commerce
 cd e-Commerce
 cp .env.example .env
 ```
 
-No `.env`, defina `APP_URL=http://localhost:8002` (já vem no exemplo). A senha do MySQL do Compose é a de `DB_PASSWORD` do exemplo (`password`); isso é o padrão do Sail, não uma credencial de produção.
+O `.env.example` inclui `APP_URL=http://localhost:8002` e a configuração local do MySQL. A senha padrão `password` é destinada ao ambiente de desenvolvimento. O arquivo `.env` fica fora do versionamento.
 
-Instale o Composer com a imagem oficial `composer:latest` (sem PHP no host). Essa imagem só serve para gerar `vendor/` (incluindo `vendor/laravel/sail`). A flag `--ignore-platform-req=ext-bcmath` vale **somente** nesse passo: essa imagem não traz `ext-bcmath`, exigida pelo `composer.json`. Não use ignore de plataforma no container Sail que executa a aplicação.
-
-Não use `laravelsail/php85-composer`: essa tag não é publicada no Docker Hub. O runtime do app continua sendo o PHP **8.5** definido em `compose.yaml`, onde `ext-bcmath` está presente.
+Instale as dependências PHP antes de iniciar o Sail, pois o Compose usa arquivos de `vendor/laravel/sail`:
 
 ```bash
 docker run --rm \
@@ -50,153 +81,139 @@ docker run --rm \
   composer install --ignore-platform-req=ext-bcmath
 ```
 
-O `composer.lock` declara plataforma `php: ^8.3` e deve ser respeitado na instalação.
+A imagem de Composer usada nessa etapa não inclui BCMath. A opção `--ignore-platform-req=ext-bcmath` se aplica somente a essa instalação inicial, a partir do `composer.lock`. O PHP do Sail deve atender a todos os requisitos da aplicação.
 
-Suba o ambiente, gere a chave, rode as migrations, o link de storage e o build dos assets. Em seguida, confira os requisitos da plataforma **no Sail**:
+Inicie o ambiente, confira esses requisitos e prepare a aplicação:
 
 ```bash
 ./vendor/bin/sail up -d
+./vendor/bin/sail composer check-platform-reqs
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate
 ./vendor/bin/sail artisan storage:link
 ./vendor/bin/sail npm install
 ./vendor/bin/sail npm run build
-./vendor/bin/sail composer check-platform-reqs
 ```
 
-`storage:link` é necessário para as imagens de produto no disco `public`. A coluna `caminho` em `imagens_produto` guarda o caminho relativo no disco; uploads novos e já existentes usam o prefixo `products/` nesse disco (compatibilidade com arquivos gravados antes da consolidação do schema).
+Acesse a loja em [http://localhost:8002](http://localhost:8002).
 
-Uma instalação nova aplica as migrations consolidadas de usuários/cache/filas/produtos/imagens **e** as incrementais de catálogo (categorias, publicação, carrinho persistente, favoritos, endereços, estoque, cupons, frete, pedidos). Não altere os cinco arquivos consolidados; novas tabelas entram só em migrations posteriores.
+O comando `storage:link` permite servir as imagens pelo disco `public`. Os arquivos de produtos usam a pasta `products/`; o banco guarda seus caminhos relativos na coluna `caminho` da tabela `imagens_produto`.
 
-Não use `migrate:fresh` se já houver dados locais que devam ser preservados.
-
-### Instalações que já rodaram as migrations antigas
-
-A consolidação **não** é uma atualização automática de schema. Bancos que já executaram a sequência anterior (criação em inglês + `add_is_admin` + dois renomes) já estão no schema final; o que muda é só o **histórico** na tabela `migrations`.
-
-No banco local `ecommerce` essa adoção **já foi feita**: os cinco registros intermediários foram substituídos pelos dois arquivos consolidados (`criar_tabela_produtos` e `criar_tabela_imagens_produto`), no **batch 1**, junto com `users`, `cache` e `jobs`. `migrate:status` deve listar as cinco migrations atuais como executadas e `migrate` não deve ter nada a aplicar. Não rode `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `migrate:rollback` nem `db:wipe` se precisar preservar os dados.
-
-Efeito no rollback: os passos intermediários (`is_admin`, tabelas em inglês, `path`) **não existem mais** no histórico. Um `migrate:rollback` do batch 1 tentaria desfazer a **base inteira** (usuários, cache, filas, produtos e imagens) de uma vez — o `down()` das migrations consolidadas não reconstrói o caminho antigo. Trate rollback como incompatível com este banco de desenvolvimento já preenchido.
-
-Outros bancos ainda no histórico antigo precisam do recorte **manual** (backup da tabela `migrations`, conferência do schema, substituição só daquelas cinco linhas). Alternativa: dump dos dados, banco vazio, `migrate` da sequência nova e importação.
-
-Índices herdados da criação em inglês podem continuar com os nomes `products_sku_unique` e `product_images_product_id_foreign`; instalações novas usam `produtos_sku_unique` e `imagens_produto_produto_id_foreign`. Isso não muda unicidade nem o FK em `produto_id` (`ON DELETE CASCADE`).
-
-## URLs
-
-Loja (após `sail up`):
-
-- Vitrine: [http://localhost:8002](http://localhost:8002)
-- Detalhes: [http://localhost:8002/produtos/{id}](http://localhost:8002/produtos/1)
-- Carrinho: [http://localhost:8002/carrinho](http://localhost:8002/carrinho)
-
-Administração:
-
-- Login: [http://localhost:8002/login](http://localhost:8002/login)
-- Painel: [http://localhost:8002/admin/painel](http://localhost:8002/admin/painel)
-- Produtos: [http://localhost:8002/admin/produtos](http://localhost:8002/admin/produtos)
-
-Administradores **novos** (incluindo o seeder local) nascem **sem** e-mail verificado. O painel exige verificação. Com a conta autenticada, gere o link local (não altera a senha):
-
-```bash
-./vendor/bin/sail artisan verificacao:url admin@example.test
-```
-
-Abra a URL no mesmo navegador. Reenvio: `/verify-email`. Não marque `email_verified_at` à mão no banco de desenvolvimento.
+As migrations incluem a base consolidada e as alterações posteriores de catálogo, contas, estoque e pedidos. Use `migrate` para aplicar as pendentes. Alterações de esquema devem ser feitas em migrations novas, mantendo as consolidadas. Não use `migrate:fresh` em um banco com dados que precisam ser mantidos.
 
 ## Administrador local
 
-O `DatabaseSeeder` **não** cria o administrador. Use:
+Configure `ADMIN_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` no `.env` e execute:
 
 ```bash
 ./vendor/bin/sail artisan db:seed --class=AdministradorSeeder
 ```
 
-Variáveis no `.env` / `.env.example`: `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+O `DatabaseSeeder` não cria o administrador. Quando nome e e-mail não são informados, os padrões são `Administrador` e `admin@example.test`.
 
-- Deixe a senha **vazia** no `.env.example` e não a publique.
-- Na primeira execução, se `ADMIN_PASSWORD` estiver vazia, o seeder gera uma senha aleatória e grava **somente** no `.env` local. Consulte esse arquivo depois do seed; não versionar `.env`.
-- Se o e-mail já existir como usuário comum, o seeder aborta sem alterar o registro.
-- Padrão quando nome e e-mail estão vazios: nome `Administrador`, e-mail `admin@example.test`.
+Na primeira criação, se `ADMIN_PASSWORD` estiver vazia, o seeder gera uma senha e a grava no `.env` local. Consulte esse arquivo para entrar na conta. Mantenha a senha vazia no `.env.example`.
 
-## Demonstração da galeria
+Se o e-mail já pertencer a um usuário comum, o seeder encerra sem modificar a conta.
+
+### Verificação de e-mail
+
+Administradores novos também precisam verificar o e-mail para acessar o painel. Após entrar na conta, gere o link de verificação local:
+
+```bash
+./vendor/bin/sail artisan verificacao:url admin@example.test
+```
+
+Se você configurou outro `ADMIN_EMAIL`, use esse endereço no comando. Abra o link gerado no mesmo navegador em que a conta está autenticada. O procedimento não altera a senha. O reenvio pode ser solicitado na tela `/verify-email`.
+
+## Dados de demonstração
+
+Para cadastrar um produto com três imagens:
 
 ```bash
 ./vendor/bin/sail artisan db:seed --class=ProdutoGaleriaDemoSeeder
 ```
 
-Cria **Bolsa Galeria Demo**, SKU `DEMO-GALLERY-01`, R$ 89,90, estoque 20, cores Azul e Verde, com três fotos. As origens versionáveis estão em `public/frontend/images/product_slide_show_{1,2,3}.jpg`. O seeder é idempotente: se o SKU já existir, não altera o registro.
+O seeder cria a **Bolsa Galeria Demo**, com SKU `DEMO-GALLERY-01`, preço de R$ 89,90, estoque de 20 unidades e cores Azul e Verde. Se o SKU já existir, o registro permanece como está.
 
-Outros produtos locais (por exemplo a Bolsa Demo Editada, SKU `DEMO-0001`) **não** são criados por esse seeder e devem ser preservados no banco de desenvolvimento. Após um clone limpo, só a galeria demo reaparece com o comando acima.
+As imagens de origem estão em `public/frontend/images/product_slide_show_{1,2,3}.jpg`. Esse é o único produto recriado pelo seeder; os demais cadastros locais não fazem parte dos dados de demonstração distribuídos com o projeto.
 
-## Limitações atuais
+## Páginas
 
-- Pagamento, impostos e gateway ficam de fora: o pedido é gravado como aguardando pagamento.
-- Frete é faixa de CEP cadastrada no admin (não há cotação de transportadora).
-- Edição de produto **não** altera quantidade; use a tela de estoque.
+Os caminhos abaixo usam a base `http://localhost:8002`.
+
+| Página | Caminho |
+| --- | --- |
+| Vitrine | `/` |
+| Categoria | `/categorias/{slug}` |
+| Detalhes do produto | `/produtos/{id}` |
+| Carrinho | `/carrinho` |
+| Checkout | `/checkout` |
+| Login | `/login` |
+| Perfil | `/perfil` |
+| Administração | `/admin/painel` |
+| Produtos no painel | `/admin/produtos` |
+
+Substitua `{id}` e `{slug}` por valores de registros existentes. `/admin/painel` encaminha para a listagem administrativa de produtos.
+
+As URLs antigas `/product-details` e `/products/{id}` continuam com redirecionamento para a vitrine e o detalhe em português, respectivamente. O redirecionamento do detalhe depende da existência do produto.
 
 ## Testes
 
-Os testes PHPUnit em `tests/Feature` e `tests/Unit` usam SQLite em memória (`phpunit.xml`) e **não** usam o MySQL `ecommerce`.
+### PHPUnit
+
+A suíte padrão, em `tests/Feature` e `tests/Unit`, usa SQLite em memória e não utiliza o banco MySQL `ecommerce`:
 
 ```bash
 ./vendor/bin/sail artisan test
 ```
 
-Provas de estoque/cupom no **MySQL isolado** `ecommerce_e2e` (recria esse banco; não toca `ecommerce`):
+### E2E
 
-```bash
-./vendor/bin/sail artisan test --env=e2e --configuration=phpunit.concorrencia.xml
-```
-
-Há uma suíte E2E com Playwright (navegador, Laravel e MySQL `ecommerce_e2e` na porta **8003**). Isolamento, matriz de cenários e comandos: [docs/e2e.md](docs/e2e.md).
+Os testes Playwright usam a aplicação na porta HTTP **8003** e o banco separado `ecommerce_e2e`. A suíte inclui Chromium, Firefox, WebKit e emulação de celular.
 
 ```bash
 ./scripts/e2e/preparar-ambiente.sh
 npm run teste:e2e
 ```
 
-`teste:e2e` e a preparação compartilham `storage/e2e/execucao.lock` (`flock`). Uma segunda execução é recusada com mensagem clara e não reinicia o banco nem sobrescreve o relatório.
+A preparação e o comando de testes compartilham o bloqueio `storage/e2e/execucao.lock`. Uma segunda execução é recusada antes de reiniciar o banco ou sobrescrever o relatório.
 
-O build de assets da loja (quando necessário):
+O relatório HTML fica em `storage/e2e/relatorio-playwright/index.html`. A configuração dos navegadores, o isolamento e os cenários estão descritos em [docs/e2e.md](docs/e2e.md).
+
+### Verificações no MySQL
+
+Depois de preparar o ambiente E2E, execute as verificações de estoque e cupom com:
 
 ```bash
-./vendor/bin/sail npm run build
+./vendor/bin/sail artisan test --env=e2e --configuration=phpunit.concorrencia.xml
 ```
 
-## Matriz das 14 entregas
+Esse comando recria o banco `ecommerce_e2e`. Execute-o com a suíte Playwright encerrada, pois ambos usam o mesmo banco. O banco de desenvolvimento `ecommerce` não é o alvo dessa configuração.
 
-| # | Entrega | Implementação | Validação |
-| --- | --- | --- | --- |
-| 1 | Busca pública | Query `q` na vitrine + filtros | PHPUnit `PublicacaoCatalogoFavoritoTest`; E2E vitrine |
-| 2 | Busca administrativa | Query `q` em produtos e usuários | PHPUnit `AdminProdutoListarTest` / `AdminUsuarioTest`; E2E `usuarios-admin` |
-| 3 | Publicação | `publicado`; `scopePublicados` | PHPUnit oculto 404; E2E vitrine e duplicar |
-| 4 | Duplicar produto | Formulário preenchido, SKU novo, cópia oculta | E2E `duplicar-produto`; PHPUnit `AdminProdutoSalvarTest` |
-| 5 | Verificação de e-mail | `MustVerifyEmail`; `verificacao:url` local | PHPUnit auth; E2E cadastro/perfil/jornada |
-| 6 | Carrinho persistente e mescla | `itens_carrinho` + `MescladorCarrinho` | PHPUnit; E2E carrinho/jornada |
-| 7 | Categorias | CRUD admin + vitrine por slug | PHPUnit; E2E jornada |
-| 8 | Favoritos | Conta verificada | PHPUnit; E2E jornada |
-| 9 | Endereços | Um padrão; exclusão promove o mais antigo | PHPUnit; E2E jornada |
-| 10 | Estoque | Tela admin (entrada/saída/ajuste) + lock | E2E `estoque-admin`; PHPUnit; concorrência MySQL |
-| 11 | Checkout e pedidos | Snapshot, idempotência, sem pagamento | PHPUnit; E2E jornada |
-| 12 | Cupons | Fixo/percentual, uso único | PHPUnit; E2E jornada; concorrência MySQL |
-| 13 | Frete por CEP | Faixas no admin | PHPUnit CEP sem cobertura; E2E jornada |
-| 14 | Usuários admin | Promover/rebaixar; último admin protegido | E2E `usuarios-admin`; PHPUnit `AdminUsuarioTest` / perfil |
+**Limite da cobertura atual:** as verificações MySQL são sequenciais. Elas não comprovam o comportamento de duas transações concorrentes executadas por processos distintos.
 
-Pendências conhecidas: disputa **simultânea** de duas transações no mesmo instante (a suíte MySQL cobre a ordem sequencial com `lockForUpdate`; não prova dois processos em paralelo).
+## Limitações
 
-## Capturas
+- Não há integração com gateway de pagamento nem cálculo de impostos.
+- O frete usa valores fixos por faixa de CEP cadastrados no painel, sem cotação de transportadoras.
+- A confirmação do checkout salva os dados comerciais do pedido e baixa o estoque. Isso não representa uma cobrança ou confirmação de pagamento.
 
-![Vitrine em desktop](docs/screenshots/vitrine-desktop.png)
+## Instalações anteriores à consolidação das migrations
 
-![Detalhes da Bolsa Galeria Demo](docs/screenshots/detalhes-galeria.png)
+Uma instalação nova aplica a sequência atual normalmente. Bancos que executaram as migrations antigas, com tabelas em inglês e renomeações posteriores, precisam ter o esquema e o histórico da tabela `migrations` conferidos antes da atualização. A consolidação não adapta esse histórico automaticamente.
 
-![Administração de produtos](docs/screenshots/admin-produtos.png)
+Faça backup antes de ajustar um banco antigo. O alinhamento do histórico exige conferir quais alterações já existem no esquema; não deve ser resolvido com uma exclusão indiscriminada dos registros de `migrations`.
 
-![Carrinho no celular](docs/screenshots/carrinho-celular.png)
+O rollback do batch que contém a base consolidada pode remover as tabelas iniciais e seus dados. Ele não reconstrói a sequência antiga de renomeações. Por isso, não use comandos de reset ou rollback para tentar corrigir esse histórico.
 
-## Template original e créditos
+Índices herdados podem manter os nomes em inglês. Isso, por si só, não altera a unicidade do SKU nem a chave estrangeira das imagens de produto.
 
-`original-template/` permanece como referência (não altere esses arquivos). Assets públicos da loja estão em `public/frontend/`. Créditos: Freeit (rodapé) e Mahamudul Hassan Sazal (`css/spacing.css`). Font Awesome: CSS/webfonts Free em `public/frontend`; o kit Pro `js/Font-Awesome.js` não é carregado.
+## Template e créditos
 
-Licença do skeleton Laravel: MIT (`composer.json`).
+O template de referência está em `original-template/`. Os assets utilizados pela loja ficam em `public/frontend/`.
+
+- **Freeit:** template e crédito no rodapé.
+- **Mahamudul Hassan Sazal:** crédito em `css/spacing.css`.
+- **Font Awesome Free:** CSS e webfonts utilizados na loja. O kit Pro `js/Font-Awesome.js` não é carregado.
+
+A licença indicada em `composer.json` é MIT. O template e as dependências mantêm seus próprios créditos e termos de uso.
